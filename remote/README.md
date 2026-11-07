@@ -1,7 +1,7 @@
 # v6_auto chạy trên Kaggle (qua Kaggle API — agent tự đẩy, không cần bấm)
 
 **Người dùng (1 lần):**
-1. kaggle.com (tài khoản thui.thanhluyen) → xác minh số điện thoại (cần cho GPU).
+1. kaggle.com (tài khoản thanhthuyytltt@gmail.com) → xác minh số điện thoại (cần cho GPU).
 2. Settings → API → Create New Token → tải `kaggle.json`.
 3. Chạy: `mkdir -p ~/.kaggle_v6 && mv ~/Downloads/kaggle.json ~/.kaggle_v6/ && chmod 600 ~/.kaggle_v6/kaggle.json`
 4. Agent điền `kaggle_user` trong `remote/config.json` và chạy `python remote/remote.py init-cache`
