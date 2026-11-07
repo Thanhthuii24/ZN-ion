@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "experiment_id": "ZN-E001",
+  "run_validity": "VALID",
+  "contract_answer": {
+    "question": "Does replacing CPMLP's fixed 100-slot flatten with masked mean, last-observed, and last-minus-first pooling break the split-2021 constant-prediction collapse and improve the matched ZN-E000 result?",
+    "outcome": "SUPPORTED",
+    "conclusion": "Yes. This is a complete, finite, protocol-compliant Tesla T4 run: the saved train.py has MD5 b67446d48df44257187ea5860a759141, equal to the reviewed and current runner, and epoch 10 is the unique checkpoint within 0.005 of the minimum MAPE. Against ZN-E000, selected-checkpoint MAPE improves from 0.434598 to 0.345131, Acc@15 from 0.1000 to 0.3405, and RMSE from 490.725 to 456.261 cycles. Prediction SD rises from 1.539 to 100.593 cycles, or from 0.00378 to 0.24688 of target SD, so the collapse rejection threshold is passed. The scientific result is that pooling only observed cycles fixes most of the constant-output failure. It does not make this CPMLP-family model eligible as a v6 candidate or parent under the user's 2026-11-08 architecture rule.",
+    "evidence_paths": [
+      "record.json.result",
+      "record.json.metrics",
+      "diagnostics.json.checkpoint_selection",
+      "diagnostics.json.summary.learning_dynamics",
+      "diagnostics.json.summary.padding_invariance",
+      "worker_meta.json",
+      "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+      "../ZN-E000/record.json.metrics",
+      "../ZN-E000/diagnostics.json.summary.branch_gradient_imbalance"
+    ]
+  },
+  "main_symptom": "Masked pooling breaks the near-constant output and substantially improves all headline metrics, but the model still cannot extrapolate long life. Independent recomputation from all 2,000 saved predictions gives MAPE 0.345131, Acc@15 0.3405, and RMSE 456.261 cycles. For the five validation cells with EOL above 700 cycles it gives MAPE 0.764220, Acc@15 0, RMSE 903.341 cycles, and mean bias -846.773 cycles. In plain language, the model now separates many short-life cells, but its predictions still top out far too low for long-lived cells; this long-life underprediction is the main limit.",
+  "causes": [
+    {
+      "id": "C1_MASKED_POOLING_FIXES_COLLAPSE",
+      "class": "representation_and_masking",
+      "supporting_evidence": [
+        "record.json.metrics.prediction_diagnostics",
+        "diagnostics.json.summary.padding_invariance",
+        "diagnostics.json.summary.mask_health",
+        "validation_predictions.npz[prediction,target]",
+        "../ZN-E000/record.json.metrics.prediction_diagnostics",
+        "../ZN-E000/diagnostics.json.summary.padding_invariance"
+      ],
+      "contradicting_evidence": [
+        "Prediction SD is still only 24.69% of target SD and prediction-target correlation is only 0.2614, so spread is not fully restored.",
+        "All five cells above 700 cycles remain outside Acc@15."
+      ],
+      "interpretation": "The one changed block produces the predicted causal signature. Padding perturbations change standardized output by exactly 0 in ZN-E001, versus mean absolute change 0.00676 in ZN-E000. Prediction SD rises 65.4x (1.539 to 100.593 cycles), MAPE falls by 0.089467, Acc@15 rises by 0.2405, and RMSE falls by 34.464 cycles. The improvement is therefore consistent with the fixed flatten being a major cause of ZN-E000's collapse. The transferable lesson is masked aggregation over observed cycles, not retention of the CPMLP family.",
+      "missing_evidence": [
+        "Splits 42 and 2024 were not run, so robustness of the mechanism across paper splits is unknown.",
+        "A non-CPMLP matched architecture is needed to show that the masking benefit transfers beyond this family."
+      ]
+    },
+    {
+      "id": "C2_LONG_LIFE_REPRESENTATION_LIMIT",
+      "class": "tail_underfit_and_extrapolation_limit",
+      "supporting_evidence": [
+        "record.json.metrics.by_eol",
+        "record.json.metrics.prediction_diagnostics",
+        "record.json.metrics.by_prefix",
+        "validation_predictions.npz[prediction,target,cell_id,prefix_length]"
+      ],
+      "contradicting_evidence": [
+        "The two 500-1000-cycle cells improve from MAPE 0.832721 in ZN-E000 to 0.615823, so the model does learn some tail-relevant signal.",
+        "Long-prefix MAPE 0.325626 is lower than 1-10-prefix MAPE 0.406031, showing that later observed cycles provide useful information."
+      ],
+      "interpretation": "Independent per-cell aggregation (target: mean prediction, MAPE, sample Acc@15) is: 104: 114.91, 0.1049, 1.00; 107: 108.25, 0.0145, 1.00; 108: 115.57, 0.0701, 1.00; 137: 168.99, 0.2335, 0; 147: 130.26, 0.1139, 0.87; 172: 155.47, 0.1500, 0.51; 174: 128.75, 0.2600, 0; 178: 122.82, 0.3100, 0; 183: 194.11, 0.0790, 0.85; 197: 187.81, 0.0476, 1.00; 201: 165.47, 0.1908, 0.41; 215: 154.79, 0.2801, 0; 219: 152.66, 0.3029, 0.08; 322: 383.81, 0.4175, 0.09; 415: 204.70, 0.5067, 0; 770: 189.87, 0.7534, 0; 923: 481.59, 0.4782, 0; 1023: 190.16, 0.8141, 0; 1281: 121.35, 0.9053, 0; 1402: 182.16, 0.8701, 0. The five >700-cycle cells improve over ZN-E000 (MAPE 0.863688 to 0.764220; RMSE 967.504 to 903.341), but remain underpredicted by 846.8 cycles on average. A summary of mean, endpoint, and endpoint-minus-first cannot adequately encode the curve topology and temporal degradation needed to distinguish these long-lived cells; that is a hypothesis for a new family, not proof that a particular convolution or TCN will solve it.",
+      "missing_evidence": [
+        "A matched causal temporal encoder test that retains observed-cycle masking while representing the full degradation trajectory.",
+        "A matched residual Conv1D curve-encoder test to isolate whether local within-cycle shape is the missing signal.",
+        "Three-split evidence for long-life cells."
+      ]
+    },
+    {
+      "id": "C3_RESIDUAL_GRADIENT_IMBALANCE",
+      "class": "optimization_warning",
+      "supporting_evidence": [
+        "diagnostics.json.summary.overall_gradient_health",
+        "diagnostics.json.summary.branch_gradient_imbalance",
+        "diagnostics.json.summary.layer_health.intra_mlp.0",
+        "diagnostics.json.summary.layer_health.head",
+        "../ZN-E000/diagnostics.json.summary.branch_gradient_imbalance"
+      ],
+      "contradicting_evidence": [
+        "Every required block has finite, nonzero gradients and updates, and no activation is collapsed or non-finite.",
+        "Training loss falls to 0.4462 of its epoch-1 value and validation MAPE reaches its minimum at epoch 10 rather than immediately collapsing at epoch 1.",
+        "tools/layer_report.py classifies all blocks OK when aggregating the available snapshots."
+      ],
+      "interpretation": "Gradient flow improves materially but does not clear the formal gate. Head-to-smallest-block imbalance falls from 5081.9x in ZN-E000 to 1380.8x, a 3.68x reduction, but remains above the 1000x warning threshold. The later saved intra_mlp.0 snapshot has near-zero-gradient fraction 0.5192, just over the 0.50 dead-block threshold, while its gradient/parameter ratio (7.26e-4) and update ratio (1.96e-4) remain nonzero. This is a warning about the CPMLP curve stack, not a numerical invalidity; it blocks promotion of the exact configuration and supports removing that stack in the new architecture rather than repairing it as a v6 parent.",
+      "missing_evidence": [
+        "A true selected-checkpoint gradient snapshot; diagnostic snapshots do not coincide with epoch 10.",
+        "A matched non-CPMLP model showing whether residual curve encoding and temporal skips remove the warning."
+      ]
+    }
+  ],
+  "selected_cause_id": "C2_LONG_LIFE_REPRESENTATION_LIMIT",
+  "layers": [
+    {
+      "name": "intra_embed",
+      "role": "Flatten and linearly embed each 300-point cycle curve.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.intra_embed",
+        "diagnostics.json.summary.activation_health.intra_embed"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "REPLACE",
+      "reason": "It is numerically healthy, but the explicit non-CPMLP-family rule and the unresolved long-life curve-shape limit call for testing a residual Conv1D curve encoder in the new family; this is a hypothesis, not a claim of measured block failure."
+    },
+    {
+      "name": "intra_mlp.0",
+      "role": "First CPMLP intra-cycle block and the smallest-gradient endpoint in ZN-E001.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.intra_mlp.0",
+        "diagnostics.json.summary.branch_gradient_imbalance"
+      ],
+      "persistent_dead_gradient": true,
+      "action": "REMOVE",
+      "reason": "Its later near-zero-gradient fraction is 0.5192, above the 0.50 dead-block threshold. Because CPMLP-family repair cannot yield an eligible v6 parent, remove this stack when transferring the masking lesson to the new family."
+    },
+    {
+      "name": "inter_summary",
+      "role": "Project masked mean, last-observed, and last-minus-first cycle features into the cell state.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.inter_summary",
+        "diagnostics.json.summary.padding_invariance",
+        "record.json.metrics.prediction_diagnostics"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "This block is healthy, padding-invariant, and the matched intervention breaks the collapse. Retain its observed-cycle masking principle as an input/readout contract for the next temporal encoder, not the exact CPMLP candidate."
+    },
+    {
+      "name": "inter_mlp.8",
+      "role": "Representative final block of the nine-layer CPMLP inter-cycle MLP stack.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.inter_mlp.8",
+        "diagnostics.json.summary.activation_health.inter_mlp_last"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "REMOVE",
+      "reason": "The block is healthy, but a pooled state followed by a deep position-agnostic MLP does not preserve the full degradation trajectory and the CPMLP family is not eligible. Replace the stack at architecture level with a masked causal temporal encoder."
+    },
+    {
+      "name": "head",
+      "role": "Map the learned cell state to standardized EOL.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.head",
+        "diagnostics.json.summary.activation_health.head"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "The head is finite, active, and updating. Its large relative gradient is evidence of upstream scale imbalance, not a head-local failure."
+    }
+  ],
+  "gates": {
+    "gradient": "FAIL",
+    "screen_floor": {
+      "applicable": false,
+      "pass": null,
+      "reason": "ZN-E001 is a full_candidate run, not a five-epoch screening run, so the screening hard floor is not applicable."
+    }
+  },
+  "decision": "DISCARD",
+  "next_action": {
+    "type": "NEW_HYPOTHESIS",
+    "summary": "Do not promote or parent ZN-E001: the exact configuration fails the formal gradient gate and, independently, the 2026-11-08 user rule excludes every CPMLP-family model from v6 candidacy. Carry forward the supported mechanism—aggregate only observed cycles with a strict mask—into a genuinely non-CPMLP family. Use contract-compliant staging: first replace the degradation encoder with a masked causal TCN while holding the current per-cycle encoder only as a matched control; if that preserves the collapse fix and improves the >700-cycle band, replace the per-cycle MLP in the next experiment with a residual Conv1D curve encoder. The falsifiable target is lower >700-cycle MAPE/RMSE and higher prediction-target spread without losing the short-life gains or mask invariance.",
+    "source_cause_id": "C2_LONG_LIFE_REPRESENTATION_LIMIT",
+    "responsible_block": "Degradation Encoder first; Curve Encoder in a separately contracted follow-up"
+  }
+}

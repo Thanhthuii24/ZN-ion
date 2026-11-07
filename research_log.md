@@ -53,3 +53,12 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - Codex: VALID + DISCARD; agreed after one round that the baseline recipe is not repaired (program.md §2b).
 - User amendment A3-ZN: no paper-baseline re-runs on 42/2024; paper Zn-ion numbers are the reference (CPMLP 0.558±0.034 / 0.297±0.084, CPTransformer 0.515±0.067 / 0.202±0.084).
 - Next: ZN-E001 = same CPMLP cycle encoder, inter flatten replaced by masked mean/last/last−first pooling (one change).
+
+## ZN-E001 — MaskedSummaryCPMLP, split 2021 (Kaggle T4)
+
+- Run: `VALID`. Decision: `DISCARD` (CPMLP family excluded by user rule A4-ZN; gradient gate FAIL).
+- One change vs ZN-E000: inter flatten -> masked mean/last/last-first pooling. 188,353 params; 15 epochs, best epoch 10.
+- Metrics: MAPE 0.3451, Acc@15 0.3405, RMSE 456, MAE 248. Pred SD 101 vs target SD 407, corr 0.26 — collapse fixed.
+- EOL bands: <500 (15 cells) MAPE 0.205 / Acc@15 0.454; 500–1000 (2) MAPE 0.616, bias −511; >1000 (3) MAPE 0.863, bias −1071.
+- Conclusion: mask-aware pooling over observed cycles is the right degradation-encoder mechanism; the remaining limit is long-life underprediction.
+- Next: ZN-E002 = first non-CPMLP family (residual Conv1D curve encoder + masked causal TCN + the same masked summary).

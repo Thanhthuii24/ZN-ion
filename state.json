@@ -10,8 +10,8 @@
   "run_approved": true,
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
   "current_experiment": null,
-  "next_experiment_id": "ZN-E001",
-  "next_action": "ZN-E001 MaskedSummaryCPMLP (replace inter flatten with masked pooling) on split 2021",
+  "next_experiment_id": "ZN-E002",
+  "next_action": "ZN-E002 ResConv-MaskedTCN (first non-CPMLP family) on split 2021",
   "active_architecture_parent": null,
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -90,7 +90,7 @@
     "hard_cap_valid_architecture_experiments": 50,
     "meaningful_mape_gain": 0.008,
     "meaningful_acc15_gain": 0.02,
-    "valid_architecture_experiments": 0,
+    "valid_architecture_experiments": 1,
     "architecture_families_covered": [],
     "valid_runs_since_meaningful_gain": 0,
     "promotion_eligible_incomplete_runs": [],
@@ -118,12 +118,12 @@
     },
     "counter": "optimizer_training_compute_seconds",
     "usage": {
-      "experiments": 1,
-      "training_seconds": 6.83
+      "experiments": 2,
+      "training_seconds": 17.29
     },
     "remaining": {
-      "experiments": 149,
-      "training_seconds": 249993.17
+      "experiments": 148,
+      "training_seconds": 249982.71
     },
     "exhausted": false,
     "status": "active"
@@ -170,6 +170,12 @@
       "date": "2026-11-08",
       "by": "user",
       "summary": "Paper baselines are not re-run on splits 42/2024; the BatteryLife paper Zn-ion numbers are the baseline reference (CPMLP MAPE 0.558\u00b10.034, Acc@15 0.297\u00b10.084; CPTransformer 0.515\u00b10.067 / 0.202\u00b10.084). The lead may propose its own Zn-ion models."
+    },
+    {
+      "id": "A4-ZN",
+      "date": "2026-11-08",
+      "by": "user",
+      "summary": "CPMLP and CPMLP-derived models are not v6 candidates or parents; the lead proposes new architectures that still give good results."
     }
   ],
   "decision_metrics": {

@@ -1,0 +1,182 @@
+
+===== ZN-E001 START 2026-11-07 17:27:10 =====
+epoch=1 epoch_steps=46/46 epoch_progress=1.000 steps=46 train_compute=1.59s val_mape=0.455419 val_acc15=0.100000
+epoch=2 epoch_steps=46/46 epoch_progress=2.000 steps=92 train_compute=2.22s val_mape=0.457588 val_acc15=0.100000
+epoch=3 epoch_steps=46/46 epoch_progress=3.000 steps=138 train_compute=2.85s val_mape=0.474884 val_acc15=0.200000
+epoch=4 epoch_steps=46/46 epoch_progress=4.000 steps=184 train_compute=3.48s val_mape=0.446178 val_acc15=0.100000
+epoch=5 epoch_steps=46/46 epoch_progress=5.000 steps=230 train_compute=4.17s val_mape=0.465024 val_acc15=0.200000
+epoch=6 epoch_steps=46/46 epoch_progress=6.000 steps=276 train_compute=4.80s val_mape=0.420307 val_acc15=0.195000
+epoch=7 epoch_steps=46/46 epoch_progress=7.000 steps=322 train_compute=5.44s val_mape=0.365735 val_acc15=0.285500
+epoch=8 epoch_steps=46/46 epoch_progress=8.000 steps=368 train_compute=6.06s val_mape=0.398475 val_acc15=0.185000
+epoch=9 epoch_steps=46/46 epoch_progress=9.000 steps=414 train_compute=6.68s val_mape=0.374811 val_acc15=0.121500
+epoch=10 epoch_steps=46/46 epoch_progress=10.000 steps=460 train_compute=7.31s val_mape=0.345131 val_acc15=0.340500
+epoch=11 epoch_steps=46/46 epoch_progress=11.000 steps=506 train_compute=7.94s val_mape=0.369218 val_acc15=0.268500
+epoch=12 epoch_steps=46/46 epoch_progress=12.000 steps=552 train_compute=8.56s val_mape=0.361472 val_acc15=0.243500
+epoch=13 epoch_steps=46/46 epoch_progress=13.000 steps=598 train_compute=9.19s val_mape=0.379999 val_acc15=0.285000
+epoch=14 epoch_steps=46/46 epoch_progress=14.000 steps=644 train_compute=9.82s val_mape=0.356214 val_acc15=0.314500
+epoch=15 epoch_steps=46/46 epoch_progress=15.000 steps=690 train_compute=10.46s val_mape=0.374113 val_acc15=0.224000
+{
+  "metrics": {
+    "mape": 0.3451309444910108,
+    "acc15": 0.3405,
+    "mae": 248.11621810150146,
+    "rmse": 456.2613607597073,
+    "prediction_diagnostics": {
+      "prediction_mean": 182.67568969726562,
+      "prediction_std": 100.59294128417969,
+      "prediction_min": 105.93490600585938,
+      "prediction_max": 539.7286376953125,
+      "target_mean": 413.8999938964844,
+      "target_std": 407.4496154785156,
+      "prediction_to_target_std_ratio": 0.24688436916560016,
+      "mean_signed_relative_error": -0.262067049741745,
+      "relative_error_std": 0.3649122714996338,
+      "prediction_target_correlation": 0.26135862382204617,
+      "extreme_prediction_count": 0
+    },
+    "by_prefix": {
+      "01-10": {
+        "mape": 0.4060312421313535,
+        "acc15": 0.3,
+        "mae": 277.51225273132326,
+        "rmse": 487.38821453912743,
+        "bias": -271.9119873046875,
+        "relative_bias": -0.36034703254699707,
+        "prediction_mean": 141.98800659179688,
+        "target_mean": 413.8999938964844,
+        "sample_count": 200,
+        "unique_cell_count": 20
+      },
+      "11-25": {
+        "mape": 0.37314938495065714,
+        "acc15": 0.3,
+        "mae": 259.09928471883137,
+        "rmse": 469.1101621285113,
+        "bias": -252.68115234375,
+        "relative_bias": -0.32254350185394287,
+        "prediction_mean": 161.21885681152344,
+        "target_mean": 413.8999938964844,
+        "sample_count": 300,
+        "unique_cell_count": 20
+      },
+      "26-50": {
+        "mape": 0.34074584558258286,
+        "acc15": 0.318,
+        "mae": 246.49333859252928,
+        "rmse": 460.06296669498505,
+        "bias": -231.60997009277344,
+        "relative_bias": -0.25885558128356934,
+        "prediction_mean": 182.29002380371094,
+        "target_mean": 413.8999938964844,
+        "sample_count": 500,
+        "unique_cell_count": 20
+      },
+      "51-75": {
+        "mape": 0.32784984595998884,
+        "acc15": 0.392,
+        "mae": 243.11618719482422,
+        "rmse": 454.024416490725,
+        "bias": -218.03567504882812,
+        "relative_bias": -0.21493209898471832,
+        "prediction_mean": 195.8643341064453,
+        "target_mean": 413.8999938964844,
+        "sample_count": 500,
+        "unique_cell_count": 20
+      },
+      "76-100": {
+        "mape": 0.32562595859853566,
+        "acc15": 0.352,
+        "mae": 236.39087469482422,
+        "rmse": 433.4098499102975,
+        "bias": -214.8780975341797,
+        "relative_bias": -0.23681555688381195,
+        "prediction_mean": 199.02191162109375,
+        "target_mean": 413.8999938964844,
+        "sample_count": 500,
+        "unique_cell_count": 20
+      }
+    },
+    "by_domain": {
+      "ZN-coin": {
+        "mape": 0.3451309444910108,
+        "acc15": 0.3405,
+        "mae": 248.11621810150146,
+        "rmse": 456.2613607597073,
+        "bias": -231.2243194580078,
+        "relative_bias": -0.262067049741745,
+        "prediction_mean": 182.67568969726562,
+        "target_mean": 413.8999938964844,
+        "sample_count": 2000,
+        "unique_cell_count": 20
+      }
+    },
+    "by_eol": {
+      "high_>1000": {
+        "mape": 0.8631516098472622,
+        "acc15": 0.0,
+        "mae": 1070.776418914795,
+        "rmse": 1085.5000938932774,
+        "bias": -1070.7764892578125,
+        "relative_bias": -0.8631516695022583,
+        "prediction_mean": 164.5569305419922,
+        "target_mean": 1235.3333740234375,
+        "sample_count": 300,
+        "unique_cell_count": 3
+      },
+      "low_<500": {
+        "mape": 0.20543450835472374,
+        "acc15": 0.454,
+        "mae": 48.563858022054035,
+        "rmse": 74.54975127501662,
+        "bias": -26.04130744934082,
+        "relative_bias": -0.09468264877796173,
+        "prediction_mean": 165.8920135498047,
+        "target_mean": 191.93333435058594,
+        "sample_count": 1500,
+        "unique_cell_count": 15
+      },
+      "middle_500-1000": {
+        "mape": 0.6158232174787862,
+        "acc15": 0.0,
+        "mae": 510.76861747741697,
+        "rmse": 522.1073853583913,
+        "bias": -510.7686462402344,
+        "relative_bias": -0.6158232092857361,
+        "prediction_mean": 335.7314147949219,
+        "target_mean": 846.5,
+        "sample_count": 200,
+        "unique_cell_count": 2
+      }
+    }
+  },
+  "result": {
+    "benchmark_round": "BATTERYLIFE-ZN-COIN-R1",
+    "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
+    "type": "architecture",
+    "seed": 2021,
+    "training_compute_seconds": 10.455,
+    "validation_seconds": 14.201,
+    "wall_seconds": 69.721,
+    "num_steps": 690,
+    "runner_version": "r4-relative-huber-v2",
+    "steps_per_sec": 65.995733,
+    "num_params": 188353,
+    "model_bytes_fp32": 753412,
+    "peak_device_memory_bytes": 352576512,
+    "best_epoch": 10,
+    "minimum_validation_mape": 0.3451309444910108,
+    "checkpoint_mape_tolerance": 0.005,
+    "best_epoch_complete": true,
+    "best_epoch_steps": 46,
+    "steps_per_epoch": 46,
+    "completed_epochs": 15,
+    "last_epoch": 15,
+    "last_epoch_steps": 46,
+    "epoch_progress": 15.0,
+    "stop_reason": "early_stopping",
+    "status": "pending_analysis",
+    "description": "Degradation encoder only: inter_flatten (Flatten + Linear 6400->64) -> masked mean over observed cycles, last observed cycle, last - cycle1, concat [B,192] -> Linear(192->64). Curve encoder (intra_embed + 5 MLP blocks), 9 inter MLP blocks and head unchanged.",
+    "device": "cuda"
+  }
+}
+===== ZN-E001 COMPLETE =====

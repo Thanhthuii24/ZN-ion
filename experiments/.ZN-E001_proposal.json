@@ -1,0 +1,61 @@
+{
+  "id": "ZN-E001",
+  "phase": "phase1_model",
+  "training_stage": "full_candidate",
+  "type": "architecture",
+  "model": {
+    "display_name": "MaskedSummaryCPMLP",
+    "variant": "masked_summary",
+    "d_model": 64,
+    "d_ff": 64,
+    "e_layers": 5,
+    "d_layers": 9,
+    "dropout": 0.1,
+    "summary_mode": "mean_last_delta"
+  },
+  "reference_experiment": "ZN-E000",
+  "observation": "ZN-E000 CPMLP collapsed: predictions ~140 cycles (SD 1.5) vs targets 104-1402, MAPE 0.4346, Acc@15 0.10, best epoch 1, head/intra_mlp.1 grad ratio 5082x. The fixed Flatten+Linear(100*64->64) holds 409,664 of 585,665 params and assigns static weights to padded cycle slots.",
+  "primary_hypothesis": "Replacing the fixed 100-slot inter-cycle flatten with mask-aware mean, last-observed and last-minus-first pooling lets the model separate cells by level and fade trend, breaking the constant-prediction collapse: MAPE below 0.4266 (ZN-E000 - 0.008) or Acc@15 above 0.12, with prediction SD > 10% of target SD.",
+  "question_inherited": "Does the CPMLP collapse on ZN-coin come from the static inter-cycle flatten?",
+  "unresolved_from_reference": "Whether the collapse is caused by the flatten (padding/position artifact, 70% of params) or by the cycle encoder / optimisation.",
+  "why_this_experiment": "architecture.md \u00a73: 'absolute position artifact -> replace static cycle-flatten with masked pooling'; \u00a74 forbids fixed flatten over padded slots; \u00a75 staging: change only the degradation encoder, keep the CPMLP cycle encoder.",
+  "modification": "Degradation encoder only: inter_flatten (Flatten + Linear 6400->64) -> masked mean over observed cycles, last observed cycle, last - cycle1, concat [B,192] -> Linear(192->64). Curve encoder (intra_embed + 5 MLP blocks), 9 inter MLP blocks and head unchanged.",
+  "changed_components": "Degradation encoder pooling (inter_flatten -> masked mean/last/delta summary).",
+  "held_constant_components": "Cycle encoder, inter MLP depth/width, head, Relative Huber delta 0.15, Adam lr 5e-4, batch 128, seed 2021, split 2021, A2-ZN epoch rule, data and preprocessing.",
+  "controlled_variables": "Split 2021 and training seed 2021, minimum 5 / maximum 100 epochs, patience 5 after epoch 5, diagnostics every 50 steps.",
+  "expected_evidence": "Selected-checkpoint MAPE, Acc@15, MAE, RMSE vs ZN-E000; prediction SD/target SD; per-cell and EOL-band errors (esp. >700-cycle cells); gradient ratio head vs intra blocks; padding sensitivity.",
+  "rejection_condition": "DISCARD if MAPE does not drop by >=0.008 and Acc@15 does not rise by >=0.02 vs ZN-E000, or predictions remain collapsed (SD < 10% of target SD). Invalid under the usual protocol/finite/epoch checks.",
+  "minimum_evidence_requirements": "At least five complete epochs; finite MAPE, Acc@15, MAE, and RMSE from one checkpoint; sample and unique-cell counts for every domain; gradient, update, activation, prediction, mask, and compute diagnostics.",
+  "required_diagnostics": "Epoch learning curve; selected and minimum-MAPE epochs; CPMLP block gradients and updates; activation health; prediction spread and bias; prefix, domain, and EOL errors; domain guardrail flags; padding sensitivity; parameters, memory, time, and throughput.",
+  "estimated_budget": {
+    "experiments": 1,
+    "training_seconds": 600
+  },
+  "training": {
+    "seed": 2021,
+    "batch_size": 128,
+    "max_epochs": 100,
+    "minimum_epochs": 5,
+    "patience": 5,
+    "learning_rate": 0.0005,
+    "scheduler": "none",
+    "target_transform": "standard",
+    "main_loss": "relative_huber",
+    "relative_huber_delta": 0.15,
+    "checkpoint_mape_tolerance": 0.005,
+    "physics_loss_weight": 0.0,
+    "extra_loss_weight": 0.0,
+    "prefix_consistency_weight": 0.0,
+    "diagnostic_interval_steps": 50,
+    "required_device": "cuda"
+  },
+  "split": "2021",
+  "architecture_addendum": {
+    "responsible_stage": "Degradation Encoder",
+    "mechanism": "Masked summary pooling (mean, last observed, last minus first)",
+    "evidence": "ZN-E000 near-constant predictions, flatten = 70% of params with static slot weights, gradient imbalance 5082x",
+    "shapes": "[B,100,3,300] -> intra_embed+MLP -> [B,100,64] -> masked pool [B,192] -> Linear [B,64] -> 9 MLP blocks [B,64] -> head [B,1]",
+    "mask_path": "weights = mask[B,100,1]; mean = sum(h*w)/max(sum(w),1); last = h[mask.sum()-1]; delta = last - h[0]; no op sees padded slots",
+    "expected_evidence": "MAPE, RMSE, Acc@15, DB-MAPE vs ZN-E000; prediction spread; per-cell errors on 20 val cells; gradient ratio"
+  }
+}
