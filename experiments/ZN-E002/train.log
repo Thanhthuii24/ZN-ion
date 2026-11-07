@@ -1,0 +1,179 @@
+
+===== ZN-E002 START 2026-11-07 17:59:56 =====
+epoch=1 epoch_steps=46/46 epoch_progress=1.000 steps=46 train_compute=19.37s val_mape=0.425451 val_acc15=0.050000
+epoch=2 epoch_steps=46/46 epoch_progress=2.000 steps=92 train_compute=30.28s val_mape=0.463698 val_acc15=0.098000
+epoch=3 epoch_steps=46/46 epoch_progress=3.000 steps=138 train_compute=41.48s val_mape=0.425127 val_acc15=0.209500
+epoch=4 epoch_steps=46/46 epoch_progress=4.000 steps=184 train_compute=53.03s val_mape=0.433142 val_acc15=0.178500
+epoch=5 epoch_steps=46/46 epoch_progress=5.000 steps=230 train_compute=64.98s val_mape=0.364486 val_acc15=0.290500
+epoch=6 epoch_steps=46/46 epoch_progress=6.000 steps=276 train_compute=76.58s val_mape=0.358770 val_acc15=0.317000
+epoch=7 epoch_steps=46/46 epoch_progress=7.000 steps=322 train_compute=87.98s val_mape=0.336823 val_acc15=0.318000
+epoch=8 epoch_steps=46/46 epoch_progress=8.000 steps=368 train_compute=99.37s val_mape=0.368364 val_acc15=0.338000
+epoch=9 epoch_steps=46/46 epoch_progress=9.000 steps=414 train_compute=110.82s val_mape=0.358646 val_acc15=0.261000
+epoch=10 epoch_steps=46/46 epoch_progress=10.000 steps=460 train_compute=122.38s val_mape=0.367121 val_acc15=0.228000
+epoch=11 epoch_steps=46/46 epoch_progress=11.000 steps=506 train_compute=133.93s val_mape=0.364199 val_acc15=0.275000
+epoch=12 epoch_steps=46/46 epoch_progress=12.000 steps=552 train_compute=145.42s val_mape=0.368414 val_acc15=0.269500
+{
+  "metrics": {
+    "mape": 0.3368226724691161,
+    "acc15": 0.318,
+    "mae": 232.92659251403808,
+    "rmse": 427.82605160132675,
+    "prediction_diagnostics": {
+      "prediction_mean": 203.24009704589844,
+      "prediction_std": 119.18199920654297,
+      "prediction_min": 107.57403564453125,
+      "prediction_max": 637.702880859375,
+      "target_mean": 413.8999938964844,
+      "target_std": 407.4496154785156,
+      "prediction_to_target_std_ratio": 0.2925073301801344,
+      "mean_signed_relative_error": -0.21665489673614502,
+      "relative_error_std": 0.372623085975647,
+      "prediction_target_correlation": 0.4279390659231574,
+      "extreme_prediction_count": 0
+    },
+    "by_prefix": {
+      "01-10": {
+        "mape": 0.4034699245562446,
+        "acc15": 0.28,
+        "mae": 275.24649101257324,
+        "rmse": 484.94721067269734,
+        "bias": -268.86651611328125,
+        "relative_bias": -0.35106536746025085,
+        "prediction_mean": 145.0334930419922,
+        "target_mean": 413.8999938964844,
+        "sample_count": 200,
+        "unique_cell_count": 20
+      },
+      "11-25": {
+        "mape": 0.3864384387816215,
+        "acc15": 0.22666666666666666,
+        "mae": 258.7385950724284,
+        "rmse": 465.77045714852613,
+        "bias": -246.07122802734375,
+        "relative_bias": -0.2996094226837158,
+        "prediction_mean": 167.8287811279297,
+        "target_mean": 413.8999938964844,
+        "sample_count": 300,
+        "unique_cell_count": 20
+      },
+      "26-50": {
+        "mape": 0.33062224677882573,
+        "acc15": 0.346,
+        "mae": 232.5935908203125,
+        "rmse": 434.4742874093298,
+        "bias": -212.25091552734375,
+        "relative_bias": -0.20691685378551483,
+        "prediction_mean": 201.64907836914062,
+        "target_mean": 413.8999938964844,
+        "sample_count": 500,
+        "unique_cell_count": 20
+      },
+      "51-75": {
+        "mape": 0.3184631634658496,
+        "acc15": 0.33,
+        "mae": 219.2059354248047,
+        "rmse": 403.4864523859176,
+        "bias": -184.2635040283203,
+        "relative_bias": -0.1413603574037552,
+        "prediction_mean": 229.63650512695312,
+        "target_mean": 413.8999938964844,
+        "sample_count": 500,
+        "unique_cell_count": 20
+      },
+      "76-100": {
+        "mape": 0.30495424654031844,
+        "acc15": 0.348,
+        "mae": 214.56509036254883,
+        "rmse": 395.39411721623554,
+        "bias": -190.93592834472656,
+        "relative_bias": -0.19815057516098022,
+        "prediction_mean": 222.96409606933594,
+        "target_mean": 413.8999938964844,
+        "sample_count": 500,
+        "unique_cell_count": 20
+      }
+    },
+    "by_domain": {
+      "ZN-coin": {
+        "mape": 0.3368226724691161,
+        "acc15": 0.318,
+        "mae": 232.92659251403808,
+        "rmse": 427.82605160132675,
+        "bias": -210.659912109375,
+        "relative_bias": -0.21665489673614502,
+        "prediction_mean": 203.24009704589844,
+        "target_mean": 413.8999938964844,
+        "sample_count": 2000,
+        "unique_cell_count": 20
+      }
+    },
+    "by_eol": {
+      "high_>1000": {
+        "mape": 0.8125291309931517,
+        "acc15": 0.0,
+        "mae": 1000.2914828999837,
+        "rmse": 1016.9014050294502,
+        "bias": -1000.2914428710938,
+        "relative_bias": -0.8125290870666504,
+        "prediction_mean": 235.04185485839844,
+        "target_mean": 1235.3333740234375,
+        "sample_count": 300,
+        "unique_cell_count": 3
+      },
+      "low_<500": {
+        "mape": 0.20825324435065845,
+        "acc15": 0.424,
+        "mae": 45.36132969156901,
+        "rmse": 63.317983502524505,
+        "bias": -15.6724271774292,
+        "relative_bias": -0.048029541969299316,
+        "prediction_mean": 176.2609100341797,
+        "target_mean": 191.93333435058594,
+        "sample_count": 1500,
+        "unique_cell_count": 15
+      },
+      "middle_500-1000": {
+        "mape": 0.5875336955714952,
+        "acc15": 0.0,
+        "mae": 488.6187281036377,
+        "rmse": 499.1491262141124,
+        "bias": -488.6187438964844,
+        "relative_bias": -0.5875336527824402,
+        "prediction_mean": 357.8812561035156,
+        "target_mean": 846.5,
+        "sample_count": 200,
+        "unique_cell_count": 2
+      }
+    }
+  },
+  "result": {
+    "benchmark_round": "BATTERYLIFE-ZN-COIN-R1",
+    "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
+    "type": "architecture",
+    "seed": 2021,
+    "training_compute_seconds": 145.422,
+    "validation_seconds": 27.859,
+    "wall_seconds": 207.159,
+    "num_steps": 552,
+    "runner_version": "r4-relative-huber-v2",
+    "steps_per_sec": 3.795852,
+    "num_params": 161729,
+    "model_bytes_fp32": 646916,
+    "peak_device_memory_bytes": 2004929536,
+    "best_epoch": 7,
+    "minimum_validation_mape": 0.3368226724691161,
+    "checkpoint_mape_tolerance": 0.005,
+    "best_epoch_complete": true,
+    "best_epoch_steps": 46,
+    "steps_per_epoch": 46,
+    "completed_epochs": 12,
+    "last_epoch": 12,
+    "last_epoch_steps": 46,
+    "epoch_progress": 12.0,
+    "stop_reason": "early_stopping",
+    "status": "pending_analysis",
+    "description": "Curve Encoder only: intra_embed Linear(900->64) + 5 MLP blocks -> Conv1D stem (3->32->64->64, kernels 7/5/3, strides 2) + 2 residual curve blocks (GroupNorm over the 38 curve positions of each cycle, never across cycles) + average pool -> [B,100,64]. Masked mean/last/last-first summary, Linear(192->64), 9 MLP blocks (d_ff 64, dropout 0.1) and head are unchanged from ZN-E001.",
+    "device": "cuda"
+  }
+}
+===== ZN-E002 COMPLETE =====
