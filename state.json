@@ -3,15 +3,15 @@
   "workflow_version": "three-phase-relative-huber-v1",
   "research_mode": "model_search_no_physics",
   "phase": "phase1_model",
-  "phase_status": "baseline_pending",
+  "phase_status": "architecture_search",
   "workflow_status": "proposal_needed",
   "protocol_status": "locked",
   "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
   "run_approved": true,
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
   "current_experiment": null,
-  "next_experiment_id": "ZN-E000",
-  "next_action": "Write ZN-E000 proposal: CPMLP baseline (paper hyper-parameters) on split 2021, then splits 42 and 2024 (ZN-E001/E002)",
+  "next_experiment_id": "ZN-E001",
+  "next_action": "ZN-E001 MaskedSummaryCPMLP (replace inter flatten with masked pooling) on split 2021",
   "active_architecture_parent": null,
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -20,7 +20,7 @@
     "one_seed_is_preliminary_evidence_only": true,
     "final_candidate_requires_three_seed_mean": true,
     "current_status": "baseline_pending",
-    "note": "target set after the CPMLP 3-split baseline"
+    "note": "Beat the paper Zn-ion best (CPTransformer MAPE 0.515, CPMLP Acc@15 0.297) on 3-split mean."
   },
   "loss_lock": {
     "main_loss": "relative_huber",
@@ -50,15 +50,35 @@
     "conclusion_and_next_step_are_plain_language": true
   },
   "baseline": {
-    "status": "pending",
+    "status": "paper_reference",
     "model": "CPMLP",
     "required_splits": [
-      "2021",
-      "42",
-      "2024"
+      "2021"
     ],
-    "runs": [],
-    "report": "baseline_report.md"
+    "runs": [
+      "ZN-E000"
+    ],
+    "report": "baseline_report.md",
+    "paper_reference": {
+      "CPMLP": {
+        "mape": "0.558\u00b10.034",
+        "acc15": "0.297\u00b10.084"
+      },
+      "CPTransformer": {
+        "mape": "0.515\u00b10.067",
+        "acc15": "0.202\u00b10.084"
+      },
+      "MICN": {
+        "mape": "0.579\u00b10.101",
+        "acc15": "0.227\u00b10.127"
+      }
+    },
+    "local_split2021_reference": {
+      "experiment": "ZN-E000",
+      "mape": 0.434598,
+      "acc15": 0.1,
+      "note": "collapsed to ~140 cycles"
+    }
   },
   "active_candidates": [],
   "test_status": "unused",
@@ -98,12 +118,12 @@
     },
     "counter": "optimizer_training_compute_seconds",
     "usage": {
-      "experiments": 0,
-      "training_seconds": 0.0
+      "experiments": 1,
+      "training_seconds": 6.83
     },
     "remaining": {
-      "experiments": 150,
-      "training_seconds": 250000
+      "experiments": 149,
+      "training_seconds": 249993.17
     },
     "exhausted": false,
     "status": "active"
@@ -119,7 +139,7 @@
       "id": "A2",
       "date": "2026-11-02",
       "by": "user",
-      "summary": "Development room: promising directions get up to 3 evidence-led follow-ups; close after 4 consecutive DISCARDs; non-promising get one repair (program.md §7)"
+      "summary": "Development room: promising directions get up to 3 evidence-led follow-ups; close after 4 consecutive DISCARDs; non-promising get one repair (program.md \u00a77)"
     },
     {
       "id": "A3",
@@ -137,13 +157,19 @@
       "id": "A1-ZN",
       "date": "2026-11-07",
       "by": "user",
-      "summary": "New project v6_auto on ZN-coin, same workflow as v4_auto; 3 paper splits (2021/42/2024) reported as mean ± std; runs on remote GPU (Kaggle/Colab); all three agents work together on this project."
+      "summary": "New project v6_auto on ZN-coin, same workflow as v4_auto; 3 paper splits (2021/42/2024) reported as mean \u00b1 std; runs on remote GPU (Kaggle/Colab); all three agents work together on this project."
     },
     {
       "id": "A2-ZN",
       "date": "2026-11-08",
       "by": "user",
       "summary": "Epochs: max 100, min 5, patience 5 after epoch 5 (paper CPMLP.sh); the Li-ion 15-epoch cap does not apply."
+    },
+    {
+      "id": "A3-ZN",
+      "date": "2026-11-08",
+      "by": "user",
+      "summary": "Paper baselines are not re-run on splits 42/2024; the BatteryLife paper Zn-ion numbers are the baseline reference (CPMLP MAPE 0.558\u00b10.034, Acc@15 0.297\u00b10.084; CPTransformer 0.515\u00b10.067 / 0.202\u00b10.084). The lead may propose its own Zn-ion models."
     }
   ],
   "decision_metrics": {
@@ -174,6 +200,6 @@
       "2024"
     ],
     "source": "BatteryLife data_split_recorder.py",
-    "rule": "screen on split 2021; KEEP candidates confirmed on 42 and 2024; compare mean ± std over the 3 splits (as the paper)"
+    "rule": "screen on split 2021; KEEP candidates confirmed on 42 and 2024; compare mean \u00b1 std over the 3 splits (as the paper)"
   }
 }

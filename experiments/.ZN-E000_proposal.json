@@ -1,0 +1,52 @@
+{
+  "id": "ZN-E000",
+  "phase": "phase1_model",
+  "training_stage": "full_candidate",
+  "type": "baseline",
+  "model": {
+    "display_name": "CPMLP",
+    "variant": "cpmlp",
+    "d_model": 64,
+    "d_ff": 64,
+    "e_layers": 5,
+    "d_layers": 9,
+    "dropout": 0.1
+  },
+  "reference_experiment": null,
+  "observation": "v6_auto (Zn-ion, ZN-coin) has no baseline yet. The paper reports CPMLP on Zn-ion with its own selected hyper-parameters (Selected_hyperparameters.md).",
+  "primary_hypothesis": "CPMLP with the paper Zn-ion configuration, trained under the locked Relative Huber loss, gives a valid reference with finite connected gradients on ZN-coin split 2021 (20 val cells).",
+  "question_inherited": "What is the valid CPMLP baseline for ZN-coin split 2021 under the v6 locked workflow?",
+  "unresolved_from_reference": "No v6 result exists.",
+  "why_this_experiment": "Every later Zn-ion model needs a same-loss, same-split CPMLP reference; ZN-E001/E002 repeat it on splits 42/2024.",
+  "modification": "CPMLP (d_model 64, d_ff 64, e_layers 5, d_layers 9, dropout 0.1; paper Zn-ion row) on BL_SPLIT=2021, Relative Huber delta 0.15, Adam lr 5e-4, batch 128, up to 100 epochs, min 5, patience 5 after epoch 5 (A2-ZN, paper CPMLP.sh). Runs on Kaggle CUDA.",
+  "changed_components": "Relative to v4 R4-E000: dataset (ZN-coin, charge-first handling from paper code), CPMLP size, lr 5e-4, batch 128, epochs 100 (A2-ZN), diagnostics every 50 steps, CUDA device on Kaggle.",
+  "held_constant_components": "Relative Huber delta 0.15, checkpoint MAPE tolerance 0.005, no scheduler, zero physics or extra loss, prefix samples 1..min(100, EOL-1), preprocessing identical to v4/BatteryLife.",
+  "controlled_variables": "Split 2021 and training seed 2021, minimum 5 / maximum 100 epochs, patience 5 after epoch 5, diagnostics every 50 steps.",
+  "expected_evidence": "One selected checkpoint with overall MAPE, Acc@15, MAE, RMSE, per-cell errors for all 20 val cells, prefix and EOL-band errors, gradient health.",
+  "rejection_condition": "Invalid if protocol/cache checks fail, values are non-finite, a block is disconnected, fewer than 5 epochs run, the loss differs from Relative Huber 0.15, or checkpoint selection breaks the fixed rule.",
+  "minimum_evidence_requirements": "At least five complete epochs; finite MAPE, Acc@15, MAE, and RMSE from one checkpoint; sample and unique-cell counts for every domain; gradient, update, activation, prediction, mask, and compute diagnostics.",
+  "required_diagnostics": "Epoch learning curve; selected and minimum-MAPE epochs; CPMLP block gradients and updates; activation health; prediction spread and bias; prefix, domain, and EOL errors; domain guardrail flags; padding sensitivity; parameters, memory, time, and throughput.",
+  "estimated_budget": {
+    "experiments": 1,
+    "training_seconds": 1800
+  },
+  "training": {
+    "seed": 2021,
+    "batch_size": 128,
+    "max_epochs": 100,
+    "minimum_epochs": 5,
+    "patience": 5,
+    "learning_rate": 0.0005,
+    "scheduler": "none",
+    "target_transform": "standard",
+    "main_loss": "relative_huber",
+    "relative_huber_delta": 0.15,
+    "checkpoint_mape_tolerance": 0.005,
+    "physics_loss_weight": 0.0,
+    "extra_loss_weight": 0.0,
+    "prefix_consistency_weight": 0.0,
+    "diagnostic_interval_steps": 50,
+    "required_device": "cuda"
+  },
+  "split": "2021"
+}

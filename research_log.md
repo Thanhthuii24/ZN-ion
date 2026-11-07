@@ -42,3 +42,14 @@ entry, a final result row, and a matching `state.json` update.
 
 The active Round 4 log uses the simplified Run/Decision schema throughout.
 Raw experiment artifacts remain unchanged for reproducibility.
+
+## ZN-E000 — CPMLP paper config, split 2021 (Kaggle T4)
+
+- Run: `VALID`. Decision: `DISCARD` (as candidate; kept as the local split-2021 reference).
+- Model: CPMLP d_model 64, d_ff 64, e_layers 5, d_layers 9, dropout 0.1, 585,665 params. Relative Huber δ 0.15, Adam lr 5e-4, batch 128, seed 2021; 9 epochs (patience stop), best epoch 1.
+- Metrics: MAPE 0.4346, Acc@15 0.100 (2/20 cells). Predictions are almost constant (mean 140.4, SD 1.5) while targets span 104–1402 cycles (mean 414); long-life cells (>700) have ~0.85–0.90 error.
+- Gradient: WARNING, head/intra_mlp.1 ratio 5081.9× (gate FAIL); activations finite, no dead blocks.
+- Cause: representation collapse; the fixed 100-slot inter flatten (409,664 params, 70% of the model) gives static weights to padded slots (architecture.md §4) and does not separate cells.
+- Codex: VALID + DISCARD; agreed after one round that the baseline recipe is not repaired (program.md §2b).
+- User amendment A3-ZN: no paper-baseline re-runs on 42/2024; paper Zn-ion numbers are the reference (CPMLP 0.558±0.034 / 0.297±0.084, CPTransformer 0.515±0.067 / 0.202±0.084).
+- Next: ZN-E001 = same CPMLP cycle encoder, inter flatten replaced by masked mean/last/last−first pooling (one change).

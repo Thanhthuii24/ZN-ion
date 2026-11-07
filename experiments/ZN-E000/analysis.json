@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "experiment_id": "ZN-E000",
+  "run_validity": "VALID",
+  "contract_answer": {
+    "question": "What is the valid CPMLP baseline for ZN-coin split 2021 under the v6 locked workflow?",
+    "outcome": "SUPPORTED",
+    "conclusion": "The run is complete, finite, protocol-compliant, reproducible, and therefore interpretable, but it is a blocked and discarded baseline rather than a promotable reference: epoch 1 is the unique minimum-MAPE checkpoint (MAPE 0.434598, Acc@15 0.100), and every later epoch is outside the 0.005 checkpoint tolerance. Predictions collapse near 140 cycles and the late head-to-intra_mlp.1 gradient ratio is 5081.9x, so the gradient gate fails. In plain language, this CPMLP mostly learned one short-life answer instead of distinguishing cells. Its one-split MAPE is numerically lower than the BatteryLife Zn-ion CPMLP three-split result (0.558 +/- 0.034), but its Acc@15 is much lower (0.100 versus 0.297 +/- 0.084); the loss/checkpoint workflow differs and one split cannot establish an improvement.",
+    "evidence_paths": [
+      "record.json.proposal.training",
+      "record.json.result",
+      "diagnostics.json.checkpoint_selection",
+      "diagnostics.json.summary.overall_gradient_health",
+      "diagnostics.json.summary.branch_gradient_imbalance",
+      "../BatteryLife/README.md:73-84"
+    ]
+  },
+  "main_symptom": "Selected-checkpoint predictions are almost constant (mean 140.419, population SD 1.539, range 136.979-142.972) while targets have mean 413.900 and SD 407.450, yielding MAPE 0.434598, Acc@15 0.100, correlation -0.0011, and mean signed relative error -0.3358. Validation never improves after epoch 1 despite eight more complete 46-step epochs at lr 5e-4; later MAPE values are 0.4425-0.4841 except epoch 9 at 0.4470, all above the epoch-1 eligibility ceiling of 0.439598.",
+  "causes": [
+    {
+      "id": "C1_REPRESENTATION_COLLAPSE",
+      "class": "representation_limit",
+      "supporting_evidence": [
+        "record.json.metrics.prediction_diagnostics",
+        "record.json.metrics.by_eol",
+        "record.json.metrics.by_prefix",
+        "validation_predictions.npz[prediction,target,cell_id]"
+      ],
+      "contradicting_evidence": [
+        "diagnostics.json.summary.activation_health reports healthy, finite activations for every instrumented block.",
+        "diagnostics.json.summary.layer_health reports nonzero gradients and updates rather than disconnected blocks."
+      ],
+      "interpretation": "The selected model barely distinguishes either cell identity or prefix: prediction SD is only 0.00378 of target SD, correlation is -0.0011, and prefix-band MAPE stays approximately 0.432-0.437. Independent aggregation of all 2,000 saved predictions gives these 20 cell-level results (target cycles: mean prediction, MAPE, Acc@15): 209-2 172: 140.40, 0.1837, 0; 402-1 104: 140.46, 0.3506, 0; 406-1 178: 140.39, 0.2113, 0; 411-1 147: 140.40, 0.0449, 1; 414-3 108: 140.39, 0.2999, 0; 415-3 201: 140.40, 0.3015, 0; 416-2 174: 140.40, 0.1931, 0; 418-2 215: 140.40, 0.3470, 0; 420-1 107: 140.38, 0.3120, 0; 429-1 137: 140.50, 0.0256, 1; 432-3 923: 140.44, 0.8478, 0; 433-3 770: 140.45, 0.8176, 0; 436-1 1402: 140.39, 0.8999, 0; 437-2 1281: 140.40, 0.8904, 0; 440-1 1023: 140.42, 0.8627, 0; 440-3 197: 140.42, 0.2872, 0; 441-1 219: 140.41, 0.3589, 0; 442-2 322: 140.42, 0.5639, 0; 445-2 415: 140.44, 0.6616, 0; 445-3 183: 140.45, 0.2325, 0. Only the 147- and 137-cycle cells pass Acc@15; all middle/high-EOL cells are severely underpredicted.",
+      "missing_evidence": [
+        "Equivalent selected-checkpoint prediction distributions for splits 42 and 2024.",
+        "A matched repaired run showing whether restoring gradient balance restores cell-dependent spread."
+      ]
+    },
+    {
+      "id": "C2_GRADIENT_SCALE_IMBALANCE",
+      "class": "optimization_failure_warning",
+      "supporting_evidence": [
+        "diagnostics.json.summary.overall_gradient_health",
+        "diagnostics.json.summary.branch_gradient_imbalance",
+        "diagnostics.json.summary.layer_health.head",
+        "diagnostics.json.summary.layer_health.intra_mlp.1",
+        "diagnostics.json.summary.learning_dynamics"
+      ],
+      "contradicting_evidence": [
+        "No layer is disconnected, frozen, non-finite, activation-collapsed, or individually classified UNHEALTHY.",
+        "Mean training loss decreases from 0.07147 at epoch 1 to 0.05549 at epoch 9."
+      ],
+      "interpretation": "At the later diagnostic snapshot the head gradient/parameter ratio is 0.1508 while intra_mlp.1 is 2.967e-5, a 5081.9x imbalance over the 1000x warning threshold. With only 46 optimizer steps per epoch at the paper lr 5e-4, the model reaches its best validation result after the first 46 steps; continued training lowers train loss but never beats epoch 1, consistent with rapid attraction to a short-life constant solution. This warning is not proof that the architecture is disconnected, but program.md makes it a failed gradient gate that blocks promotion and requires an explanation or matched repair.",
+      "missing_evidence": [
+        "A true end-of-run gradient snapshot after step 414; the saved later snapshot is step 185.",
+        "A matched repair that changes only gradient flow or its diagnostic sampling while preserving the paper baseline recipe where possible."
+      ]
+    },
+    {
+      "id": "C3_RELATIVE_LOSS_SHORT_LIFE_ATTRACTOR",
+      "class": "loss_distribution_interaction",
+      "supporting_evidence": [
+        "record.json.metrics.by_eol.low_<500",
+        "record.json.metrics.by_eol.middle_500-1000",
+        "record.json.metrics.by_eol.high_>1000",
+        "record.json.metrics.prediction_diagnostics.mean_signed_relative_error"
+      ],
+      "contradicting_evidence": [
+        "Phase 1 locks Relative Huber, so this run cannot isolate loss choice from representation and optimization.",
+        "The local run uses the paper architecture and optimizer hyperparameters but not the paper MSE objective, making the paper aggregate contextual rather than a matched control."
+      ],
+      "interpretation": "Fifteen of 20 cells are below 500 cycles, and Relative Huber directly weights relative error. A prediction near 140 cycles gives low error on a few short-life cells while producing MAPE 0.8327 for the two 500-1000-cycle cells and 0.8843 for the three >1000-cycle cells. This may explain why local MAPE looks better than the paper mean while Acc@15 is worse, but Phase 1 evidence cannot identify it as the primary cause.",
+      "missing_evidence": [
+        "A matched MSE reproduction is unavailable and outside the locked Phase-1 loss contract.",
+        "Three-split local aggregate needed for an honest comparison with the paper's mean +/- standard deviation."
+      ]
+    }
+  ],
+  "selected_cause_id": "C2_GRADIENT_SCALE_IMBALANCE",
+  "layers": [
+    {
+      "name": "intra_embed",
+      "role": "Embed each cycle curve before intra-cycle processing.",
+      "evidence_paths": ["diagnostics.json.summary.layer_health.intra_embed", "diagnostics.json.summary.activation_health.intra_embed"],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Finite gradients, nonzero updates, and healthy activations; no block-local failure is measured."
+    },
+    {
+      "name": "intra_mlp.1",
+      "role": "Representative early intra-cycle MLP block and the smallest late gradient-scale endpoint.",
+      "evidence_paths": ["diagnostics.json.summary.layer_health.intra_mlp.1", "diagnostics.json.summary.branch_gradient_imbalance"],
+      "persistent_dead_gradient": false,
+      "action": "REPAIR",
+      "reason": "It is connected and updating, but its late gradient/parameter ratio is 5081.9x below the head, exceeding the blocking 1000x imbalance threshold; first obtain a true late snapshot and then use the smallest matched gradient-flow repair if confirmed."
+    },
+    {
+      "name": "inter_flatten",
+      "role": "Combine masked cycle representations for inter-cycle prediction.",
+      "evidence_paths": ["diagnostics.json.summary.layer_health.inter_flatten", "diagnostics.json.padding_invariance"],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "It has finite nonzero gradients and updates. Padding sensitivity is documented, but cached masked slots are exactly zero, so no future-cycle leakage is measured."
+    },
+    {
+      "name": "inter_mlp.8",
+      "role": "Final inter-cycle MLP block before the regression head.",
+      "evidence_paths": ["diagnostics.json.summary.layer_health.inter_mlp.8", "diagnostics.json.summary.activation_health.inter_mlp_last"],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Healthy finite gradient, update, and activation diagnostics do not justify replacement from this run alone."
+    },
+    {
+      "name": "head",
+      "role": "Map the learned representation to standardized EOL.",
+      "evidence_paths": ["diagnostics.json.summary.layer_health.head", "diagnostics.json.summary.branch_gradient_imbalance", "record.json.metrics.prediction_diagnostics"],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "The head is healthy and connected; its much larger gradient scale is evidence of an upstream balance problem, not evidence that the head itself should be removed."
+    }
+  ],
+  "gates": {
+    "gradient": "FAIL",
+    "screen_floor": {
+      "applicable": false,
+      "pass": null,
+      "reason": "ZN-E000 is a full_candidate baseline with no matched reference, so the screening hard floor is not applicable."
+    }
+  },
+  "decision": "DISCARD",
+  "next_action": {
+    "type": "CONFIRM",
+    "summary": "Retain ZN-E000 as the valid but non-promotable split-2021 paper-reference run, and run ZN-E001 and ZN-E002 on splits 42 and 2024 with the identical accepted CPMLP recipe to complete the local three-split mean +/- SD. Do not repair the baseline; use the measured prediction collapse and 5081.9x gradient imbalance to motivate a separately proposed Phase-1 architecture candidate under locked Relative Huber 0.15.",
+    "source_cause_id": "C2_GRADIENT_SCALE_IMBALANCE",
+    "responsible_block": null
+  }
+}
