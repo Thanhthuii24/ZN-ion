@@ -4118,6 +4118,7 @@ def build_model(config):
             d_ff=config.get("d_ff", 256),
             mlp_layers=config.get("mlp_layers", 4),
             summary_mode=config.get("summary_mode", "mean_last_delta"),
+            dropout=config.get("dropout", 0.0),
         )
     if variant == "residual_conv_temporal_tcn_masked_summary":
         return ResidualConvTemporalTCNMaskedSummary(
