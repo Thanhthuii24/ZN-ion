@@ -6,7 +6,7 @@
   "phase_status": "baseline_pending",
   "workflow_status": "proposal_needed",
   "protocol_status": "locked",
-  "protocol_fingerprint": "787547564f645e9330fe73d5c2aed1ff0349a889738effe7548dfbb8548fe975",
+  "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
   "run_approved": true,
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
   "current_experiment": null,
@@ -138,6 +138,12 @@
       "date": "2026-11-07",
       "by": "user",
       "summary": "New project v6_auto on ZN-coin, same workflow as v4_auto; 3 paper splits (2021/42/2024) reported as mean ± std; runs on remote GPU (Kaggle/Colab); all three agents work together on this project."
+    },
+    {
+      "id": "A2-ZN",
+      "date": "2026-11-08",
+      "by": "user",
+      "summary": "Epochs: max 100, min 5, patience 5 after epoch 5 (paper CPMLP.sh); the Li-ion 15-epoch cap does not apply."
     }
   ],
   "decision_metrics": {
