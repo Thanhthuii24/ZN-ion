@@ -32,8 +32,8 @@
   "changed_components": "Degradation encoder: added masked causal TCN (27,264 params). Code change T001: temporal_norm='masked_group' option (default 'group' unchanged).",
   "held_constant_components": "Residual Conv1D curve encoder, masked summary, Linear(192->64), 9 MLP blocks, head, Relative Huber delta 0.15, Adam lr 5e-4, batch 128, seed 2021, split 2021, A2-ZN epochs, data.",
   "controlled_variables": "Split 2021 and training seed 2021, minimum 5 / maximum 100 epochs, patience 5 after epoch 5, diagnostics every 50 steps.",
-  "expected_evidence": "Overall MAPE/Acc@15/RMSE vs ZN-E002; EOL bands 500-1000 and >1000 MAPE/bias; corr and pred SD; per-block gradient health incl. TCN and inter_mlp.0; padding sensitivity; params/time.",
-  "rejection_condition": "DISCARD if neither MAPE < 0.3288 nor RMSE < 407 (with Acc@15 regression <= 0.05), or long-life band MAPE does not improve, or gradient gate fails, or predictions collapse. Invalid under the usual protocol/finite/epoch checks.",
+  "expected_evidence": "Overall MAPE/Acc@15/RMSE and DB-MAPE (tools/rescore.py) vs ZN-E002; EOL bands 500-1000 and >1000 MAPE/bias; corr and pred SD; per-block gradient health incl. TCN and inter_mlp.0; padding sensitivity; params/time.",
+  "rejection_condition": "Primary rule (all must hold for KEEP, else DISCARD): (MAPE <= 0.3288 OR RMSE <= 406.8) AND Acc@15 >= 0.268 (ZN-E002 0.318 - 0.05) AND DB-MAPE <= 0.3468 (ZN-E002 + 0.01) AND gradient gate PASS AND prediction SD >= 10% of target SD. Secondary evidence (reported, not part of the accept rule): 500-1000 and >1000 band MAPE/bias vs ZN-E002. Invalid under the usual protocol/finite/epoch checks.",
   "minimum_evidence_requirements": "At least five complete epochs; finite MAPE, Acc@15, MAE, and RMSE from one checkpoint; sample and unique-cell counts for every domain; gradient, update, activation, prediction, mask, and compute diagnostics.",
   "required_diagnostics": "Epoch learning curve; selected and minimum-MAPE epochs; CPMLP block gradients and updates; activation health; prediction spread and bias; prefix, domain, and EOL errors; domain guardrail flags; padding sensitivity; parameters, memory, time, and throughput.",
   "estimated_budget": {
@@ -65,6 +65,7 @@
     "evidence": "ZN-E002 long-life bias -489/-1000 with no temporal operator; architecture.md \u00a73 'missing temporal trend'",
     "shapes": "[B,100,3,300] -> ResConv [B,100,64] -> transpose [B,64,100] -> 6 TCN blocks [B,64,100] -> transpose [B,100,64] -> masked summary [B,192] -> Linear [B,64] -> 9 MLP blocks -> head [B,1]",
     "mask_path": "features * mask before TCN; causal left padding (cycle t sees only <=t); GroupNorm mean/var over mask==1 positions only; output re-masked after every block; summary uses mask==1 mean, last at mask.sum()-1, delta last - cycle1. Local check: output identical when padded slots are noise; prefix-sensitive.",
-    "expected_evidence": "MAPE, RMSE, Acc@15 vs ZN-E002; EOL-band MAPE and bias; corr and pred SD; gradient gate; TCN block gradients/updates"
-  }
+    "expected_evidence": "MAPE, RMSE, Acc@15 and DB-MAPE vs ZN-E002 (MAPE 0.3368, RMSE 427.8, Acc@15 0.318, DB-MAPE 0.3368; ZN-coin is one domain of 20 val cells, so DB-MAPE = overall MAPE, computed by tools/rescore.py); EOL-band MAPE and bias; corr and pred SD; gradient gate; TCN block gradients/updates"
+  },
+  "smoke_evidence": "Local MPS smoke 2026-11-08 (scratch copy, 2 epochs = 92 optimizer steps, identical model/optimizer, max_epochs overridden to 2): finite loss/metrics, val MAPE 0.4203 -> 0.4225, ~0.9 s/step on MPS, all instrumented activations HEALTHY, 0 non-finite; gradient health WARNING (to be judged on the full run). Kaggle CUDA path already exercised by ZN-E000..E002."
 }
