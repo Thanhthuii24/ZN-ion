@@ -1,0 +1,62 @@
+{
+  "id": "ZN-E004",
+  "phase": "phase1_model",
+  "training_stage": "full_candidate",
+  "type": "architecture",
+  "model": {
+    "display_name": "ResConv-MaskedSummary-H2",
+    "variant": "residual_conv_masked_summary",
+    "d_model": 64,
+    "residual_layers": 2,
+    "d_ff": 64,
+    "mlp_layers": 2,
+    "summary_mode": "mean_last_delta",
+    "dropout": 0.1
+  },
+  "reference_experiment": "ZN-E002",
+  "observation": "ZN-E002 (ResConv + masked summary, 9 inter MLP blocks): MAPE 0.3368, RMSE 427.8, Acc@15 0.318; gradient gate FAIL only at inter_mlp.0 (55% near-zero late grads). ZN-E003 (+TCN) passed the gradient gate but was worse (MAPE 0.3635), so the temporal operator is dropped. Validation is noisy (20 cells, 46 steps/epoch).",
+  "primary_hypothesis": "Reducing the post-summary MLP from 9 residual blocks to 2 (architecture.md \u00a72.3 lightweight head) removes the weak-gradient deep stack and lowers variance, giving a passing gradient gate and MAPE <= 0.3288 or RMSE <= 406.8 vs ZN-E002.",
+  "question_inherited": "Is ZN-E002's gradient-gate failure and variance caused by the over-deep 9-block head?",
+  "unresolved_from_reference": "Whether a 2-block head keeps ZN-E002's accuracy while passing the gradient gate.",
+  "why_this_experiment": "A2 follow-up 2 of the ResConv family (Codex ZN-E003 analysis). architecture.md \u00a73: flat/dead deep layers -> reduce depth; \u00a72.3 head = 1-2 layer MLP.",
+  "modification": "Head only: inter_mlp 9 -> 2 MLP blocks (d_ff 64, dropout 0.1). Curve encoder, masked summary, Linear(192->64) and output head unchanged from ZN-E002.",
+  "changed_components": "Prediction head depth (9 -> 2 MLP blocks).",
+  "held_constant_components": "Residual Conv1D curve encoder, masked mean/last/delta summary, Linear(192->64), d_model 64, dropout 0.1, Relative Huber delta 0.15, Adam lr 5e-4, batch 128, seed 2021, split 2021, A2-ZN epochs, data.",
+  "controlled_variables": "Split 2021 and training seed 2021, minimum 5 / maximum 100 epochs, patience 5 after epoch 5, diagnostics every 50 steps.",
+  "expected_evidence": "MAPE/Acc@15/RMSE/DB-MAPE (tools/rescore.py) vs ZN-E002; gradient health per block; EOL-band MAPE/bias; pred SD and corr; params/time.",
+  "rejection_condition": "Primary rule (all must hold for KEEP, else DISCARD): (MAPE <= 0.3288 OR RMSE <= 406.8) AND Acc@15 >= 0.268 AND DB-MAPE <= 0.3468 AND gradient gate PASS AND prediction SD >= 10% of target SD. Secondary: EOL-band MAPE/bias vs ZN-E002.",
+  "minimum_evidence_requirements": "At least five complete epochs; finite MAPE, Acc@15, MAE, and RMSE from one checkpoint; sample and unique-cell counts for every domain; gradient, update, activation, prediction, mask, and compute diagnostics.",
+  "required_diagnostics": "Epoch learning curve; selected and minimum-MAPE epochs; CPMLP block gradients and updates; activation health; prediction spread and bias; prefix, domain, and EOL errors; domain guardrail flags; padding sensitivity; parameters, memory, time, and throughput.",
+  "estimated_budget": {
+    "experiments": 1,
+    "training_seconds": 600
+  },
+  "training": {
+    "seed": 2021,
+    "batch_size": 128,
+    "max_epochs": 100,
+    "minimum_epochs": 5,
+    "patience": 5,
+    "learning_rate": 0.0005,
+    "scheduler": "none",
+    "target_transform": "standard",
+    "main_loss": "relative_huber",
+    "relative_huber_delta": 0.15,
+    "checkpoint_mape_tolerance": 0.005,
+    "physics_loss_weight": 0.0,
+    "extra_loss_weight": 0.0,
+    "prefix_consistency_weight": 0.0,
+    "diagnostic_interval_steps": 50,
+    "required_device": "cuda"
+  },
+  "split": "2021",
+  "architecture_addendum": {
+    "responsible_stage": "Prediction Head",
+    "mechanism": "Shallow 2-block MLP head",
+    "evidence": "ZN-E002 inter_mlp.0 55% near-zero late gradients (only gate failure); architecture.md \u00a72.3/\u00a73",
+    "shapes": "[B,100,3,300] -> ResConv [B,100,64] -> masked summary [B,192] -> Linear [B,64] -> 2 MLP blocks [B,64] -> Linear [B,1]",
+    "mask_path": "unchanged from ZN-E002: per-cycle encoding; mean over mask==1, last at mask.sum()-1, delta last - cycle1",
+    "expected_evidence": "MAPE, RMSE, Acc@15 and DB-MAPE (= MAPE, one domain) vs ZN-E002; gradient gate; EOL bands; pred SD/corr"
+  },
+  "smoke_evidence": "Same variant and code path as ZN-E002 (Kaggle T4 full run) and ZN-E003S CUDA smoke; only mlp_layers changes. Local forward check: finite, padding-invariant."
+}

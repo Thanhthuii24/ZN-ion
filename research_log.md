@@ -71,3 +71,12 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - EOL bands: <500 MAPE 0.208 / Acc@15 0.424; 500–1000 MAPE 0.588, bias −489; >1000 MAPE 0.813, bias −1000.
 - Reviewer: Codex (after usage-limit reset). Main limit: no temporal model of fade; long-life cells still underpredicted.
 - Next: ZN-E003 = add masked causal TCN with mask-aware GroupNorm (stats over observed cycles only).
+
+## ZN-E003 — ResConv + masked causal TCN (masked GroupNorm), split 2021
+
+- Run: `VALID`. Decision: `DISCARD` (primary rule fails on every metric; gradient gate PASS).
+- One change vs ZN-E002: 6 masked causal TCN blocks (dilations 1..32) with mask-aware GroupNorm (T001). 188,993 params; 12 epochs, best epoch 7.
+- Metrics: MAPE 0.3635 (+0.027), Acc@15 0.203, RMSE 454.8, DB-MAPE 0.3635. Pred SD 72 (was 119), corr 0.23 (was 0.43). Bands: 500–1000 bias −540, >1000 bias −1057.
+- Process: Codex required DB-MAPE, one numeric rule, a tracked test and a CUDA smoke (ZN-E003S, T4, 92 steps, HEALTHY) before APPROVE. Kaggle rejected a 1.3 MB script; remote payload now excludes diagnostics/ and tests/.
+- Conclusion: a temporal operator does not help on ZN-coin with 46 steps/epoch; it shrinks prediction spread. Long-life underprediction looks more like a loss/label-imbalance limit (15/20 val cells <500) — Phase 2 candidate (tail/cell-balanced weighting).
+- Next: ZN-E004 = ZN-E002 with a 2-block head (A2 follow-up 2).

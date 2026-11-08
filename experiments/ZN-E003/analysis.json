@@ -1,0 +1,185 @@
+{
+  "schema_version": 1,
+  "experiment_id": "ZN-E003",
+  "run_validity": "VALID",
+  "contract_answer": {
+    "question": "Does adding a six-block masked causal dilated TCN with masked GroupNorm to ZN-E002 encode degradation trajectories well enough to improve long-life and overall validation accuracy while passing the declared guards?",
+    "outcome": "REFUTED",
+    "conclusion": "No. Apply the proposal's primary rule exactly: ZN-E003 has MAPE 0.363541 and RMSE 454.794, so neither MAPE <= 0.3288 nor RMSE <= 406.8 holds; Acc@15 0.203 is below 0.268; and DB-MAPE 0.363541 is above 0.3468. The gradient gate passes and prediction SD / target SD is 0.1763, above 0.10, but all conjuncts were required. Relative to ZN-E002, MAPE worsens by 0.02672, Acc@15 by 0.115, RMSE by 26.97 cycles, prediction SD falls from 119.18 to 71.83 cycles, and prediction-target correlation falls from 0.428 to 0.230. The secondary long-life evidence also worsens: 500-1000-cycle bias changes from -488.6 to -539.8 cycles and >1000-cycle bias from -1000.3 to -1057.3 cycles. This is a complete finite Tesla T4 run with 12 complete epochs, 552 optimizer steps, invariant padding, healthy masks/activations/gradients, and the archived train.py equals the reviewed current file (MD5 321b6fbfa86a215763f3ec61849c09ab).",
+    "evidence_paths": [
+      "record.json.proposal.rejection_condition",
+      "record.json.metrics",
+      "record.json.result",
+      "diagnostics.json.checkpoint_selection",
+      "diagnostics.json.summary.overall_gradient_health",
+      "diagnostics.json.summary.padding_invariance",
+      "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+      "worker_meta.json",
+      "../ZN-E002/record.json.metrics"
+    ]
+  },
+  "main_symptom": "The new temporal stack is numerically healthy but makes generalization worse and more compressed. Validation MAPE oscillates between 0.3635 and 0.4406 across epochs despite a steadily trained model and only 46 optimizer steps per epoch; at the selected epoch, predictions span too little of the target distribution (SD 71.83 versus 407.45 cycles) and correlate only 0.230 with EOL. All five validation cells at or above 500 cycles have zero Acc@15, with biases -539.8 cycles for 500-1000 and -1057.3 cycles above 1000.",
+  "causes": [
+    {
+      "id": "C1_TCN_INDUCTIVE_BIAS_AND_VARIANCE",
+      "class": "architectural_generalization_failure",
+      "supporting_evidence": [
+        "record.json.metrics",
+        "record.json.metrics.prediction_diagnostics",
+        "record.json.metrics.by_eol",
+        "diagnostics.json.epoch_history",
+        "diagnostics.json.summary.layer_health.temporal_tcn",
+        "diagnostics.json.summary.activation_health.temporal_tcn_first",
+        "diagnostics.json.summary.activation_health.temporal_tcn_last",
+        "../ZN-E002/record.json.metrics"
+      ],
+      "contradicting_evidence": [
+        "The temporal_tcn block is connected and healthy: its gradient/update diagnostics are finite, its late near-zero-gradient fraction is only 0.0029, and both first and last TCN activation groups are healthy.",
+        "Padding invariance is exact, so the regression is not explained by future-padding leakage.",
+        "Later prefixes remain mildly better than early prefixes, so temporal information is not completely useless."
+      ],
+      "interpretation": "The added TCN learned and updated, but the learned representation did not generalize. Compared with ZN-E002 it reduced prediction spread by 47.35 cycles and correlation by 0.198 while worsening every headline and tail metric. With only 46 updates per epoch, a fixed 5e-4 learning rate, and an effective validation sample size of 20 cells despite 2,000 correlated prefixes, the 12-epoch curve is high-variance: MAPE repeatedly jumps by roughly 0.02-0.07 between adjacent epochs (0.3992 to 0.4372 to 0.3635 to 0.4099). Six causal blocks and repeated within-sample masked GroupNorm may smooth or normalize away cell-specific magnitude cues, but the artifacts do not isolate convolution from normalization. The defensible conclusion is therefore that this exact TCN mechanism hurts; not that all temporal models must fail.",
+      "missing_evidence": [
+        "A matched TCN normalization ablation separating causal convolution from masked GroupNorm.",
+        "Multiple training seeds or paper splits to quantify optimizer and validation-cell variance.",
+        "Saved intermediate representations showing whether long-life and short-life cells become less separable after the TCN."
+      ]
+    },
+    {
+      "id": "C2_TAIL_UNDERWEIGHTING",
+      "class": "loss_and_label_imbalance_limit",
+      "supporting_evidence": [
+        "record.json.metrics.by_eol",
+        "record.json.metrics.prediction_diagnostics",
+        "validation_predictions.npz[target,cell_id,prediction]",
+        "../ZN-E002/record.json.metrics.by_eol"
+      ],
+      "contradicting_evidence": [
+        "Two 500-1000-cycle cells and three >1000-cycle cells are too few to distinguish a population-wide loss effect from split-specific feature ambiguity.",
+        "ZN-E002 predicts some long-life cells substantially higher than ZN-E003 under the identical Relative Huber loss, so architecture still affects tail performance.",
+        "Training-set cell-level tail metrics are not saved for this run."
+      ],
+      "interpretation": "Independent aggregation of validation_predictions.npz confirms that 15 of 20 validation cells have EOL below 500, while only two lie at 500-1000 and three above 1000. The selected model predicts a mean 179.8 cycles for the 15 short-life cells, 306.7 for the middle band, and only 178.0 for the >1000 band, producing zero Acc@15 on all five tail cells. Because every cell contributes many prefixes and Relative Huber optimizes relative error, the available evidence is consistent with the common short-life regime dominating learning and the rare tail receiving insufficient effective signal. The fact that a healthy temporal operator makes the tail worse rather than better weakens the original claim that missing trajectory capacity is the main limit. On current evidence the remaining long-life ceiling is more likely a loss/sampling/label-imbalance problem than a need for deeper temporal architecture, but Phase 1 locks loss and sampling changes, so this remains a Phase-2 hypothesis rather than an authorized next intervention.",
+      "missing_evidence": [
+        "Train-cell EOL counts and cell-balanced train metrics by EOL band.",
+        "Per-band gradient contribution under the locked Relative Huber objective.",
+        "A later Phase-2 matched cell-balanced or tail-aware objective test after the architecture is frozen."
+      ]
+    },
+    {
+      "id": "C3_OVERSIZED_POST_SUMMARY_HEAD",
+      "class": "capacity_and_optimization_risk",
+      "supporting_evidence": [
+        "record.json.proposal.model.mlp_layers",
+        "diagnostics.json.epoch_history",
+        "diagnostics.json.summary.learning_dynamics",
+        "diagnostics.json.summary.layer_health.inter_mlp.0",
+        "../ZN-E002/diagnostics.json.summary.layer_health.inter_mlp.0"
+      ],
+      "contradicting_evidence": [
+        "All nine inter_mlp blocks are HEALTHY in ZN-E003, including inter_mlp.0 with late near-zero-gradient fraction 0.384 and a nonzero update ratio.",
+        "No matched depth ablation has yet shown that a shallower head improves validation metrics.",
+        "ZN-E002 achieved the current best ResConv result with the same nine-block head."
+      ],
+      "interpretation": "The nine-block residual MLP head is large relative to a roughly 100-cell dataset and architecture.md recommends a lightweight one- or two-layer prediction head. In ZN-E002, inter_mlp.0 had a 0.550 late near-zero-gradient fraction and failed the strict gradient gate; ZN-E003 repairs that diagnostic but not accuracy, so the earlier warning was not proof that the TCN was needed. The noisy 20-cell validation curve, only 46 updates per epoch, constant 5e-4 learning rate, and weaker training-loss reduction in ZN-E003 (first-to-last ratio 0.728 versus 0.438 in ZN-E002) indicate optimization/estimation variance rather than classic demonstrated overfitting: there is no saved train-validation metric gap proving memorization. A matched depth reduction on the better ZN-E002 representation is the cleanest remaining Phase-1 test because it directly addresses a saved block warning and reduces variance without changing the locked objective.",
+      "missing_evidence": [
+        "A matched ZN-E002 head-depth ablation with all other components fixed.",
+        "Cell-balanced training and validation curves needed to distinguish overfitting from underfitting.",
+        "Multiple seeds to quantify whether the gradient warning and epoch oscillations persist."
+      ]
+    }
+  ],
+  "selected_cause_id": "C3_OVERSIZED_POST_SUMMARY_HEAD",
+  "layers": [
+    {
+      "name": "cycle_stem",
+      "role": "Downsample each observed V/I/Q cycle into local curve features.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.cycle_stem",
+        "diagnostics.json.summary.activation_health.cycle_stem"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "The stem is healthy, finite, updating, and belongs to the ZN-E002 residual curve encoder that remains the best-supported part of the family."
+    },
+    {
+      "name": "residual_blocks",
+      "role": "Extract within-cycle residual Conv1D curve-shape features.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.residual_blocks.0",
+        "diagnostics.json.summary.layer_health.residual_blocks.1",
+        "diagnostics.json.summary.activation_health.residual_blocks",
+        "../ZN-E002/record.json.metrics"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Both blocks have healthy gradients and updates, and ZN-E002 already showed that the isolated residual curve encoder improves MAPE and RMSE over its matched reference."
+    },
+    {
+      "name": "temporal_tcn",
+      "role": "Model the ordered observed-cycle trajectory with six masked causal dilated blocks.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.temporal_tcn",
+        "diagnostics.json.summary.activation_health.temporal_tcn_first",
+        "diagnostics.json.summary.activation_health.temporal_tcn_last",
+        "record.json.metrics",
+        "../ZN-E002/record.json.metrics"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "REMOVE",
+      "reason": "The block is technically healthy but causally associated in the matched comparison with worse MAPE, Acc@15, RMSE, DB-MAPE, prediction spread, correlation, and both long-life bands. Remove this exact mechanism rather than spending the next run on more TCN capacity."
+    },
+    {
+      "name": "inter_summary",
+      "role": "Project the masked mean, last-observed, and last-minus-first cycle features.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.inter_summary",
+        "diagnostics.json.summary.activation_health.inter_summary",
+        "diagnostics.json.summary.padding_invariance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "The summary is active, finite, and exactly padding-invariant. ZN-E002 performs better without the TCN while using this same readout."
+    },
+    {
+      "name": "inter_mlp",
+      "role": "Nine residual MLP blocks transform the projected cell summary before regression.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.inter_mlp.0",
+        "diagnostics.json.summary.layer_health.inter_mlp.8",
+        "diagnostics.json.summary.activation_health.inter_mlp",
+        "../ZN-E002/diagnostics.json.summary.layer_health.inter_mlp.0"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "REPAIR",
+      "reason": "The stack is healthy in this run, but its first block failed the strict near-zero-gradient gate in the better ZN-E002 run and nine blocks are disproportionate for the small cell count. Test a two-block version as one matched depth repair; do not infer overfitting as proven."
+    },
+    {
+      "name": "head",
+      "role": "Map the learned representation to standardized EOL.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.head",
+        "diagnostics.json.summary.activation_health.head",
+        "diagnostics.json.summary.branch_gradient_imbalance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "The final regressor is finite, active, and updating; branch imbalance is below the warning threshold, so the evidence points to upstream representation/capacity and tail weighting rather than a disconnected output layer."
+    }
+  ],
+  "gates": {
+    "gradient": "PASS",
+    "screen_floor": {
+      "applicable": false,
+      "pass": null,
+      "reason": "ZN-E003 is a full_candidate run, not an exactly five-epoch screen. It completed 12 epochs and is decided by its pre-registered full-candidate primary rule and promotion gates."
+    }
+  },
+  "decision": "DISCARD",
+  "next_action": {
+    "type": "REPAIR",
+    "summary": "Use A2 follow-up 2 of the ResConv family for one matched head-depth repair against ZN-E002: keep the residual Conv1D curve encoder, masked mean/last/delta summary, dimensions, dropout, loss, optimizer, split, seed, and checkpoint policy; do not retain the failed TCN; change only inter_mlp depth from nine residual blocks to two. This is the most evidence-led Phase-1 change because ZN-E002's inter_mlp.0 failed the gradient gate, architecture.md calls for a lightweight one- or two-layer head, and the 20-cell/46-step regime shows high validation variance. Treat tail reweighting or cell-balanced loss as the stronger remaining long-life hypothesis, but defer it to Phase 2 because the Phase-1 objective is locked.",
+    "source_cause_id": "C3_OVERSIZED_POST_SUMMARY_HEAD",
+    "responsible_block": "Prediction Head (inter_mlp depth only)"
+  }
+}
