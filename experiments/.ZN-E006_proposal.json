@@ -21,10 +21,10 @@
   "why_this_experiment": "state.json split_protocol: KEEP candidates are confirmed on splits 42 and 2024 with identical config/seed before further comparison (Codex ZN-E005 analysis).",
   "modification": "None vs ZN-E005: identical model and training; only BL_SPLIT=42.",
   "changed_components": "Data split only (BL_SPLIT=42).",
-  "held_constant_components": "Residual Conv1D curve encoder, masked summary, Linear(192->64), d_model 64, Relative Huber delta 0.15, Adam lr 5e-4, batch 128, seed 2021, split 2021, A2-ZN epochs, data.",
-  "controlled_variables": "Split 2021 and training seed 2021, minimum 5 / maximum 100 epochs, patience 5 after epoch 5, diagnostics every 50 steps.",
-  "expected_evidence": "MAPE/Acc@15/RMSE/DB-MAPE (tools/rescore.py) vs ZN-E002; gradient health per block; EOL-band MAPE/bias; pred SD and corr; params/time.",
-  "rejection_condition": "Confirmation run: no KEEP/DISCARD of the architecture by itself. INVALID under the usual protocol/finite/epoch checks. Reported as the split-42 member of the 3-split mean \u00b1 std; a split MAPE worse than the paper CPMLP mean (0.558) or a failing gradient gate is flagged as a generalisation failure for the lead decision.",
+  "held_constant_components": "Model (ResConv-MaskedSummary-H0, 85,697 params) and all training settings fixed from ZN-E005: Relative Huber delta 0.15, Adam lr 5e-4, batch 128, seed 2021, A2-ZN epoch rule, checkpoint rule, preprocessing.",
+  "controlled_variables": "Training seed 2021, minimum 5 / maximum 100 epochs, patience 5 after epoch 5, diagnostics every 50 steps. Sole changed variable: split 42 (BL_SPLIT=42).",
+  "expected_evidence": "Split-42 selected-checkpoint MAPE, Acc@15, RMSE, DB-MAPE (tools/rescore.py), EOL bands, pred SD/corr, gradient gate; contributes to the prespecified 3-split mean \u00b1 std with ZN-E005 (split 2021) and the other confirmation run.",
+  "rejection_condition": "Per-run disposition: VALID with gradient gate PASS -> KEEP (as confirmation evidence); VALID with gradient gate FAIL -> DISCARD; protocol/finite/completeness failure -> INVALID, no decision. Candidate-level aggregate (decided after ZN-E007 over ZN-E005/E006/E007 = splits 2021/42/2024, same config and seed): CONFIRMED iff 3-split mean MAPE < 0.515 (beats paper Zn-ion best, CPTransformer) AND 3-split mean Acc@15 > 0.297 (beats paper CPMLP) AND all three runs KEEP; otherwise NOT CONFIRMED (stays a split-2021 result; no further ResConv tuning \u2014 the next step is the new phase-split curve-encoder family).",
   "minimum_evidence_requirements": "At least five complete epochs; finite MAPE, Acc@15, MAE, and RMSE from one checkpoint; sample and unique-cell counts for every domain; gradient, update, activation, prediction, mask, and compute diagnostics.",
   "required_diagnostics": "Epoch learning curve; selected and minimum-MAPE epochs; ResConv stem/residual-block, inter_summary and head (inter_mlp) gradients and updates; activation health; prediction spread and bias; prefix, domain, and EOL errors; domain guardrail flags; padding sensitivity; parameters, memory, time, and throughput.",
   "estimated_budget": {
@@ -52,11 +52,11 @@
   "split": "42",
   "architecture_addendum": {
     "responsible_stage": "Prediction Head",
-    "mechanism": "No residual MLP head (linear readout after summary projection)",
-    "evidence": "inter_mlp.0 55% near-zero late gradients at both 9 and 2 blocks (ZN-E002, ZN-E004)",
+    "mechanism": "None (split confirmation of ZN-E005)",
+    "evidence": "Confirmation of the ZN-E005 KEEP (split 2021); no architecture change",
     "shapes": "[B,100,3,300] -> ResConv [B,100,64] -> masked summary [B,192] -> Linear [B,64] -> ReLU -> Linear [B,1]",
-    "mask_path": "unchanged from ZN-E002: per-cycle encoding; mean over mask==1, last at mask.sum()-1, delta last - cycle1",
-    "expected_evidence": "MAPE, RMSE, Acc@15, DB-MAPE vs ZN-E004; gradient gate; EOL bands; pred SD/corr"
+    "mask_path": "identical to ZN-E005: per-cycle encoding; mean over mask==1, last at mask.sum()-1, delta last - cycle1",
+    "expected_evidence": "Split-42 selected-checkpoint MAPE, Acc@15, RMSE, DB-MAPE (tools/rescore.py), EOL bands, pred SD/corr, gradient gate; contributes to the prespecified 3-split mean \u00b1 std with ZN-E005 (split 2021) and the other confirmation run."
   },
   "smoke_evidence": "Identical code and config to ZN-E005 (Kaggle T4 full run) and ZN-E005S; only the split changes."
 }
