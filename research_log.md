@@ -80,3 +80,11 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - Process: Codex required DB-MAPE, one numeric rule, a tracked test and a CUDA smoke (ZN-E003S, T4, 92 steps, HEALTHY) before APPROVE. Kaggle rejected a 1.3 MB script; remote payload now excludes diagnostics/ and tests/.
 - Conclusion: a temporal operator does not help on ZN-coin with 46 steps/epoch; it shrinks prediction spread. Long-life underprediction looks more like a loss/label-imbalance limit (15/20 val cells <500) — Phase 2 candidate (tail/cell-balanced weighting).
 - Next: ZN-E004 = ZN-E002 with a 2-block head (A2 follow-up 2).
+
+## ZN-E004 — ResConv-MaskedSummary, 2-block head, split 2021
+
+- Run: `VALID`. Decision: `DISCARD` (§7: RMSE 442.4 > 437.8 on every path; gradient gate FAIL at inter_mlp.0, 55.08% near-zero late grads).
+- One change vs ZN-E002: inter_mlp 9 -> 2 blocks. 102,593 params; 11 epochs, best epoch 6.
+- Metrics: MAPE 0.3266 (best so far), Acc@15 0.355 (best), RMSE 442.4, DB-MAPE 0.3266; pred SD 117, corr 0.35.
+- Bands: <500 MAPE 0.192 / Acc@15 0.473; 500–1000 bias −452; >1000 bias −1050. 3 cells >1000 cycles = 86.65% of squared error.
+- Next: ZN-E005 = no inter_mlp (last A2 follow-up; a DISCARD closes the ResConv family). Code: diagnostic_modules skips an empty inter_mlp.

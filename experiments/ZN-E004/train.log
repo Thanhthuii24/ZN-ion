@@ -1,0 +1,178 @@
+
+===== ZN-E004 START 2026-11-08 04:01:33 =====
+epoch=1 epoch_steps=46/46 epoch_progress=1.000 steps=46 train_compute=19.91s val_mape=0.445802 val_acc15=0.200000
+epoch=2 epoch_steps=46/46 epoch_progress=2.000 steps=92 train_compute=30.21s val_mape=0.420951 val_acc15=0.209500
+epoch=3 epoch_steps=46/46 epoch_progress=3.000 steps=138 train_compute=40.71s val_mape=0.412482 val_acc15=0.186000
+epoch=4 epoch_steps=46/46 epoch_progress=4.000 steps=184 train_compute=51.29s val_mape=0.376142 val_acc15=0.314500
+epoch=5 epoch_steps=46/46 epoch_progress=5.000 steps=230 train_compute=62.06s val_mape=0.342077 val_acc15=0.344000
+epoch=6 epoch_steps=46/46 epoch_progress=6.000 steps=276 train_compute=73.05s val_mape=0.326584 val_acc15=0.355000
+epoch=7 epoch_steps=46/46 epoch_progress=7.000 steps=322 train_compute=84.23s val_mape=0.331722 val_acc15=0.298000
+epoch=8 epoch_steps=46/46 epoch_progress=8.000 steps=368 train_compute=95.38s val_mape=0.344773 val_acc15=0.320500
+epoch=9 epoch_steps=46/46 epoch_progress=9.000 steps=414 train_compute=106.35s val_mape=0.342819 val_acc15=0.301500
+epoch=10 epoch_steps=46/46 epoch_progress=10.000 steps=460 train_compute=117.34s val_mape=0.339424 val_acc15=0.312500
+epoch=11 epoch_steps=46/46 epoch_progress=11.000 steps=506 train_compute=128.36s val_mape=0.353229 val_acc15=0.262000
+{
+  "metrics": {
+    "mape": 0.3265841997277028,
+    "acc15": 0.355,
+    "mae": 235.3146231536865,
+    "rmse": 442.3519820863134,
+    "prediction_diagnostics": {
+      "prediction_mean": 191.0272216796875,
+      "prediction_std": 117.17546081542969,
+      "prediction_min": 108.36309814453125,
+      "prediction_max": 663.6249389648438,
+      "target_mean": 413.8999938964844,
+      "target_std": 407.4496154785156,
+      "prediction_to_target_std_ratio": 0.2875827006924939,
+      "mean_signed_relative_error": -0.25394508242607117,
+      "relative_error_std": 0.351686954498291,
+      "prediction_target_correlation": 0.35337340317556054,
+      "extreme_prediction_count": 0
+    },
+    "by_prefix": {
+      "01-10": {
+        "mape": 0.43339383513437313,
+        "acc15": 0.205,
+        "mae": 287.1681829833984,
+        "rmse": 495.0996774971677,
+        "bias": -283.4331970214844,
+        "relative_bias": -0.3982917070388794,
+        "prediction_mean": 130.466796875,
+        "target_mean": 413.8999938964844,
+        "sample_count": 200,
+        "unique_cell_count": 20
+      },
+      "11-25": {
+        "mape": 0.3920371467641085,
+        "acc15": 0.2633333333333333,
+        "mae": 263.35103256225585,
+        "rmse": 470.2817558782652,
+        "bias": -257.114501953125,
+        "relative_bias": -0.3425520062446594,
+        "prediction_mean": 156.78549194335938,
+        "target_mean": 413.8999938964844,
+        "sample_count": 300,
+        "unique_cell_count": 20
+      },
+      "26-50": {
+        "mape": 0.32211505160756704,
+        "acc15": 0.356,
+        "mae": 235.17856777954103,
+        "rmse": 449.58247650930554,
+        "bias": -222.57974243164062,
+        "relative_bias": -0.2367851585149765,
+        "prediction_mean": 191.3202667236328,
+        "target_mean": 413.8999938964844,
+        "sample_count": 500,
+        "unique_cell_count": 20
+      },
+      "51-75": {
+        "mape": 0.2916029126134396,
+        "acc15": 0.43,
+        "mae": 219.58130227661132,
+        "rmse": 427.20077384825186,
+        "bias": -199.07240295410156,
+        "relative_bias": -0.18037746846675873,
+        "prediction_mean": 214.8275909423828,
+        "target_mean": 413.8999938964844,
+        "sample_count": 500,
+        "unique_cell_count": 20
+      },
+      "76-100": {
+        "mape": 0.28403901257759023,
+        "acc15": 0.394,
+        "mae": 213.62072982788087,
+        "rmse": 409.05716672818306,
+        "bias": -202.19703674316406,
+        "relative_bias": -0.2337697446346283,
+        "prediction_mean": 211.70297241210938,
+        "target_mean": 413.8999938964844,
+        "sample_count": 500,
+        "unique_cell_count": 20
+      }
+    },
+    "by_domain": {
+      "ZN-coin": {
+        "mape": 0.3265841997277028,
+        "acc15": 0.355,
+        "mae": 235.3146231536865,
+        "rmse": 442.3519820863134,
+        "bias": -222.87278747558594,
+        "relative_bias": -0.25394508242607117,
+        "prediction_mean": 191.0272216796875,
+        "target_mean": 413.8999938964844,
+        "sample_count": 2000,
+        "unique_cell_count": 20
+      }
+    },
+    "by_eol": {
+      "high_>1000": {
+        "mape": 0.849218353470926,
+        "acc15": 0.0,
+        "mae": 1049.9024509175617,
+        "rmse": 1063.1561504628057,
+        "bias": -1049.90234375,
+        "relative_bias": -0.8492183685302734,
+        "prediction_mean": 185.43089294433594,
+        "target_mean": 1235.3333740234375,
+        "sample_count": 300,
+        "unique_cell_count": 3
+      },
+      "low_<500": {
+        "mape": 0.19243411209061803,
+        "acc15": 0.47333333333333333,
+        "mae": 43.536441752115884,
+        "rmse": 65.7314479730987,
+        "bias": -26.947324752807617,
+        "relative_bias": -0.09558192640542984,
+        "prediction_mean": 164.98599243164062,
+        "target_mean": 191.93333435058594,
+        "sample_count": 1500,
+        "unique_cell_count": 15
+      },
+      "middle_500-1000": {
+        "mape": 0.5487586263910041,
+        "acc15": 0.0,
+        "mae": 451.76924201965335,
+        "rmse": 478.4313804107768,
+        "bias": -451.7692565917969,
+        "relative_bias": -0.5487586259841919,
+        "prediction_mean": 394.7307434082031,
+        "target_mean": 846.5,
+        "sample_count": 200,
+        "unique_cell_count": 2
+      }
+    }
+  },
+  "result": {
+    "benchmark_round": "BATTERYLIFE-ZN-COIN-R1",
+    "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
+    "type": "architecture",
+    "seed": 2021,
+    "training_compute_seconds": 128.359,
+    "validation_seconds": 28.699,
+    "wall_seconds": 201.415,
+    "num_steps": 506,
+    "runner_version": "r4-relative-huber-v2",
+    "steps_per_sec": 3.942053,
+    "num_params": 102593,
+    "model_bytes_fp32": 410372,
+    "peak_device_memory_bytes": 2003710976,
+    "best_epoch": 6,
+    "minimum_validation_mape": 0.3265841997277028,
+    "checkpoint_mape_tolerance": 0.005,
+    "best_epoch_complete": true,
+    "best_epoch_steps": 46,
+    "steps_per_epoch": 46,
+    "completed_epochs": 11,
+    "last_epoch": 11,
+    "last_epoch_steps": 46,
+    "epoch_progress": 11.0,
+    "stop_reason": "early_stopping",
+    "status": "pending_analysis",
+    "description": "Head only: inter_mlp 9 -> 2 MLP blocks (d_ff 64, dropout 0.1). Curve encoder, masked summary, Linear(192->64) and output head unchanged from ZN-E002.",
+    "device": "cuda"
+  }
+}
+===== ZN-E004 COMPLETE =====

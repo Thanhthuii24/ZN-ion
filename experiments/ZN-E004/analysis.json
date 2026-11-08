@@ -1,0 +1,175 @@
+{
+  "schema_version": 1,
+  "experiment_id": "ZN-E004",
+  "run_validity": "VALID",
+  "contract_answer": {
+    "question": "Is ZN-E002's gradient-gate failure and validation variance caused by its over-deep nine-block post-summary head, such that reducing that head to two blocks passes the gradient gate and satisfies the pre-registered accuracy rule?",
+    "outcome": "REFUTED",
+    "conclusion": "Apply the proposal's primary rule exactly. ZN-E004 has MAPE 0.326584, Acc@15 0.355, RMSE 442.352 cycles, and DB-MAPE 0.326584 versus ZN-E002's 0.336823, 0.318, 427.826, and 0.336823. Path A meets its MAPE threshold but fails RMSE <= 437.8; path B fails RMSE <= 406.8; path C meets its Acc@15 and MAPE thresholds but also fails RMSE <= 437.8. The common prediction-spread and DB-MAPE guards pass, but the gradient gate fails because diagnostics reports WARNING and inter_mlp.0 has a late near-zero-gradient fraction of 0.550781, above 0.50. Thus no path satisfies all required conjuncts. The two-block head improves low-life MAPE and overall Acc@15, but it neither removes the first-block gradient warning nor preserves RMSE. This is a complete finite Tesla T4 run with 11 epochs and 506 steps; masks and activations are healthy, padding is invariant, and the archived and reviewed train.py files have identical MD5 321b6fbfa86a215763f3ec61849c09ab.",
+    "evidence_paths": [
+      "record.json.proposal.rejection_condition",
+      "record.json.result",
+      "record.json.metrics",
+      "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+      "diagnostics.json.summary.overall_gradient_health",
+      "diagnostics.json.summary.layer_health.inter_mlp.0",
+      "diagnostics.json.summary.mask_health",
+      "diagnostics.json.summary.padding_invariance",
+      "worker_meta.json",
+      "../ZN-E002/record.json.metrics"
+    ]
+  },
+  "main_symptom": "The shallow head trades better relative-error performance on the 15 cells below 500 cycles for worse long-tail squared error. MAPE improves by 0.01024 and Acc@15 by 0.037 versus ZN-E002, but RMSE worsens by 14.53 cycles. The three cells above 1000 cycles have bias -1049.9 cycles and account for 86.65% of total validation squared error; prediction SD is only 117.2 versus target SD 407.4 and correlation is 0.353. The same first residual head block remains over the strict dead-gradient threshold, so reducing stack depth did not repair the diagnosed gradient fault.",
+  "causes": [
+    {
+      "id": "C1_PERSISTENT_FIRST_HEAD_BLOCK_GRADIENT",
+      "class": "optimization_warning",
+      "supporting_evidence": [
+        "diagnostics.json.summary.overall_gradient_health",
+        "diagnostics.json.summary.layer_health.inter_mlp.0",
+        "diagnostics.json.summary.branch_gradient_imbalance",
+        "../ZN-E002/diagnostics.json.summary.layer_health.inter_mlp.0"
+      ],
+      "contradicting_evidence": [
+        "inter_mlp.0 remains connected and updates: its late gradient/parameter ratio is 0.005933 and late update ratio is 0.001125.",
+        "The aggregate inter_mlp activation group is HEALTHY with all features active, and the branch gradient imbalance is only 79.2x, below the 1000x warning threshold.",
+        "MAPE and Acc@15 improve despite the warning, so the block is not wholly uninformative."
+      ],
+      "interpretation": "The exact diagnostic that motivated the intervention persists: inter_mlp.0's late near-zero-gradient fraction is 0.550781, essentially unchanged from ZN-E002's 0.550071 and above the mandatory 0.50 threshold. Reducing later depth therefore does not repair the first residual block. Because this is the only non-OK block and its activations and updates remain finite, the evidence supports one final matched removal ablation rather than another width, dropout, or optimizer change.",
+      "missing_evidence": [
+        "A matched zero-residual-block head run that retains inter_summary, its 192-to-64 projection, and the final output layer.",
+        "Gradient snapshots at the selected checkpoint rather than only the automatic early/late diagnostic steps."
+      ]
+    },
+    {
+      "id": "C2_LONG_LIFE_TAIL_DOMINATES_RMSE",
+      "class": "tail_imbalance_or_objective_limit",
+      "supporting_evidence": [
+        "record.json.metrics.by_eol.high_>1000",
+        "record.json.metrics.by_eol.low_<500",
+        "record.json.metrics.by_eol.middle_500-1000",
+        "record.json.metrics.prediction_diagnostics",
+        "validation_predictions.npz[prediction,target,cell_id]"
+      ],
+      "contradicting_evidence": [
+        "The 500-1000-cycle band improves versus ZN-E002: MAPE falls from 0.5875 to 0.5488 and bias improves from -488.6 to -451.8 cycles.",
+        "Later prefixes carry useful signal: MAPE falls from 0.4334 at prefixes 1-10 to 0.2840 at prefixes 76-100.",
+        "Only three validation cells are above 1000 cycles, so their measured behavior has high sampling uncertainty."
+      ],
+      "interpretation": "The validation population is heavily skewed toward short lives: 15 of 20 cells are below 500 cycles. ZN-E004 improves that band's MAPE from 0.2083 to 0.1924 and Acc@15 from 0.424 to 0.473, while the three >1000-cycle cells worsen to MAPE 0.8492 and bias -1049.9. Independent calculation from validation_predictions.npz shows those three cells contribute 86.65% of total squared error, explaining why overall MAPE and Acc@15 improve while RMSE fails both allowed guards. A cell/tail-balanced objective is a plausible cause-directed intervention, but it is locked out of Phase 1 and remains a Phase-2 hypothesis rather than a proven cause.",
+      "missing_evidence": [
+        "A Phase-2 matched cell-balanced or tail-balanced loss run after an architecture is frozen.",
+        "Splits 42 and 2024 to determine whether the three-cell tail behavior generalizes."
+      ]
+    },
+    {
+      "id": "C3_MASKED_SUMMARY_REPRESENTATION_LIMIT",
+      "class": "representation_limit",
+      "supporting_evidence": [
+        "record.json.metrics.prediction_diagnostics",
+        "record.json.metrics.by_prefix",
+        "record.json.metrics.by_eol",
+        "validation_predictions.npz[prediction,target,prefix_length]",
+        "../ZN-E003/record.json.metrics"
+      ],
+      "contradicting_evidence": [
+        "The same mean/last/delta summary supports improved MAPE and Acc@15 when head depth is reduced.",
+        "The prior six-block masked causal TCN in ZN-E003 worsened all headline metrics and compressed prediction SD to 71.8 cycles, so adding temporal complexity is not generally beneficial.",
+        "Padding is exactly invariant and inter_summary has healthy gradients, updates, and activations."
+      ],
+      "interpretation": "Predictions remain compressed (SD ratio 0.288, correlation 0.353) and severe tail underprediction persists across head depths, so mean/last/delta pooling may omit cell-specific degradation or charge/discharge-phase evidence. However ZN-E003 rules out the tested deep causal-TCN implementation, not every mask-aware aggregation or Zn-specific phase encoder. This is a credible new-family hypothesis only after the direct head-removal test exhausts the final ResConv follow-up.",
+      "missing_evidence": [
+        "A new-family run using either lightweight masked cycle-attention pooling or a charge/discharge phase-split curve encoder as one isolated mechanism.",
+        "Feature attribution or representation probes showing which observed-cycle or electrochemical-phase information separates the long-life cells."
+      ]
+    }
+  ],
+  "selected_cause_id": "C1_PERSISTENT_FIRST_HEAD_BLOCK_GRADIENT",
+  "layers": [
+    {
+      "name": "cycle_stem",
+      "role": "Downsample each observed V/I/Q cycle into local curve features.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.cycle_stem",
+        "diagnostics.json.summary.activation_health.cycle_stem"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "The block is finite and healthy, with late near-zero-gradient fraction 0.2853 and late update ratio 0.00163. This run does not isolate or discredit the residual curve encoder."
+    },
+    {
+      "name": "residual_blocks",
+      "role": "Two residual Conv1D blocks encode within-cycle curve shape.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.residual_blocks.0",
+        "diagnostics.json.summary.layer_health.residual_blocks.1",
+        "diagnostics.json.summary.activation_health.residual_blocks"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Both residual curve blocks are OK in the layer report, have nonzero updates, and show no activation collapse. The final head ablation should hold them fixed."
+    },
+    {
+      "name": "inter_summary",
+      "role": "Project masked mean, last-observed, and last-minus-first cycle features from 192 to 64 dimensions.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.inter_summary",
+        "diagnostics.json.summary.activation_health.inter_summary",
+        "diagnostics.json.summary.padding_invariance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "It has strong finite gradients and updates, healthy activations, and exact padding invariance. Keeping it makes the proposed zero-block-head test isolate only the residual head stack."
+    },
+    {
+      "name": "inter_mlp.0",
+      "role": "First post-summary residual MLP block.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.inter_mlp.0",
+        "diagnostics.json.summary.activation_health.inter_mlp",
+        "../ZN-E002/diagnostics.json.summary.layer_health.inter_mlp.0"
+      ],
+      "persistent_dead_gradient": true,
+      "action": "REMOVE",
+      "reason": "This block again exceeds the mandatory 0.50 late near-zero-gradient threshold after depth was reduced from nine blocks to two. Remove the residual stack in one final matched follow-up; retain the summary projection and output layer so this remains a single head-depth intervention."
+    },
+    {
+      "name": "inter_mlp.1",
+      "role": "Second post-summary residual MLP block.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.inter_mlp.1",
+        "diagnostics.json.summary.activation_health.inter_mlp"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "REMOVE",
+      "reason": "This block is individually healthy, but the pre-registered two-block depth repair failed and the final matched test removes the residual head stack as one architectural unit. Retaining only this block would confound depth with block position."
+    },
+    {
+      "name": "head",
+      "role": "Map the 64-dimensional cell representation to standardized EOL.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.head",
+        "diagnostics.json.summary.activation_health.head",
+        "diagnostics.json.summary.branch_gradient_imbalance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "The final linear regressor is healthy, active, finite, and updating. Its gradient/parameter ratio and update ratio pass, so the evidence does not support changing it."
+    }
+  ],
+  "gates": {
+    "gradient": "FAIL",
+    "screen_floor": {
+      "applicable": false,
+      "pass": null,
+      "reason": "ZN-E004 is a full_candidate run, not an exactly five-epoch screen. It completed 11 epochs and is decided by its pre-registered full-candidate rule and promotion gates."
+    }
+  },
+  "decision": "DISCARD",
+  "next_action": {
+    "type": "ABLATION",
+    "summary": "Use the third and final allowed ResConv-family follow-up for one matched zero-block-head ablation: starting from ZN-E004, change only inter_mlp depth from two residual blocks to zero, directly connecting the retained masked-summary 192-to-64 projection to the retained output layer. Keep the curve encoder, summary, dimensions, dropout elsewhere, loss, optimizer, split, seed, and checkpoint policy fixed. This is justified because the same first residual head block remains just over the dead-gradient threshold, while ZN-E004 already reaches the MAPE and Acc@15 portions of paths A/C and misses their RMSE guard by only 4.55 cycles. Require the full primary metric guards and a passing gradient gate; if it is also DISCARD, that is the fourth consecutive ResConv-family DISCARD and closes the direction. The next new-family candidate should then isolate a Zn-specific charge/discharge phase-split curve encoder rather than repeat the failed deep temporal TCN; tail/cell balancing remains deferred to Phase 2.",
+    "source_cause_id": "C1_PERSISTENT_FIRST_HEAD_BLOCK_GRADIENT",
+    "responsible_block": "Prediction Head: remove inter_mlp residual stack only"
+  }
+}

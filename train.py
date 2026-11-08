@@ -997,13 +997,15 @@ class ResidualConvMaskedSummary(nn.Module):
         return self.head(F.relu(values)).squeeze(-1)
 
     def diagnostic_modules(self):
-        return {
+        modules = {
             "cycle_stem": self.cycle_stem,
             "residual_blocks": self.residual_blocks,
             "inter_summary": self.inter_summary,
-            "inter_mlp": self.inter_mlp[-1],
-            "head": self.head,
         }
+        if len(self.inter_mlp):
+            modules["inter_mlp"] = self.inter_mlp[-1]
+        modules["head"] = self.head
+        return modules
 
 
 class ResidualConvTemporalTCNMaskedSummary(ResidualConvMaskedSummary):
