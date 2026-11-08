@@ -19,7 +19,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 WS = ROOT.parent
 CFG = json.loads((ROOT / "remote" / "config.json").read_text())
-EXCLUDE_TOP = {".git", "experiments", "handoff", "reports", "live.log", "__pycache__", ".claude"}
+EXCLUDE_TOP = {".git", "experiments", "handoff", "reports", "diagnostics", "tests", "live.log", "__pycache__", ".claude"}
 BL_PARTS = ["models", "layers", "utils", "data_provider/data_split_recorder.py", "data_provider/__init__.py"]
 
 
