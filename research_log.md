@@ -88,3 +88,11 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - Metrics: MAPE 0.3266 (best so far), Acc@15 0.355 (best), RMSE 442.4, DB-MAPE 0.3266; pred SD 117, corr 0.35.
 - Bands: <500 MAPE 0.192 / Acc@15 0.473; 500–1000 bias −452; >1000 bias −1050. 3 cells >1000 cycles = 86.65% of squared error.
 - Next: ZN-E005 = no inter_mlp (last A2 follow-up; a DISCARD closes the ResConv family). Code: diagnostic_modules skips an empty inter_mlp.
+
+## ZN-E005 — ResConv-MaskedSummary, no MLP head (H0), split 2021 — KEEP
+
+- Run: `VALID`. Decision: `KEEP` (§7 path C vs ZN-E004; gradient gate PASS, HEALTHY). First KEEP of v6; active_architecture_parent = ZN-E005.
+- One change vs ZN-E004: inter_mlp 2 -> 0; head = Linear(192->64) -> ReLU -> Linear(64->1). 85,697 params; 13 epochs, best epoch 8.
+- Metrics: MAPE 0.3216, Acc@15 0.4055, RMSE 445.0, DB-MAPE 0.3216; pred SD 116, corr 0.28. Paper Zn-ion 3-split: CPMLP 0.558 / 0.297, CPTransformer 0.515 / 0.202.
+- Bands: <500 MAPE 0.186 / Acc@15 0.541; 500–1000 bias −469; >1000 bias −1049 (main limit).
+- Next: confirm on splits 42 (ZN-E006) and 2024 (ZN-E007); then a Zn-ion charge/discharge phase-split curve encoder.

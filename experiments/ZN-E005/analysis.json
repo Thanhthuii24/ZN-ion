@@ -1,0 +1,168 @@
+{
+  "schema_version": 1,
+  "experiment_id": "ZN-E005",
+  "run_validity": "VALID",
+  "contract_answer": {
+    "question": "Is the inter_mlp stack needed after the masked mean/last/delta summary, or can removing it eliminate ZN-E004's persistent dead-gradient block while preserving enough accuracy to pass the pre-registered rule?",
+    "outcome": "SUPPORTED",
+    "conclusion": "Apply the proposal's primary rule exactly. ZN-E005 scores MAPE 0.321573, Acc@15 0.4055, RMSE 445.047 cycles, and DB-MAPE 0.321573 versus ZN-E004's 0.326584, 0.3550, 442.352, and 0.326584. Path A fails MAPE <= 0.3186 and path B fails RMSE <= 421.4. Path C passes because Acc@15 >= 0.375, MAPE <= 0.3296, and RMSE <= 452.4. Its common guards also pass: DB-MAPE <= 0.3366, overall gradient health is HEALTHY, and prediction SD is 28.39% of target SD, above the required 10%. Therefore the exact rule yields KEEP. Removing inter_mlp eliminates the only non-OK block from ZN-E004: every remaining layer is healthy, with inter_summary's late near-zero-gradient fraction 0.4571 below 0.50. The run is complete and finite on a Tesla T4 (13 epochs, 598 steps), masks and activations are healthy, padding is invariant, and the archived train.py MD5 fb6893f80e3e2f4134f716ed6abe2fe4 equals the reviewed workspace file.",
+    "evidence_paths": [
+      "record.json.proposal.rejection_condition",
+      "record.json.result",
+      "record.json.metrics",
+      "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+      "diagnostics.json.summary.overall_gradient_health",
+      "diagnostics.json.summary.layer_health",
+      "diagnostics.json.summary.mask_health",
+      "diagnostics.json.summary.padding_invariance",
+      "diagnostics.json.nonfinite_detected",
+      "worker_meta.json",
+      "../ZN-E004/record.json.metrics",
+      "../ZN-E004/diagnostics.json.summary.layer_health.inter_mlp.0"
+    ]
+  },
+  "main_symptom": "The no-inter_mlp head passes the pre-registered Acc@15 gain path, improving MAPE by 0.00501 and Acc@15 by 0.0505 versus ZN-E004 while RMSE regresses by only 2.69 cycles. The gain is concentrated in the 15 cells below 500 cycles (MAPE 0.1856, Acc@15 0.5407); the two 500-1000-cycle cells retain bias -469.2 cycles and the three >1000-cycle cells retain bias -1048.6 cycles. Those three long-life cells contribute 86.66% of squared error. Prediction SD remains compressed at 115.7 versus target SD 407.4, and correlation falls to 0.276. Validation is also noisy: the selected minimum is epoch 8 at MAPE 0.3216, while epoch 13 returns to 0.3264 despite continued train-loss reduction.",
+  "causes": [
+    {
+      "id": "C1_REDUNDANT_INTER_MLP_REMOVAL",
+      "class": "head_optimization_and_capacity",
+      "supporting_evidence": [
+        "diagnostics.json.summary.overall_gradient_health",
+        "diagnostics.json.summary.layer_health.inter_summary",
+        "diagnostics.json.summary.layer_health.head",
+        "record.json.metrics",
+        "../ZN-E004/diagnostics.json.summary.layer_health.inter_mlp.0",
+        "../ZN-E004/record.json.metrics"
+      ],
+      "contradicting_evidence": [
+        "RMSE worsens from 442.352 to 445.047 cycles, so removing the stack does not improve every metric.",
+        "Prediction-target correlation falls from 0.353 to 0.276 and prediction SD falls slightly from 117.2 to 115.7 cycles.",
+        "The MAPE improvement is 0.00501, below the separate path-A threshold of 0.008."
+      ],
+      "interpretation": "The direct ablation supports the proposal's mechanism: removing inter_mlp removes ZN-E004's persistent non-OK block and passes the full gradient gate without sacrificing the headline accuracy guards. The resulting 0.0505 Acc@15 gain is large enough for path C, while the MAPE and RMSE guardrails remain satisfied. The residual head stack was therefore unnecessary for this split and configuration, although the improvement is mainly short-life accuracy rather than better long-life representation.",
+      "missing_evidence": [
+        "Matched runs of this exact configuration on paper splits 42 and 2024.",
+        "The three-split mean and standard deviation required for candidate comparison."
+      ]
+    },
+    {
+      "id": "C2_MASKED_SUMMARY_LONG_LIFE_BOTTLENECK",
+      "class": "representation_limit",
+      "supporting_evidence": [
+        "record.json.metrics.by_eol.high_>1000",
+        "record.json.metrics.by_eol.middle_500-1000",
+        "record.json.metrics.by_eol.low_<500",
+        "record.json.metrics.prediction_diagnostics",
+        "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+        "../ZN-E004/record.json.metrics.by_eol"
+      ],
+      "contradicting_evidence": [
+        "The same mean/last/delta summary achieves MAPE 0.1856 and Acc@15 0.5407 on the 15 short-life cells.",
+        "Later-prefix MAPE improves to 0.2770 for prefixes 76-100, so the summary uses some additional observed-cycle information.",
+        "Only five validation cells have EOL >= 500, making the tail subgroup uncertain on one split."
+      ],
+      "interpretation": "Healthy optimization does not resolve the dominant representational symptom. Predictions span only 28.39% of target SD, correlation is 0.276, and all five cells at or above 500 cycles are severely underpredicted. The three >1000-cycle cells alone contribute 86.66% of squared error. Because removing head depth leaves this pattern essentially unchanged, the next architecture family should change what information is encoded or pooled, not add another generic post-summary MLP. Two plausible isolated mechanisms are a Zn-ion charge/discharge phase-split curve encoder and masked cycle-attention pooling that replaces fixed mean/last/delta aggregation.",
+      "missing_evidence": [
+        "A matched new-family run isolating a charge/discharge phase-split cycle encoder while holding cycle aggregation and training fixed.",
+        "A separate matched run replacing mean/last/delta with mask-aware cycle-attention pooling.",
+        "Splits 42 and 2024 to establish whether severe long-life underprediction is stable."
+      ]
+    },
+    {
+      "id": "C3_SINGLE_SPLIT_CHECKPOINT_NOISE",
+      "class": "validation_uncertainty",
+      "supporting_evidence": [
+        "diagnostics.json.epoch_history",
+        "diagnostics.json.checkpoint_selection",
+        "diagnostics.json.summary.learning_dynamics",
+        "record.json.result.best_epoch",
+        "record.json.result.completed_epochs"
+      ],
+      "contradicting_evidence": [
+        "The selected checkpoint follows the locked rule and is reloaded consistently for every reported metric.",
+        "Epoch 13 MAPE 0.3264 is only 0.00485 above the minimum and remains inside the 0.005 eligibility tolerance.",
+        "The run completed 13 epochs and early stopping operated normally, so this is not an incomplete-run artifact."
+      ],
+      "interpretation": "The single-split KEEP is preliminary. Validation MAPE reaches 0.3216 at epoch 8, then oscillates and ends at 0.3264 at epoch 13 while training loss continues downward. That variation is comparable to the 0.00501 MAPE advantage over ZN-E004, so the paper's split confirmations are more informative than rerunning three initialization seeds on split 2021. Confirmation must keep the same model configuration and training seed and change only BL_SPLIT to 42 and 2024.",
+      "missing_evidence": [
+        "The exact configuration's results on BL_SPLIT=42 and BL_SPLIT=2024.",
+        "Three-split mean, standard deviation, subgroup stability, and gradient health."
+      ]
+    }
+  ],
+  "selected_cause_id": "C1_REDUNDANT_INTER_MLP_REMOVAL",
+  "layers": [
+    {
+      "name": "cycle_stem",
+      "role": "Downsample each observed V/I/Q cycle into local curve features.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.cycle_stem",
+        "diagnostics.json.summary.activation_health.cycle_stem"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "The block is healthy, finite, and updating; its late gradient/parameter ratio is 0.0382, late near-zero fraction is 0.3569, and late update ratio is 0.00129. Retain it unchanged for split confirmation. A phase-split replacement belongs to a later new-family experiment, not this candidate confirmation."
+    },
+    {
+      "name": "residual_blocks.0",
+      "role": "First residual Conv1D block for within-cycle curve-shape encoding.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.residual_blocks.0",
+        "diagnostics.json.summary.activation_health.residual_blocks"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "The first residual block is OK, with finite gradients and nonzero updates. This run provides no block-specific evidence for repair or removal."
+    },
+    {
+      "name": "residual_blocks.1",
+      "role": "Second residual Conv1D block for within-cycle curve-shape encoding.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.residual_blocks.1",
+        "diagnostics.json.summary.activation_health.residual_blocks"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "The second residual block is OK, with a late near-zero fraction of 0.1652 and a late update ratio of 0.000713. Retain it for the exact split confirmations."
+    },
+    {
+      "name": "inter_summary",
+      "role": "Project the masked mean, last-observed, and last-minus-first cycle summary from 192 to 64 dimensions.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.inter_summary",
+        "diagnostics.json.summary.activation_health.inter_summary",
+        "diagnostics.json.summary.padding_invariance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "After inter_mlp removal, inter_summary is HEALTHY: its late near-zero-gradient fraction is 0.4571, below the strict 0.50 boundary, and its late update ratio is 0.00251. Padding is exactly invariant. Retain it for confirmation; test mask-aware attention pooling later as a distinct new-family mechanism if the tail bottleneck persists across splits."
+    },
+    {
+      "name": "head",
+      "role": "Map the 64-dimensional summary representation directly to standardized EOL.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.head",
+        "diagnostics.json.summary.activation_health.head",
+        "diagnostics.json.summary.branch_gradient_imbalance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "The direct linear head is healthy, active, finite, and updating, and the complete architecture passes path C. It should remain unchanged for split confirmation."
+    }
+  ],
+  "gates": {
+    "gradient": "PASS",
+    "screen_floor": {
+      "applicable": false,
+      "pass": null,
+      "reason": "ZN-E005 is a full_candidate run, not an exactly five-epoch screening run. It completed 13 epochs and is decided by its pre-registered full-candidate rule and promotion gates."
+    }
+  },
+  "decision": "KEEP",
+  "next_action": {
+    "type": "CONFIRM",
+    "summary": "Confirm ZN-E005 first on paper splits 42 and 2024, using the identical no-inter_mlp configuration and training seed 2021 and changing only BL_SPLIT, as state.json.split_protocol requires. This comes before any three-initialization-seed check: in this project the required candidate evidence is the mean +/- standard deviation over the three paper splits, and the saved epoch oscillation plus only 20 validation cells makes cross-split confirmation the relevant uncertainty check. Require each confirmation to remain valid with healthy gradients, then compare the three-split aggregate and long-life bands before parent selection. After confirmation, do not return to ResConv head-depth tuning. The next architecture step should open a genuinely new family with one isolated Curve Encoder change: split each normalized 300-point cycle into its charge and discharge halves, encode them with phase-specific lightweight branches, fuse once per cycle, and retain the proven mask path and direct head. This targets the persistent low spread and long-life underprediction while respecting Zn-ion charge/discharge structure. A separate later hypothesis may replace fixed mean/last/delta with masked cycle-attention pooling; do not combine both mechanisms in one experiment.",
+    "source_cause_id": "C3_SINGLE_SPLIT_CHECKPOINT_NOISE",
+    "responsible_block": "Split confirmation first; then new-family Curve Encoder with charge/discharge phase-split branches"
+  }
+}
