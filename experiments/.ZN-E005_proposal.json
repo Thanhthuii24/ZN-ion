@@ -58,5 +58,5 @@
     "mask_path": "unchanged from ZN-E002: per-cycle encoding; mean over mask==1, last at mask.sum()-1, delta last - cycle1",
     "expected_evidence": "MAPE, RMSE, Acc@15, DB-MAPE vs ZN-E004; gradient gate; EOL bands; pred SD/corr"
   },
-  "smoke_evidence": "Same variant/code path as ZN-E002/E004 Kaggle T4 runs; only mlp_layers changes (0 = empty ModuleList). Local forward: finite, padding-invariant."
+  "smoke_evidence": "CUDA smoke ZN-E005S on Kaggle Tesla T4: identical config, 92 optimizer steps, worker preflight passed, finite (val MAPE 0.4320 -> 0.4225, not quality evidence), all activations HEALTHY, gradient health WARNING at smoke length, executed train.py md5 = reviewed. Artifacts: diagnostics/ZN-E005S_cuda_smoke/."
 }
