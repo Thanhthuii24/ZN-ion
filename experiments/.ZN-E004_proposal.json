@@ -24,9 +24,9 @@
   "held_constant_components": "Residual Conv1D curve encoder, masked mean/last/delta summary, Linear(192->64), d_model 64, dropout 0.1, Relative Huber delta 0.15, Adam lr 5e-4, batch 128, seed 2021, split 2021, A2-ZN epochs, data.",
   "controlled_variables": "Split 2021 and training seed 2021, minimum 5 / maximum 100 epochs, patience 5 after epoch 5, diagnostics every 50 steps.",
   "expected_evidence": "MAPE/Acc@15/RMSE/DB-MAPE (tools/rescore.py) vs ZN-E002; gradient health per block; EOL-band MAPE/bias; pred SD and corr; params/time.",
-  "rejection_condition": "Primary rule (all must hold for KEEP, else DISCARD): (MAPE <= 0.3288 OR RMSE <= 406.8) AND Acc@15 >= 0.268 AND DB-MAPE <= 0.3468 AND gradient gate PASS AND prediction SD >= 10% of target SD. Secondary: EOL-band MAPE/bias vs ZN-E002.",
+  "rejection_condition": "Primary rule (program.md \u00a77, vs ZN-E002 MAPE 0.3368 / RMSE 427.8 / Acc@15 0.318 / DB-MAPE 0.3368). KEEP iff [path A: MAPE <= 0.3288 AND RMSE <= 437.8] OR [path B: RMSE <= 406.8 AND MAPE <= 0.3398] OR [path C: Acc@15 >= 0.338 with MAPE <= 0.3398 and RMSE <= 437.8], AND Acc@15 >= 0.288 (paths A/B) AND DB-MAPE <= 0.3468 AND gradient gate PASS AND prediction SD >= 10% of target SD; otherwise DISCARD. Secondary: EOL-band MAPE/bias vs ZN-E002.",
   "minimum_evidence_requirements": "At least five complete epochs; finite MAPE, Acc@15, MAE, and RMSE from one checkpoint; sample and unique-cell counts for every domain; gradient, update, activation, prediction, mask, and compute diagnostics.",
-  "required_diagnostics": "Epoch learning curve; selected and minimum-MAPE epochs; CPMLP block gradients and updates; activation health; prediction spread and bias; prefix, domain, and EOL errors; domain guardrail flags; padding sensitivity; parameters, memory, time, and throughput.",
+  "required_diagnostics": "Epoch learning curve; selected and minimum-MAPE epochs; ResConv stem/residual-block, inter_summary and head (inter_mlp) gradients and updates; activation health; prediction spread and bias; prefix, domain, and EOL errors; domain guardrail flags; padding sensitivity; parameters, memory, time, and throughput.",
   "estimated_budget": {
     "experiments": 1,
     "training_seconds": 600
