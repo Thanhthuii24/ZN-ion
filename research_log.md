@@ -62,3 +62,12 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - EOL bands: <500 (15 cells) MAPE 0.205 / Acc@15 0.454; 500–1000 (2) MAPE 0.616, bias −511; >1000 (3) MAPE 0.863, bias −1071.
 - Conclusion: mask-aware pooling over observed cycles is the right degradation-encoder mechanism; the remaining limit is long-life underprediction.
 - Next: ZN-E002 = first non-CPMLP family (residual Conv1D curve encoder + masked causal TCN + the same masked summary).
+
+## ZN-E002 — ResConv-MaskedSummary, split 2021 (Kaggle T4)
+
+- Run: `VALID`. Decision: `DISCARD` (gradient gate FAIL: inter_mlp.0 has 55% near-zero late gradients). Direction promising (A2).
+- One change vs ZN-E001: per-cycle MLP -> residual Conv1D curve encoder. 161,729 params; 12 epochs, best epoch 7.
+- Metrics: MAPE 0.3368 (−0.0083), RMSE 428 (−28), Acc@15 0.318 (−0.0225), corr 0.43 (was 0.26), pred SD 119.
+- EOL bands: <500 MAPE 0.208 / Acc@15 0.424; 500–1000 MAPE 0.588, bias −489; >1000 MAPE 0.813, bias −1000.
+- Reviewer: Codex (after usage-limit reset). Main limit: no temporal model of fade; long-life cells still underpredicted.
+- Next: ZN-E003 = add masked causal TCN with mask-aware GroupNorm (stats over observed cycles only).

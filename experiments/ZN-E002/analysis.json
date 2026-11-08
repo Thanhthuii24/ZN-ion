@@ -1,0 +1,211 @@
+{
+  "schema_version": 1,
+  "experiment_id": "ZN-E002",
+  "run_validity": "VALID",
+  "contract_answer": {
+    "question": "Does replacing only ZN-E001's flat per-cycle MLP curve encoder with a residual Conv1D curve encoder preserve mask-safe prediction spread and reduce long-life underprediction on split 2021?",
+    "outcome": "SUPPORTED",
+    "conclusion": "The isolated curve-encoder change produces the predicted accuracy signature. Against ZN-E001, MAPE improves from 0.3451 to 0.3368 (gain 0.0083, meeting the 0.008 threshold) and RMSE improves from 456.3 to 427.8 cycles (gain 28.4, exceeding 21), while Acc@15 changes from 0.3405 to 0.3180 (regression 0.0225, within the stated 0.05 allowance). The five cells above 700 cycles improve from MAPE 0.7642 and bias -846.8 to MAPE 0.7225 and bias -795.6. Prediction SD rises from 100.6 to 119.2 cycles and correlation from 0.261 to 0.428. The executed Tesla T4 train.py is identical to the reviewed/current file (MD5 63d77d389672f005fdf8c6f5f3d3611e; SHA-256 67b3c042643b8998c9f780c2bbc747982d294ea4672fa67e9ca2bd4d12d4e0d4). The exact configuration is nevertheless not promotable because its formal gradient gate fails.",
+    "evidence_paths": [
+      "record.json.proposal.modification",
+      "record.json.metrics",
+      "record.json.result",
+      "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+      "diagnostics.json.summary.overall_gradient_health",
+      "diagnostics.json.summary.layer_health",
+      "worker_meta.json",
+      "../ZN-E001/record.json.metrics"
+    ]
+  },
+  "main_symptom": "The residual curve encoder gives a small but meaningful headline and >700-cycle gain, yet the prediction range remains much too compressed for long-lived cells: prediction SD is 119.2 cycles versus target SD 407.4 (ratio 0.293), correlation is only 0.428, both 500-1000-cycle cells have zero Acc@15 with bias -488.6 cycles, and all three >1000-cycle cells have zero Acc@15 with bias -1000.3 cycles. In plain language, the model reads each cycle better, but its mean/last/delta summary still throws away too much of the degradation history to tell how long the longest-lived cells will last.",
+  "causes": [
+    {
+      "id": "C1_TEMPORAL_DEGRADATION_BOTTLENECK",
+      "class": "representation_limit",
+      "supporting_evidence": [
+        "record.json.metrics.by_eol",
+        "record.json.metrics.by_prefix",
+        "record.json.metrics.prediction_diagnostics",
+        "validation_predictions.npz[prediction,target,cell_id,prefix_length]"
+      ],
+      "contradicting_evidence": [
+        "The unchanged masked summary is not wholly uninformative: MAPE improves from 0.4035 at prefixes 1-10 to 0.3050 at prefixes 76-100.",
+        "The isolated curve encoder lowers >700-cycle MAPE from 0.7642 to 0.7225, so within-cycle shape contributes useful long-life signal."
+      ],
+      "interpretation": "The remaining error is concentrated in the life tail even though padding is invariant and every activation group is healthy. Independent aggregation of the 2,000 saved predictions gives these 20 cell results as target: mean prediction, MAPE, Acc@15: 104: 118.94, 0.1437, 0.52; 107: 112.68, 0.0531, 1.00; 108: 117.95, 0.0921, 1.00; 137: 155.07, 0.1319, 0.79; 147: 127.38, 0.1334, 0.60; 172: 169.97, 0.2165, 0.25; 174: 133.63, 0.2320, 0.15; 178: 130.98, 0.2642, 0.00; 183: 248.20, 0.3563, 0.19; 197: 203.13, 0.0334, 0.94; 201: 185.73, 0.2154, 0.31; 215: 172.27, 0.1999, 0.45; 219: 135.84, 0.3797, 0.04; 322: 350.53, 0.3506, 0.12; 415: 281.60, 0.3215, 0.00; 770: 229.74, 0.7016, 0.00; 923: 486.02, 0.4734, 0.00; 1023: 193.92, 0.8104, 0.00; 1281: 122.10, 0.9047, 0.00; 1402: 389.10, 0.7225, 0.00. The 500-1000 band has MAPE 0.5875 and bias -488.6; the >1000 band has MAPE 0.8125 and bias -1000.3. A summary of mean, endpoint, and endpoint-minus-first does not explicitly model the ordered degradation path, making a mask-safe causal temporal encoder the prioritized representation hypothesis.",
+      "missing_evidence": [
+        "A matched run adding only a masked causal temporal degradation encoder on top of ZN-E002.",
+        "Splits 42 and 2024, needed to establish that the tail gain generalizes across the paper splits."
+      ]
+    },
+    {
+      "id": "C2_FIRST_INTER_MLP_DEAD_GRADIENT",
+      "class": "optimization_warning",
+      "supporting_evidence": [
+        "diagnostics.json.summary.overall_gradient_health",
+        "diagnostics.json.summary.layer_health.inter_mlp.0",
+        "diagnostics.json.summary.branch_gradient_imbalance",
+        "diagnostics.json.summary.learning_dynamics"
+      ],
+      "contradicting_evidence": [
+        "inter_mlp.0 remains connected and updating: its later gradient/parameter ratio is 6.686e-4 and update ratio is 9.321e-4.",
+        "The layer-report aggregate classifies all blocks OK, activations are healthy, training loss falls to 0.4384 of its epoch-1 value, and no gradient is non-finite."
+      ],
+      "interpretation": "The later saved snapshot gives inter_mlp.0 a near-zero-gradient fraction of 0.5501, above the strict 0.50 dead-block threshold. Consequently diagnostics.json labels overall gradient health WARNING, the validator requires a failed gradient gate, and program.md blocks promotion of this exact full-candidate configuration. The branch gradient ratio is 164.8x, below the 1000x imbalance warning, so this is a localized first-block warning rather than global explosion or disconnection.",
+      "missing_evidence": [
+        "A selected-checkpoint or true end-of-run gradient snapshot; the automatic snapshots are at steps 1 and 185, not epoch 7 or the final step.",
+        "A matched intervention showing whether the warning persists when temporal degradation processing is inserted before the unchanged summary/head."
+      ]
+    },
+    {
+      "id": "C3_CURVE_SHAPE_SIGNAL",
+      "class": "supported_mechanism",
+      "supporting_evidence": [
+        "record.json.metrics.mape",
+        "record.json.metrics.rmse",
+        "record.json.metrics.prediction_diagnostics",
+        "validation_predictions.npz[prediction,target,cell_id]",
+        "../ZN-E001/record.json.metrics"
+      ],
+      "contradicting_evidence": [
+        "Acc@15 regresses by 0.0225 and low-EOL MAPE changes from 0.2054 to 0.2083, so the gain is not uniform.",
+        "Long-life predictions remain severely compressed and all five cells above 700 cycles still have zero Acc@15."
+      ],
+      "interpretation": "Changing only the curve encoder clears both meaningful-gain magnitudes: MAPE improves 0.00831 and RMSE improves 28.44 cycles. DB-MAPE equals ordinary MAPE because the validation set has one domain, so it improves by the same 0.00831. The overall Acc@15 regression is 0.0225, within both the prompt's 0.05 allowance and program path A/B's stricter 0.03 allowance. Prediction SD improves by 18.6 cycles and correlation by 0.167. These matched changes support retaining the residual Conv1D curve encoder as the basis of the direction, but do not override the failed gradient gate for this exact run.",
+      "missing_evidence": [
+        "Three-split confirmation of the residual curve encoder's gain.",
+        "Feature-level evidence tying particular curve shapes to the improved long-life cells."
+      ]
+    }
+  ],
+  "selected_cause_id": "C1_TEMPORAL_DEGRADATION_BOTTLENECK",
+  "layers": [
+    {
+      "name": "cycle_stem",
+      "role": "Downsample each observed V/I/Q cycle into local curve features.",
+      "evidence_paths": ["diagnostics.json.summary.layer_health.cycle_stem", "diagnostics.json.summary.activation_health.cycle_stem"],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Finite nonzero gradients and updates, late near-zero fraction 0.2909, healthy activations, and matched accuracy gains support retaining the new curve stem."
+    },
+    {
+      "name": "residual_blocks.0",
+      "role": "First residual Conv1D curve-shape block.",
+      "evidence_paths": ["diagnostics.json.summary.layer_health.residual_blocks.0", "diagnostics.json.summary.activation_health.residual_blocks"],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Late near-zero fraction 0.2224 and update ratio 0.00168 are healthy; no block-local repair is indicated."
+    },
+    {
+      "name": "residual_blocks.1",
+      "role": "Second residual Conv1D curve-shape block.",
+      "evidence_paths": ["diagnostics.json.summary.layer_health.residual_blocks.1", "diagnostics.json.summary.activation_health.residual_blocks"],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Late near-zero fraction 0.2375 and update ratio 0.000718 are healthy; the isolated curve stack improves MAPE, RMSE, spread, and correlation."
+    },
+    {
+      "name": "inter_summary",
+      "role": "Project masked mean, last-observed, and last-minus-first cycle features.",
+      "evidence_paths": ["diagnostics.json.summary.layer_health.inter_summary", "diagnostics.json.summary.activation_health.inter_summary", "diagnostics.json.summary.padding_invariance"],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "It is strongly active and padding-invariant with late near-zero fraction 0.0311; retain it as the readout after a future temporal encoder, while recognizing that summary-only degradation encoding is the main representation limit."
+    },
+    {
+      "name": "inter_mlp.0",
+      "role": "First post-summary residual MLP block.",
+      "evidence_paths": ["diagnostics.json.summary.layer_health.inter_mlp.0", "diagnostics.json.summary.activation_health.inter_mlp"],
+      "persistent_dead_gradient": true,
+      "action": "REPAIR",
+      "reason": "Its later near-zero-gradient fraction is 0.5501, above the strict 0.50 threshold. It remains connected and updating, so repair or re-measure its gradient flow rather than removing the entire healthy head stack without a matched test."
+    },
+    {
+      "name": "inter_mlp.1",
+      "role": "Second post-summary residual MLP block.",
+      "evidence_paths": ["diagnostics.json.summary.layer_health.inter_mlp.1"],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Late near-zero fraction 0.3666 and nonzero gradient/update diagnostics are within the health gates."
+    },
+    {
+      "name": "inter_mlp.2",
+      "role": "Third post-summary residual MLP block.",
+      "evidence_paths": ["diagnostics.json.summary.layer_health.inter_mlp.2"],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Late near-zero fraction 0.4279 remains below 0.50 and the block has finite gradients and updates."
+    },
+    {
+      "name": "inter_mlp.3",
+      "role": "Fourth post-summary residual MLP block.",
+      "evidence_paths": ["diagnostics.json.summary.layer_health.inter_mlp.3"],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Late near-zero fraction 0.3700 and finite nonzero update ratio show no block-local failure."
+    },
+    {
+      "name": "inter_mlp.4",
+      "role": "Fifth post-summary residual MLP block.",
+      "evidence_paths": ["diagnostics.json.summary.layer_health.inter_mlp.4"],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Late near-zero fraction 0.3233 and finite nonzero update ratio are healthy."
+    },
+    {
+      "name": "inter_mlp.5",
+      "role": "Sixth post-summary residual MLP block.",
+      "evidence_paths": ["diagnostics.json.summary.layer_health.inter_mlp.5"],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Late near-zero fraction 0.2918 and finite nonzero gradient/update diagnostics are healthy."
+    },
+    {
+      "name": "inter_mlp.6",
+      "role": "Seventh post-summary residual MLP block.",
+      "evidence_paths": ["diagnostics.json.summary.layer_health.inter_mlp.6"],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Late near-zero fraction 0.3359 and finite nonzero gradient/update diagnostics are healthy."
+    },
+    {
+      "name": "inter_mlp.7",
+      "role": "Eighth post-summary residual MLP block.",
+      "evidence_paths": ["diagnostics.json.summary.layer_health.inter_mlp.7"],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Late near-zero fraction 0.3093 and finite nonzero gradient/update diagnostics are healthy."
+    },
+    {
+      "name": "inter_mlp.8",
+      "role": "Ninth and final post-summary residual MLP block.",
+      "evidence_paths": ["diagnostics.json.summary.layer_health.inter_mlp.8", "diagnostics.json.summary.activation_health.inter_mlp"],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Late near-zero fraction 0.3563, finite updates, and healthy aggregate MLP activations do not justify replacement."
+    },
+    {
+      "name": "head",
+      "role": "Map the learned cell representation to standardized EOL.",
+      "evidence_paths": ["diagnostics.json.summary.layer_health.head", "diagnostics.json.summary.activation_health.head", "diagnostics.json.summary.branch_gradient_imbalance"],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "The head is finite, active, and updating; total branch imbalance is 164.8x, below the 1000x warning threshold."
+    }
+  ],
+  "gates": {
+    "gradient": "FAIL",
+    "screen_floor": {
+      "applicable": false,
+      "pass": null,
+      "reason": "ZN-E002 is a full_candidate run rather than a five-epoch screening run, so the screening hard floor is not applicable."
+    }
+  },
+  "decision": "DISCARD",
+  "next_action": {
+    "type": "REPAIR",
+    "summary": "Do not promote the exact ZN-E002 configuration because the formal gradient gate fails at inter_mlp.0. The residual-convolution direction is nevertheless promising under program.md section 7 because its matched MAPE gain is 0.0083 and RMSE gain is 28.4 cycles. Use its development room for one evidence-led follow-up: ZN-E003 should add a masked causal TCN degradation encoder with mask-aware normalization that computes no statistics over padded cycles on top of ZN-E002, while retaining the residual curve encoder, strict re-masking, masked summary, locked loss, and training setup. Require a healthy per-block gradient gate as well as improved long-life error before promotion.",
+    "source_cause_id": "C1_TEMPORAL_DEGRADATION_BOTTLENECK",
+    "responsible_block": "Degradation Encoder; inter_mlp.0 gradient health remains a mandatory gate"
+  }
+}

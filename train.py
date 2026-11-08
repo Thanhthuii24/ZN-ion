@@ -514,7 +514,7 @@ class MeanMaxPool1d(nn.Module):
 
 
 class MaskedTemporalConvBlock(nn.Module):
-    def __init__(self, channels, dilation):
+    def __init__(self, channels, dilation, norm_mode="group"):
         super().__init__()
         self.left_padding = 2 * dilation
         self.depthwise = nn.Conv1d(
@@ -525,12 +525,28 @@ class MaskedTemporalConvBlock(nn.Module):
             groups=channels,
         )
         self.pointwise = nn.Conv1d(channels, channels, kernel_size=1)
-        self.norm = nn.GroupNorm(8, channels)
+        if norm_mode not in {"group", "masked_group"}:
+            raise ValueError(f"Unsupported temporal normalization: {norm_mode}")
+        self.norm_mode = norm_mode
+        self.norm = nn.GroupNorm(8, channels, eps=1e-5)
+
+    def _normalize(self, values, mask):
+        if self.norm_mode == "group":
+            return self.norm(values)
+        batch, channels, cycles = values.shape
+        groups = self.norm.num_groups
+        grouped = values.reshape(batch, groups, channels // groups, cycles)
+        weights = mask[:, None, :, :].to(values.dtype)
+        count = (weights.sum(dim=(2, 3), keepdim=True) * (channels // groups)).clamp_min(1)
+        mean = (grouped * weights).sum(dim=(2, 3), keepdim=True) / count
+        variance = ((grouped - mean).square() * weights).sum(dim=(2, 3), keepdim=True) / count
+        normalized = ((grouped - mean) * torch.rsqrt(variance + self.norm.eps)).reshape_as(values)
+        return normalized * self.norm.weight[None, :, None] + self.norm.bias[None, :, None]
 
     def forward(self, values, mask):
         transformed = F.pad(values, (self.left_padding, 0))
         transformed = self.pointwise(self.depthwise(transformed))
-        values = F.relu(values + self.norm(transformed))
+        values = F.relu(values + self._normalize(transformed, mask))
         return values * mask
 
 
@@ -934,6 +950,7 @@ class ResidualConvMaskedSummary(nn.Module):
         mlp_layers=4,
         summary_mode="mean_last_delta",
         dropout=0.0,
+        temporal_norm="group",
     ):
         super().__init__()
         self.summary_mode = summary_mode
@@ -1001,6 +1018,7 @@ class ResidualConvTemporalTCNMaskedSummary(ResidualConvMaskedSummary):
         mlp_layers=7,
         summary_mode="mean_last_delta",
         dropout=0.0,
+        temporal_norm="group",
     ):
         super().__init__(
             d_model=d_model,
@@ -1011,7 +1029,7 @@ class ResidualConvTemporalTCNMaskedSummary(ResidualConvMaskedSummary):
             dropout=dropout,
         )
         self.temporal_tcn = nn.ModuleList(
-            [MaskedTemporalConvBlock(d_model, dilation) for dilation in temporal_dilations]
+            [MaskedTemporalConvBlock(d_model, dilation, temporal_norm) for dilation in temporal_dilations]
         )
 
     def encode_curve_features(self, curves):
@@ -4129,6 +4147,7 @@ def build_model(config):
             mlp_layers=config.get("mlp_layers", 7),
             summary_mode=config.get("summary_mode", "mean_last_delta"),
             dropout=config.get("dropout", 0.0),
+            temporal_norm=config.get("temporal_norm", "group"),
         )
     if variant == "residual_conv_temporal_tcn_physical_differential":
         return ResidualConvTemporalTCNPhysicalDifferential(

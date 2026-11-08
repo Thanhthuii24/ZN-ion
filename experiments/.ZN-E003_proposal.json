@@ -1,0 +1,70 @@
+{
+  "id": "ZN-E003",
+  "phase": "phase1_model",
+  "training_stage": "full_candidate",
+  "type": "architecture",
+  "model": {
+    "display_name": "ResConv-MaskedTCN",
+    "variant": "residual_conv_temporal_tcn_masked_summary",
+    "d_model": 64,
+    "residual_layers": 2,
+    "temporal_dilations": [
+      1,
+      2,
+      4,
+      8,
+      16,
+      32
+    ],
+    "temporal_norm": "masked_group",
+    "d_ff": 64,
+    "mlp_layers": 9,
+    "summary_mode": "mean_last_delta",
+    "dropout": 0.1
+  },
+  "reference_experiment": "ZN-E002",
+  "observation": "ZN-E002 (ResConv curve encoder + masked summary): MAPE 0.3368, RMSE 428, Acc@15 0.318, corr 0.43; VALID/DISCARD on the gradient gate (inter_mlp.0 55% near-zero late grads). Long-life cells still underpredicted: 500-1000 MAPE 0.588 bias -489; >1000 MAPE 0.813 bias -1000. The model has no temporal operator: the summary only sees mean, last and last-first of per-cycle features.",
+  "primary_hypothesis": "Adding a masked causal dilated TCN (6 depthwise-separable blocks, dilations 1..32, receptive field 127 cycles, GroupNorm statistics over observed cycles only) between the curve encoder and the masked summary lets the model encode the fade trajectory (rate and curvature over cycles), which separates long-life cells: 500-1000 and >1000 band MAPE lower than ZN-E002 and overall MAPE below 0.3288 (ZN-E002 - 0.008) or RMSE below 407 (-21), with a passing gradient gate.",
+  "question_inherited": "Is ZN-E002's long-life underprediction caused by the missing temporal model of fade?",
+  "unresolved_from_reference": "Whether a temporal operator over observed cycles adds information beyond mean/last/last-first pooling on ZN-coin.",
+  "why_this_experiment": "A2 follow-up 1 of the promising ResConv family. architecture.md \u00a73: missing temporal trend -> dilated causal TCN; \u00a74: causal padding + mask-aware normalization (T001 masked_group, after Codex rejected temporal GroupNorm over padded cycles); \u00a75 staging Run B: keep the curve encoder, add one degradation-encoder mechanism.",
+  "modification": "Degradation encoder only: insert 6 MaskedTemporalConvBlock (depthwise k=3 causal left padding 2*d, pointwise 1x1, masked GroupNorm(8,64), residual, ReLU, re-mask) with dilations 1,2,4,8,16,32 before the masked mean/last/last-first summary. Curve encoder, summary, 9 MLP blocks (d_ff 64, dropout 0.1) and head unchanged from ZN-E002.",
+  "changed_components": "Degradation encoder: added masked causal TCN (27,264 params). Code change T001: temporal_norm='masked_group' option (default 'group' unchanged).",
+  "held_constant_components": "Residual Conv1D curve encoder, masked summary, Linear(192->64), 9 MLP blocks, head, Relative Huber delta 0.15, Adam lr 5e-4, batch 128, seed 2021, split 2021, A2-ZN epochs, data.",
+  "controlled_variables": "Split 2021 and training seed 2021, minimum 5 / maximum 100 epochs, patience 5 after epoch 5, diagnostics every 50 steps.",
+  "expected_evidence": "Overall MAPE/Acc@15/RMSE vs ZN-E002; EOL bands 500-1000 and >1000 MAPE/bias; corr and pred SD; per-block gradient health incl. TCN and inter_mlp.0; padding sensitivity; params/time.",
+  "rejection_condition": "DISCARD if neither MAPE < 0.3288 nor RMSE < 407 (with Acc@15 regression <= 0.05), or long-life band MAPE does not improve, or gradient gate fails, or predictions collapse. Invalid under the usual protocol/finite/epoch checks.",
+  "minimum_evidence_requirements": "At least five complete epochs; finite MAPE, Acc@15, MAE, and RMSE from one checkpoint; sample and unique-cell counts for every domain; gradient, update, activation, prediction, mask, and compute diagnostics.",
+  "required_diagnostics": "Epoch learning curve; selected and minimum-MAPE epochs; CPMLP block gradients and updates; activation health; prediction spread and bias; prefix, domain, and EOL errors; domain guardrail flags; padding sensitivity; parameters, memory, time, and throughput.",
+  "estimated_budget": {
+    "experiments": 1,
+    "training_seconds": 600
+  },
+  "training": {
+    "seed": 2021,
+    "batch_size": 128,
+    "max_epochs": 100,
+    "minimum_epochs": 5,
+    "patience": 5,
+    "learning_rate": 0.0005,
+    "scheduler": "none",
+    "target_transform": "standard",
+    "main_loss": "relative_huber",
+    "relative_huber_delta": 0.15,
+    "checkpoint_mape_tolerance": 0.005,
+    "physics_loss_weight": 0.0,
+    "extra_loss_weight": 0.0,
+    "prefix_consistency_weight": 0.0,
+    "diagnostic_interval_steps": 50,
+    "required_device": "cuda"
+  },
+  "split": "2021",
+  "architecture_addendum": {
+    "responsible_stage": "Degradation Encoder",
+    "mechanism": "Masked causal dilated TCN with mask-aware GroupNorm",
+    "evidence": "ZN-E002 long-life bias -489/-1000 with no temporal operator; architecture.md \u00a73 'missing temporal trend'",
+    "shapes": "[B,100,3,300] -> ResConv [B,100,64] -> transpose [B,64,100] -> 6 TCN blocks [B,64,100] -> transpose [B,100,64] -> masked summary [B,192] -> Linear [B,64] -> 9 MLP blocks -> head [B,1]",
+    "mask_path": "features * mask before TCN; causal left padding (cycle t sees only <=t); GroupNorm mean/var over mask==1 positions only; output re-masked after every block; summary uses mask==1 mean, last at mask.sum()-1, delta last - cycle1. Local check: output identical when padded slots are noise; prefix-sensitive.",
+    "expected_evidence": "MAPE, RMSE, Acc@15 vs ZN-E002; EOL-band MAPE and bias; corr and pred SD; gradient gate; TCN block gradients/updates"
+  }
+}
