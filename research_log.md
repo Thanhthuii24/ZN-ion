@@ -151,3 +151,9 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - Phase 1 closes early (A5-ZN, user 2026-11-09; diagnostics/phase1_breakthrough_diagnosis.md).
 - Freeze candidate (Gemini, §7 among gradient-healthy runs): ZN-E010 AnchoredFade-ResConv-GELU. ZN-E005 is NOT CONFIRMED (gate FAIL on 42/2024).
 - Next: confirm ZN-E010 on splits 42 (ZN-E013) and 2024 (ZN-E014); if CONFIRMED, freeze and unlock Phase 2.
+
+## ZN-E013 — ZN-E010 config, split 42 (confirmation)
+
+- Run: `VALID`. Decision: `KEEP` (confirmation evidence; gradient gate PASS — the GELU model passes where the ReLU ZN-E006 failed).
+- Metrics: MAPE 0.3471, Acc@15 0.2470, RMSE 350.3, seen 0.337 / unseen 0.365. Bands: <500 (17) MAPE 0.275; 500–1000 bias −603; >1000 bias −949.
+- Next: ZN-E014 split 2024, then the aggregate decision.

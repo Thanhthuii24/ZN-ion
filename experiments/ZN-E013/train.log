@@ -1,0 +1,176 @@
+
+===== ZN-E013 START 2026-11-09 05:50:20 =====
+epoch=1 epoch_steps=46/46 epoch_progress=1.000 steps=46 train_compute=14.53s val_mape=0.414184 val_acc15=0.100000
+epoch=2 epoch_steps=46/46 epoch_progress=2.000 steps=92 train_compute=25.30s val_mape=0.419606 val_acc15=0.183500
+epoch=3 epoch_steps=46/46 epoch_progress=3.000 steps=138 train_compute=36.25s val_mape=0.349682 val_acc15=0.208500
+epoch=4 epoch_steps=46/46 epoch_progress=4.000 steps=184 train_compute=47.57s val_mape=0.347109 val_acc15=0.247000
+epoch=5 epoch_steps=46/46 epoch_progress=5.000 steps=230 train_compute=59.51s val_mape=0.371376 val_acc15=0.210000
+epoch=6 epoch_steps=46/46 epoch_progress=6.000 steps=276 train_compute=71.83s val_mape=0.404498 val_acc15=0.132500
+epoch=7 epoch_steps=46/46 epoch_progress=7.000 steps=322 train_compute=83.45s val_mape=0.377608 val_acc15=0.215000
+epoch=8 epoch_steps=46/46 epoch_progress=8.000 steps=368 train_compute=94.84s val_mape=0.368680 val_acc15=0.220500
+epoch=9 epoch_steps=46/46 epoch_progress=9.000 steps=414 train_compute=106.33s val_mape=0.366640 val_acc15=0.208000
+{
+  "metrics": {
+    "mape": 0.3471085692639451,
+    "acc15": 0.247,
+    "mae": 183.72832073211669,
+    "rmse": 350.2902899922968,
+    "prediction_diagnostics": {
+      "prediction_mean": 186.28579711914062,
+      "prediction_std": 67.11648559570312,
+      "prediction_min": -62.155242919921875,
+      "prediction_max": 374.53021240234375,
+      "target_mean": 351.3999938964844,
+      "target_std": 336.43756103515625,
+      "prediction_to_target_std_ratio": 0.19949165422908813,
+      "mean_signed_relative_error": -0.19201725721359253,
+      "relative_error_std": 0.37546077370643616,
+      "prediction_target_correlation": 0.4927761915176725,
+      "extreme_prediction_count": 4
+    },
+    "by_prefix": {
+      "01-10": {
+        "mape": 0.4192776614792163,
+        "acc15": 0.1,
+        "mae": 221.75672348022462,
+        "rmse": 395.9724513256318,
+        "bias": -207.3641815185547,
+        "relative_bias": -0.2942425608634949,
+        "prediction_mean": 144.03582763671875,
+        "target_mean": 351.3999938964844,
+        "sample_count": 200,
+        "unique_cell_count": 20
+      },
+      "11-25": {
+        "mape": 0.4165040226192758,
+        "acc15": 0.12,
+        "mae": 213.008521677653,
+        "rmse": 386.4464116709335,
+        "bias": -191.41552734375,
+        "relative_bias": -0.23142178356647491,
+        "prediction_mean": 159.98448181152344,
+        "target_mean": 351.3999938964844,
+        "sample_count": 300,
+        "unique_cell_count": 20
+      },
+      "26-50": {
+        "mape": 0.3876067984669837,
+        "acc15": 0.184,
+        "mae": 191.25880029296874,
+        "rmse": 360.08097819042524,
+        "bias": -161.0047149658203,
+        "relative_bias": -0.1361183077096939,
+        "prediction_mean": 190.39527893066406,
+        "target_mean": 351.3999938964844,
+        "sample_count": 500,
+        "unique_cell_count": 20
+      },
+      "51-75": {
+        "mape": 0.31287789813527833,
+        "acc15": 0.31,
+        "mae": 166.39152670288087,
+        "rmse": 325.74008904949017,
+        "bias": -144.97769165039062,
+        "relative_bias": -0.1370071917772293,
+        "prediction_mean": 206.4223175048828,
+        "target_mean": 351.3999938964844,
+        "sample_count": 500,
+        "unique_cell_count": 20
+      },
+      "76-100": {
+        "mape": 0.2703361022902667,
+        "acc15": 0.382,
+        "mae": 160.75515353393556,
+        "rmse": 320.5090673342486,
+        "bias": -156.6793975830078,
+        "relative_bias": -0.23839344084262848,
+        "prediction_mean": 194.72061157226562,
+        "target_mean": 351.3999938964844,
+        "sample_count": 500,
+        "unique_cell_count": 20
+      }
+    },
+    "by_domain": {
+      "ZN-coin": {
+        "mape": 0.3471085692639451,
+        "acc15": 0.247,
+        "mae": 183.72832073211669,
+        "rmse": 350.2902899922968,
+        "bias": -165.1141815185547,
+        "relative_bias": -0.19201725721359253,
+        "prediction_mean": 186.28579711914062,
+        "target_mean": 351.3999938964844,
+        "sample_count": 2000,
+        "unique_cell_count": 20
+      }
+    },
+    "by_eol": {
+      "high_>1000": {
+        "mape": 0.7753017660700177,
+        "acc15": 0.0,
+        "mae": 949.1390760803223,
+        "rmse": 982.7853581450764,
+        "bias": -949.1390380859375,
+        "relative_bias": -0.7753017544746399,
+        "prediction_mean": 256.8609313964844,
+        "target_mean": 1206.0,
+        "sample_count": 200,
+        "unique_cell_count": 2
+      },
+      "low_<500": {
+        "mape": 0.27478874489017646,
+        "acc15": 0.29058823529411765,
+        "mae": 69.03029532039866,
+        "rmse": 96.22507108457611,
+        "bias": -47.131324768066406,
+        "relative_bias": -0.09232837706804276,
+        "prediction_mean": 175.1627960205078,
+        "target_mean": 222.2941131591797,
+        "sample_count": 1700,
+        "unique_cell_count": 17
+      },
+      "middle_500-1000": {
+        "mape": 0.7201591900058688,
+        "acc15": 0.0,
+        "mae": 602.7732420349121,
+        "rmse": 604.0895063648402,
+        "bias": -602.7732543945312,
+        "relative_bias": -0.7201592326164246,
+        "prediction_mean": 234.22677612304688,
+        "target_mean": 837.0,
+        "sample_count": 100,
+        "unique_cell_count": 1
+      }
+    }
+  },
+  "result": {
+    "benchmark_round": "BATTERYLIFE-ZN-COIN-R1",
+    "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
+    "type": "architecture",
+    "seed": 2021,
+    "training_compute_seconds": 106.326,
+    "validation_seconds": 22.072,
+    "wall_seconds": 155.555,
+    "num_steps": 414,
+    "runner_version": "r4-relative-huber-v2",
+    "steps_per_sec": 3.893689,
+    "num_params": 98113,
+    "model_bytes_fp32": 392452,
+    "peak_device_memory_bytes": 2619652096,
+    "best_epoch": 4,
+    "minimum_validation_mape": 0.3471085692639451,
+    "checkpoint_mape_tolerance": 0.005,
+    "best_epoch_complete": true,
+    "best_epoch_steps": 46,
+    "steps_per_epoch": 46,
+    "completed_epochs": 9,
+    "last_epoch": 9,
+    "last_epoch_steps": 46,
+    "epoch_progress": 9.0,
+    "stop_reason": "early_stopping",
+    "status": "pending_analysis",
+    "description": "None vs ZN-E010: identical model and training; only BL_SPLIT=42.",
+    "device": "cuda"
+  }
+}
+===== ZN-E013 COMPLETE =====
