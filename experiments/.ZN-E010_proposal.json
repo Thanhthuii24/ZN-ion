@@ -60,5 +60,5 @@
     "mask_path": "h_1 = cycle index 0 (always observed); g_t multiplied by mask; mean over mask==1, last at mask.sum()-1, delta last - first. tests/test_anchored_fade.py: padding invariance and cycle-1 dependence.",
     "expected_evidence": "MAPE, RMSE, Acc@15, DB-MAPE (= MAPE) vs ZN-E005; EOL bands; gradient gate incl. fade_encoder"
   },
-  "smoke_evidence": "pending CUDA smoke ZN-E010S"
+  "smoke_evidence": "CUDA smoke ZN-E010S on Kaggle Tesla T4: identical config, 92 optimizer steps, worker preflight passed, finite (val MAPE 0.4173 -> 0.3731, not quality evidence), gradient health HEALTHY in every block incl. fade_encoder, all activations HEALTHY, executed train.py md5 = reviewed. Artifacts: diagnostics/ZN-E010S_cuda_smoke/."
 }
