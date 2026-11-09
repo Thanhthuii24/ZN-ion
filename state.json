@@ -4,14 +4,14 @@
   "research_mode": "model_search_no_physics",
   "phase": "phase1_model",
   "phase_status": "architecture_search",
-  "workflow_status": "running_remote",
+  "workflow_status": "task_for_executor",
   "protocol_status": "locked",
   "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
   "run_approved": true,
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
-  "current_experiment": "ZN-E011",
-  "next_experiment_id": "ZN-E011",
-  "next_action": "T005 rate-aware fade input; ZN-E011",
+  "current_experiment": null,
+  "next_experiment_id": "ZN-E012",
+  "next_action": "T006 identity-preserving relative-fade residual; ZN-E012; user decision on A5 early Phase-1 closure",
   "active_architecture_parent": "ZN-E005",
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -110,7 +110,7 @@
       "experiment": "ZN-E010",
       "status": "promising_A2",
       "follow_ups_used": 1,
-      "consecutive_discards": 1
+      "consecutive_discards": 2
     }
   ],
   "test_status": "unused",
@@ -122,14 +122,14 @@
     "hard_cap_valid_architecture_experiments": 50,
     "meaningful_mape_gain": 0.008,
     "meaningful_acc15_gain": 0.02,
-    "valid_architecture_experiments": 8,
+    "valid_architecture_experiments": 9,
     "architecture_families_covered": [
       "residual_conv_masked_summary",
       "residual_conv_temporal_tcn_masked_summary",
       "phase_split_resconv_masked_summary",
       "anchored_fade_resconv_masked_summary"
     ],
-    "valid_runs_since_meaningful_gain": 3,
+    "valid_runs_since_meaningful_gain": 4,
     "promotion_eligible_incomplete_runs": [],
     "meaningful_rmse_gain": 21
   },
@@ -155,12 +155,12 @@
     },
     "counter": "optimizer_training_compute_seconds",
     "usage": {
-      "experiments": 11,
-      "training_seconds": 1397.11
+      "experiments": 12,
+      "training_seconds": 1543.33
     },
     "remaining": {
-      "experiments": 139,
-      "training_seconds": 248602.89
+      "experiments": 138,
+      "training_seconds": 248456.67
     },
     "exhausted": false,
     "status": "active"
@@ -245,5 +245,11 @@
     "source": "BatteryLife data_split_recorder.py",
     "rule": "screen on split 2021; KEEP candidates confirmed on 42 and 2024; compare mean \u00b1 std over the 3 splits (as the paper)"
   },
-  "phase2_notes": "Long-life (>1000 cycles) underprediction ~ -1000 on every run; Relative Huber dL/dyhat = \u00b1delta/y underweights long-life cells 6-13x. Phase-2 candidates: stat_tail_balance (loss.md \u00a74.7), cell-balanced weighting, label-free physics P0/P4b/P2."
+  "phase2_notes": "Long-life (>1000 cycles) underprediction ~ -1000 on every run; Relative Huber dL/dyhat = \u00b1delta/y underweights long-life cells 6-13x. Phase-2 candidates: stat_tail_balance (loss.md \u00a74.7), cell-balanced weighting, label-free physics P0/P4b/P2.",
+  "phase1_early_closure_candidate": {
+    "amendment": "A5",
+    "evidence": "Shared long-life underprediction (>1000 cycles bias -930..-1070, Acc@15 0) on 8 architectures and 3 splits; split-2021 MAPE floor 0.32-0.34 with per-cell MAPE corr 0.90; Relative Huber dL/dyhat = \u00b1delta/y underweights long-life cells 6-13x",
+    "needs": "diagnostics/phase1_breakthrough_diagnosis.md, A4 directions check, user agreement",
+    "status": "asked user 2026-11-09"
+  }
 }

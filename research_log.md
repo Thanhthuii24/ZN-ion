@@ -136,3 +136,11 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - Metrics: MAPE 0.3325, Acc@15 0.3665, RMSE 425.0; corr 0.48 (highest of all runs), pred SD 124. Bands: <500 MAPE 0.200 / Acc@15 0.489; 500–1000 bias −533; >1000 bias −970 (RMSE −75 vs ZN-E005).
 - Reviewer (Gemini): Family 4 PROMISING under A2 (up to 3 follow-ups). Phase 1 now covers 4 families (8 valid architecture runs).
 - Next: ZN-E011 = rate-aware fade input [h_t, h_t − h_1, (h_t − h_1)/t] (one change; Gemini also suggested zero-init, deferred to keep one mechanism).
+
+## ZN-E011 — AnchoredFade + fade-rate input, split 2021 (Family 4 follow-up 1)
+
+- Run: `VALID`. Decision: `DISCARD` (§7: RMSE 415.8 passes path B but MAPE 0.3327 > 0.3246; Acc@15 0.3045 < 0.3755). Gate PASS.
+- One change vs ZN-E010: fade input [h_t, d_t] -> [h_t, d_t, d_t/max(t,1)]. 102,209 params; best epoch 8.
+- Metrics: lowest RMSE (415.8) and MAE (223.5) of all runs; corr 0.46, pred SD 142. Bands: 500–1000 bias −425; >1000 bias −978.
+- Reviewer finding: split-2021 MAPE of 8 architectures sits at 0.32–0.34 (pairwise per-cell MAPE corr 0.90) while RMSE improves 40 cycles — a Relative-Huber 1/y floor. Candidate for A5 early Phase-1 closure (needs user agreement).
+- Next: ZN-E012 (follow-up 2) = identity-preserving relative-fade residual.

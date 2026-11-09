@@ -1,0 +1,198 @@
+{
+  "schema_version": 1,
+  "experiment_id": "ZN-E011",
+  "run_validity": "VALID",
+  "contract_answer": {
+    "question": "Does explicit fade-rate information r_t = (h_t - h_1)/max(t,1) added to the anchored fade encoder input u_t = [h_t, h_t - h_1, r_t] help separate slow-fading (long-life) from fast-fading (short-life) ZN-coin cells, achieving split-2021 MAPE <= 0.3136 or RMSE <= 424.0 (with MAPE <= 0.3246) or Acc@15 >= 0.4255 vs ZN-E005 under §7?",
+    "outcome": "REFUTED",
+    "conclusion": "Reviewed by CODEX(gemini-4-argon). Apply the proposal's primary rule exactly. On split 2021 (seed 2021, Kaggle Tesla T4), ZN-E011 is a complete, finite 13-epoch run (598 optimizer steps, 146.224s training compute, 102,209 parameters, early stopping at epoch 13 with both minimum-MAPE and epsilon-Pareto selected checkpoint at epoch 8) achieving MAPE 0.332726, Acc@15 0.3045, RMSE 415.830 cycles (lowest of all runs), MAE 223.475 cycles (lowest of all runs), and DB-MAPE 0.332726 versus matched reference ZN-E010 (MAPE 0.332536, Acc@15 0.3665, RMSE 425.009 cycles, MAE 232.129 cycles, DB-MAPE 0.332536, 98,113 parameters) and active parent ZN-E005 (MAPE 0.321573, Acc@15 0.4055, RMSE 445.047 cycles, MAE 234.104 cycles, DB-MAPE 0.321573, 85,697 parameters). Against active parent ZN-E005, ZN-E011 clears Path B's primary RMSE threshold by 8.170 cycles (415.830 <= 424.0, -29.217 cycles vs ZN-E005 and -9.180 cycles vs ZN-E010), but fails Path B's accompanying MAPE guard (0.332726 > 0.3246, +0.011153 vs ZN-E005), Acc@15 guard (0.3045 < 0.3755, -0.1010 vs ZN-E005 and -0.0620 vs ZN-E010), DB-MAPE guard (0.332726 > 0.3316), and 20-cell ZN-coin domain Acc@15 guardrail (-0.1010 > 0.05 regression). Path A (MAPE <= 0.3136) and Path C (Acc@15 >= 0.4255) also fail. The gradient gate PASSES cleanly (overall_gradient_health HEALTHY, all 6 blocks OK in tools/layer_report.py with late near-zero fractions 0.0000 in cycle_stem, 0.0286 in residual_blocks.0, 0.0776 in residual_blocks.1, 0.0154 in fade_encoder, 0.0000 in inter_summary, and 0.0000 in head) and prediction spread PASSES (prediction SD 142.27 cycles = 34.92% of target SD 407.45 >= 10%, correlation 0.4562, 0 extreme negative predictions). Therefore the primary rule requires Decision: DISCARD. Under program.md §7 (amendment A2), Family 4 (AnchoredFade-ResConv-GELU) has now used 1 of 3 follow-ups and sits at 2 consecutive DISCARDs (ZN-E010, ZN-E011), leaving 2 follow-ups before the 4-consecutive-DISCARD closure limit.",
+    "evidence_paths": [
+      "record.json.proposal.rejection_condition",
+      "record.json.result",
+      "record.json.metrics",
+      "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+      "diagnostics.json.checkpoint_selection",
+      "diagnostics.json.summary.overall_gradient_health",
+      "diagnostics.json.summary.layer_health.cycle_stem",
+      "diagnostics.json.summary.layer_health.residual_blocks.0",
+      "diagnostics.json.summary.layer_health.residual_blocks.1",
+      "diagnostics.json.summary.layer_health.fade_encoder",
+      "diagnostics.json.summary.layer_health.inter_summary",
+      "diagnostics.json.summary.layer_health.head",
+      "diagnostics.json.summary.activation_health",
+      "diagnostics.json.summary.mask_health",
+      "diagnostics.json.summary.padding_invariance",
+      "worker_meta.json",
+      "../ZN-E010/record.json.metrics",
+      "../ZN-E010/diagnostics.json.summary.layer_health",
+      "../ZN-E005/record.json.metrics"
+    ]
+  },
+  "main_symptom": "Adding the per-cycle fade-rate term r_t = (h_t - h_1)/max(t,1) in ZN-E011 validates the rate mechanism on medium/long-life trajectories—cutting overall RMSE to 415.83 cycles (-9.18 vs ZN-E010, -29.22 vs ZN-E005, lowest of all runs) and MAE to 223.48 cycles (lowest of all runs), reducing 500-1000 cycle bias by +108.41 cycles vs ZN-E010 (-533.01 -> -424.60; MAPE 0.6388 -> 0.5171, RMSE 538.96 -> 452.14), improving >=500-cycle combined MAPE from 0.7307 (ZN-E010) and 0.7296 (ZN-E005) to 0.6842 (-0.0114 contribution to overall MAPE), and achieving the best prefix 26-50 MAPE of any run (0.3186, RMSE 420.85) with prediction SD rising to 142.27 cycles (correlation 0.4562) and all 6 blocks HEALTHY. However, overall MAPE stays stuck at 0.3327 (+0.0002 vs ZN-E010, +0.0112 vs ZN-E005) and Acc@15 drops to 0.3045 (-0.0620 vs ZN-E010, -0.1010 vs ZN-E005) because feeding raw h_t into an unanchored fade_encoder without zero-initialization or Cycle-1 masking shifts short-life (<500 cycles, 15 of 20 cells, 75% of samples) predictions upward near the 15% relative-error boundary (<500 MAPE 0.1856 [ZN-E005] -> 0.1998 [ZN-E010] -> 0.2156 [ZN-E011], adding +0.0225 to overall MAPE and dropping <500 Acc@15 from 0.5407 -> 0.4887 -> 0.4060 despite <500 RMSE improving from 65.82 -> 65.57 -> 63.44 cycles).",
+  "causes": [
+    {
+      "id": "C1_RATE_TERM_REDUCES_MEDIUM_LIFE_BIAS_BUT_UNANCHORED_H_T_INPUT_SHIFTS_SHORT_LIFE_CALIBRATION",
+      "class": "architecture_mechanism_tradeoff",
+      "supporting_evidence": [
+        "record.json.metrics",
+        "record.json.metrics.prediction_diagnostics",
+        "record.json.metrics.by_prefix.01-10",
+        "record.json.metrics.by_prefix.11-25",
+        "record.json.metrics.by_prefix.26-50",
+        "record.json.metrics.by_prefix.51-75",
+        "record.json.metrics.by_prefix.76-100",
+        "record.json.metrics.by_eol.low_<500",
+        "record.json.metrics.by_eol.middle_500-1000",
+        "record.json.metrics.by_eol.high_>1000",
+        "diagnostics.json.summary.layer_health.fade_encoder",
+        "diagnostics.json.summary.activation_health.fade_encoder",
+        "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+        "../ZN-E010/record.json.metrics",
+        "../ZN-E005/record.json.metrics"
+      ],
+      "contradicting_evidence": [
+        "Overall RMSE reaches 415.83 cycles (-9.18 vs ZN-E010 and -29.22 vs ZN-E005, clearing Path B's <= 424.0 RMSE requirement by 8.17 cycles) and MAE reaches 223.48 cycles (-8.65 vs ZN-E010 and -10.63 vs ZN-E005), both the best of any run to date.",
+        "Even within the <500-cycle band, absolute error improves vs ZN-E005 and ZN-E010: <500 RMSE drops from 65.82 (ZN-E005) and 65.57 (ZN-E010) to 63.44 cycles, and <500 signed bias improves from -25.94 (ZN-E010) to -13.00 cycles."
+      ],
+      "interpretation": "Comparing ZN-E011 directly against matched reference ZN-E010 proves that adding r_t = (h_t - h_1)/max(t,1) resolves the prefix-rate blindness on medium-life cells diagnosed in ZN-E010: on ZN-coin_432-3 (EOL 923), prefix predictions rise from [166.0, 396.3, 470.2, 476.9, 453.9] in ZN-E010 to [183.1, 542.1, 666.4, 686.1, 663.8] in ZN-E011 (cell MAPE 0.538 -> 0.346), and on ZN-coin_433-3 (EOL 770) from 200.7 to 240.1 mean cycles, cutting 500-1000 bias from -533.01 to -424.60 cycles and >=500 combined MAPE from 0.7307 to 0.6842 (-0.0114 overall MAPE gain). Simultaneously, fade_encoder late grad-to-parameter ratio improves 2.4x (0.00136 -> 0.00328) and activation L2 norm moderates from 5.103 to 2.397. However, because u_t = [h_t, d_t, r_t] still feeds the raw static representation h_t into fade_encoder and adds fade_encoder(u_t) directly to h_t without zero-initialization or Cycle-1 masking, fade_encoder([h_1, 0, 0]) is non-zero at Cycle 1 and acts as an unanchored static offset. This shifts predictions upward on short-life cells (mean prediction 166.0 -> 178.9 cycles on <500): the two charge-first short-life cells ZN-coin_429-1 (EOL 137: pred 144.4 [E005] -> 183.1 [E010] -> 202.3 [E011], MAPE 0.061 -> 0.336 -> 0.477) and ZN-coin_402-1 (EOL 104: pred 103.9 -> 112.0 -> 118.2, MAPE 0.024 -> 0.077 -> 0.137, Acc@15 1.00 -> 0.62) together with ZN-coin_445-3 (EOL 183: pred 211.5 -> 251.7, Acc@15 0.55 -> 0.00) push <500 MAPE from 0.1856 (E005) and 0.1998 (E010) to 0.2156 (+0.0225 overall MAPE regression vs E005), erasing the >=500 MAPE gain and preventing Path B's MAPE <= 0.3246 and Acc@15 >= 0.3755 guards from passing.",
+      "missing_evidence": [
+        "Testing whether isolating fade_encoder to pure zero-anchored degradation inputs [d_t, r_t] = [h_t - h_1, (h_t - h_1)/max(t,1)] (removing raw h_t from fade_encoder input, masking t=0, and zero-initializing the final Linear layer so g_1 = h_1 exactly) retains ZN-E011's <= 424.0 RMSE while restoring ZN-E005's <500 calibration (MAPE <= 0.3246, Acc@15 >= 0.3755)."
+      ]
+    },
+    {
+      "id": "C2_STRUCTURAL_MAPE_FLOOR_AND_RMSE_MAPE_DECOUPLING_UNDER_LOCKED_RELATIVE_HUBER",
+      "class": "loss_objective_limit",
+      "supporting_evidence": [
+        "record.json.metrics.by_eol.high_>1000",
+        "record.json.metrics.by_eol.middle_500-1000",
+        "record.json.metrics.by_eol.low_<500",
+        "diagnostics.json.epoch_history",
+        "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+        "../ZN-E001/record.json.metrics",
+        "../ZN-E002/record.json.metrics",
+        "../ZN-E003/record.json.metrics",
+        "../ZN-E004/record.json.metrics",
+        "../ZN-E005/record.json.metrics",
+        "../ZN-E008/record.json.metrics",
+        "../ZN-E009/record.json.metrics",
+        "../ZN-E010/record.json.metrics"
+      ],
+      "contradicting_evidence": [
+        "Architecture changes have consistently improved RMSE across 4 families: from 456.26 (ZN-E001) and 445.05 (ZN-E005) to 425.01 (ZN-E010) and 415.83 (ZN-E011, -29.22 cycles vs ZN-E005), while raising prediction-target correlation from 0.258 (ZN-E001) and 0.276 (ZN-E005) to 0.456-0.479 (ZN-E010/E011) and cutting MAE from 248.1 to 223.5 cycles."
+      ],
+      "interpretation": "Assessment of split-2021 MAPE plateau across 8 architectures (ZN-E001..ZN-E005, ZN-E008..ZN-E011): Across all 8 non-collapsed architectures spanning 4 distinct families, validation MAPE is confined to 0.3216-0.3635 (7 of 8 within a 0.0153 band: 0.3216-0.3369) and the pairwise correlation of per-cell MAPE across the 20 validation cells is 0.9046 (min 0.7857), even as RMSE improves by 40.4 cycles (456.26 -> 415.83). This decoupling is caused by the mathematical structure of locked sample-level Relative Huber (delta = 0.15) on the skewed 20-cell ZN-coin split: (1) In the linear regime (|rel_err| > 0.15), the gradient wrt prediction scales inversely with target life, dL/dy_hat = +/- delta / y. The 15 short-life cells (EOL 104-415, mean 191.9, 75% of samples) receive 6.4x to 11.9x larger per-sample gradients than the 3 high-life cells (EOL 1023-1402, mean 1235.3, 15% of samples) and 4.4x larger gradients than the 2 middle-life cells (EOL 770-923, mean 846.5, 10% of samples). Combined with the 75% sample share, ~95% of total gradient pull anchors predictions near the short-life mode (~180-215 cycles), leaving every architecture with -970 to -1071 cycles of bias on >1000-cycle cells (82-88% of total MSE and a fixed ~0.120 floor on overall MAPE) plus ~0.055 from 500-1000 cells (~0.171-0.183 combined MAPE contribution from >=500 cells). (2) Because d(MAPE)/dy_hat = +/- 1/(N*y) while d(MSE)/dy_hat = 2*(y_hat - y)/N, raising predictions by +100 cycles on a 1235-cycle cell cuts MSE by ~190,000 cycles^2 (strongly lowering RMSE) but reduces overall MAPE by only 0.012, whereas a +15-20 cycle upward drift on a 137-cycle cell changes MSE by only ~2,000 cycles^2 (invisible in RMSE) while adding +0.022 to overall MAPE and crossing the 15% Acc@15 cliff. Consequently, under locked Phase-1 Relative Huber, architecture changes cannot substantially lower overall MAPE below ~0.31-0.32; however, under program.md §7 Path B, an architecture DOES NOT need to lower MAPE below 0.3216 to achieve KEEP—it only needs RMSE <= 424.0 (which ZN-E011 already achieves at 415.83) while keeping MAPE <= 0.3246 and Acc@15 >= 0.3755. Moreover, Phase 1 cannot close today without a 3-split confirmed model (ZN-E005 failed the gradient gate on splits 42/2024 in ZN-E006/E007, and valid_architecture_experiments is 9 vs 20 required for ordinary stop, or A5 early closure which requires user agreement + a 3-split confirmed candidate). Therefore, the fastest evidence-led path to Phase 2 is to win Path B (or confirm a GELU-healthy candidate across splits 2021/42/2024) and then request A5 early Phase-1 closure to unlock Phase-2 tail-balanced / physics losses.",
+      "missing_evidence": [
+        "A 3-split gradient-healthy confirmed candidate (via Family 4 Path B KEEP or a GELU-repaired ResConv-MaskedSummary-H0 confirmation on splits 2021/42/2024) to satisfy the Phase-1 freeze prerequisite before invoking A5 early closure or reaching the stopping rule."
+      ]
+    },
+    {
+      "id": "C3_HEALTHY_GRADIENT_AND_ACTIVATION_FLOW_ACROSS_ALL_SIX_BLOCKS",
+      "class": "optimization_resolution",
+      "supporting_evidence": [
+        "diagnostics.json.summary.overall_gradient_health",
+        "diagnostics.json.summary.layer_health.cycle_stem",
+        "diagnostics.json.summary.layer_health.residual_blocks.0",
+        "diagnostics.json.summary.layer_health.residual_blocks.1",
+        "diagnostics.json.summary.layer_health.fade_encoder",
+        "diagnostics.json.summary.layer_health.inter_summary",
+        "diagnostics.json.summary.layer_health.head",
+        "diagnostics.json.summary.activation_health",
+        "diagnostics.json.summary.branch_gradient_imbalance"
+      ],
+      "contradicting_evidence": [
+        "Healthy gradients across all 6 blocks (0.00% near-zero in cycle_stem, inter_summary, and head; 1.54% in fade_encoder) do not prevent short-life over-prediction when fade_encoder adds an unanchored residual to h_t."
+      ],
+      "interpretation": "All 6 blocks in ZN-E011 report status OK in tools/layer_report.py with zero non-finite gradients, zero dead blocks, exact padding invariance (0.0), and branch gradient imbalance ratio 84.13x (well below the 1000x warning threshold). Compared with ZN-E010, adding the rate input increased fade_encoder's late grad-to-parameter ratio from 0.00136 to 0.00328 and reduced its maximum activation L2 norm from 5.103 to 2.397, confirming that the GELU-backed ResConv + fade_encoder optimization path is completely healthy.",
+      "missing_evidence": [
+        "Three-split confirmation on splits 2021, 42, and 2024 once split-2021 KEEP is achieved."
+      ]
+    }
+  ],
+  "selected_cause_id": "C1_RATE_TERM_REDUCES_MEDIUM_LIFE_BIAS_BUT_UNANCHORED_H_T_INPUT_SHIFTS_SHORT_LIFE_CALIBRATION",
+  "layers": [
+    {
+      "name": "cycle_stem",
+      "role": "Downsample each 300-point (V, I, Q) cycle curve via 3 strided Conv1d+GELU layers (3->32->64->64).",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.cycle_stem",
+        "diagnostics.json.summary.activation_health.cycle_stem"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Status is HEALTHY (OK in layer_report.py) with late near-zero gradient fraction 0.0, late grad-to-parameter ratio 0.0244, update ratio 0.00216, and activation zero_fraction_max 0.0. Retain unchanged."
+    },
+    {
+      "name": "residual_blocks.0",
+      "role": "First GroupNorm-normalized ResidualCurveBlock(64, groups=8) extracting intra-cycle curve features.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.residual_blocks.0",
+        "diagnostics.json.summary.activation_health.residual_blocks"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Status is HEALTHY (OK in layer_report.py) with late near-zero gradient fraction 0.0286, late grad-to-parameter ratio 0.00905, and update ratio 0.00101. Retain unchanged."
+    },
+    {
+      "name": "residual_blocks.1",
+      "role": "Second GroupNorm-normalized ResidualCurveBlock(64, groups=8) completing the 64-channel per-cycle curve encoding h_t.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.residual_blocks.1",
+        "diagnostics.json.summary.activation_health.residual_blocks"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Status is HEALTHY (OK in layer_report.py) with late near-zero gradient fraction 0.0776, late grad-to-parameter ratio 0.00547, and update ratio 0.00112. Retain unchanged."
+    },
+    {
+      "name": "fade_encoder",
+      "role": "Per-cycle rate-aware anchored fade MLP (Linear 192->64, GELU, Linear 64->64) applied to u_t = [h_t, h_t - h_1, (h_t - h_1)/max(t,1)] and added residually to h_t before masked summary pooling.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.fade_encoder",
+        "diagnostics.json.summary.activation_health.fade_encoder",
+        "diagnostics.json.summary.branch_gradient_imbalance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "REPAIR",
+      "reason": "Status is HEALTHY (OK in layer_report.py) with late near-zero gradient fraction 0.0154, late grad-to-parameter ratio 0.00328 (up 2.4x from 0.00136 in ZN-E010), and update ratio 0.00283, driving overall RMSE down to 415.83 cycles (lowest of all runs, <= 424.0 Path B target) and cutting 500-1000 bias by +108.41 cycles vs ZN-E010. However, because u_t includes raw h_t and fade_encoder is not zero-anchored at Cycle 1, fade_encoder([h_1, 0, 0]) is non-zero and perturbs static short-life (<500) calibration (charge-first ZN-coin_429-1 MAPE 0.061 -> 0.477, <500 MAPE 0.1856 -> 0.2156), blocking Path B's MAPE <= 0.3246 and Acc@15 >= 0.3755 guards. Repair in ZN-E012 by feeding pure zero-anchored fade inputs [d_t, r_t] (removing raw h_t from fade_encoder input), zero-initializing the output Linear layer, and masking t=0 so g_1 = h_1 is exact."
+    },
+    {
+      "name": "inter_summary",
+      "role": "Linear projection mapping the 192-dimensional masked cycle summary [mean, last, last - first] to 64 dimensions before the GELU readout.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.inter_summary",
+        "diagnostics.json.summary.activation_health.inter_summary",
+        "diagnostics.json.summary.padding_invariance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Status is HEALTHY (OK in layer_report.py) with late near-zero gradient fraction 0.0, late grad-to-parameter ratio 0.0432, update ratio 0.00205, and exact padding invariance (0.0). Retain unchanged."
+    },
+    {
+      "name": "head",
+      "role": "Linear readout mapping the 64-dimensional GELU summary state to scalar standardized EOL.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.head",
+        "diagnostics.json.summary.activation_health.head",
+        "diagnostics.json.summary.branch_gradient_imbalance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Status is HEALTHY (OK in layer_report.py) with late near-zero gradient fraction 0.0, late grad-to-parameter ratio 0.2758, update ratio 0.000285, and zero extreme negative predictions (min +106.50 cycles). Retain unchanged."
+    }
+  ],
+  "gates": {
+    "gradient": "PASS",
+    "screen_floor": {
+      "applicable": false,
+      "pass": null,
+      "reason": "ZN-E011 is a full_candidate run on split 2021 (13 completed epochs), not a five-epoch screening run."
+    }
+  },
+  "decision": "DISCARD",
+  "next_action": {
+    "type": "REPAIR",
+    "summary": "ZN-E011 is VALID + DISCARD under the proposal's primary rule against active parent ZN-E005: although it achieves the lowest RMSE (415.83 cycles <= 424.0, -29.22 vs ZN-E005 and -9.18 vs ZN-E010) and lowest MAE (223.48 cycles) of all runs and passes the gradient gate across all 6 blocks, it fails Path B's MAPE guard (0.3327 > 0.3246), Acc@15 guard (0.3045 < 0.3755), and DB-MAPE guard (0.3327 > 0.3316). Family 4 A2 status: 3 follow-ups budget, 1 used (ZN-E011), 2 consecutive DISCARDs (ZN-E010, ZN-E011), 2 follow-ups remaining. Cross-architecture assessment shows that locked Relative Huber downweights >1000-cycle gradients by 6.4x-11.9x (~1/y), creating a structural split-2021 MAPE floor (~0.32-0.34, pairwise 20-cell MAPE correlation 0.9046 across 8 architectures) while allowing RMSE to improve by 40.4 cycles; thus Phase 1 should aim to secure a 3-split gradient-healthy confirmed candidate via Path B (RMSE <= 424.0 with preserved <500 calibration) and then invoke program.md §10 A5 early Phase-1 closure (or close Family 4 and confirm ZN-E005+GELU across splits 2021/42/2024) rather than expecting architecture search alone to break the Relative Huber MAPE floor. Single most evidence-led change for ZN-E012 (Family 4 Follow-up 2, Degradation Encoder only): isolate fade_encoder to pure zero-anchored relative fade inputs u_t = [d_t, r_t] = [h_t - h_1, (h_t - h_1)/max(t,1)] (removing raw h_t from fade_encoder input so it cannot shift static Cycle-1 cell identity, reducing fade_encoder input 192->128 back to 98,113 params) with zero-initialized output Linear(64->64) and Cycle-1 mask (t > 0) on the residual g_t = h_t + (t > 0) * fade_encoder([d_t, r_t]), preserving ZN-E005's exact Cycle-1 and <500 calibration (MAPE <= 0.3246, Acc@15 >= 0.3755) while retaining ZN-E011's rate-driven RMSE <= 424.0 for Path B KEEP.",
+    "source_cause_id": "C1_RATE_TERM_REDUCES_MEDIUM_LIFE_BIAS_BUT_UNANCHORED_H_T_INPUT_SHIFTS_SHORT_LIFE_CALIBRATION",
+    "responsible_block": "Degradation Encoder (fade_encoder in AnchoredFadeResConvMaskedSummary: pure relative-fade input [d_t, r_t] without raw h_t + Cycle-1-masked zero-init residual)"
+  }
+}
