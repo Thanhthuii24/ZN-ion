@@ -96,3 +96,10 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - Metrics: MAPE 0.3216, Acc@15 0.4055, RMSE 445.0, DB-MAPE 0.3216; pred SD 116, corr 0.28. Paper Zn-ion 3-split: CPMLP 0.558 / 0.297, CPTransformer 0.515 / 0.202.
 - Bands: <500 MAPE 0.186 / Acc@15 0.541; 500–1000 bias −469; >1000 bias −1049 (main limit).
 - Next: confirm on splits 42 (ZN-E006) and 2024 (ZN-E007); then a Zn-ion charge/discharge phase-split curve encoder.
+
+## ZN-E006 — ZN-E005 config, split 42 (confirmation)
+
+- Run: `VALID`. Decision: `DISCARD` (gradient gate FAIL: head and inter_summary NEAR_ZERO_DOMINANT). Reviewer: Gemini 4 Argon (acting Codex; user switched reviewer 2026-11-09).
+- Metrics: MAPE 0.3386, Acc@15 0.2475, RMSE 347.7, seen 0.324 / unseen 0.366. Bands: <500 (17) MAPE 0.268; 500–1000 (1) bias −596; >1000 (2) bias −932.
+- Aggregate: ZN-E005 NOT CONFIRMED (needs all three KEEP). ResConv family closed (A2 follow-ups used).
+- Next: ZN-E007 split 2024 for the 3-split record only; new family = phase-split curve encoder (T002 -> ZN-E008).

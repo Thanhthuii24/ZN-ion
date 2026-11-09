@@ -4,14 +4,14 @@
   "research_mode": "model_search_no_physics",
   "phase": "phase1_model",
   "phase_status": "architecture_search",
-  "workflow_status": "awaiting_reviewer_analysis",
+  "workflow_status": "running_remote",
   "protocol_status": "locked",
   "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
   "run_approved": true,
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
-  "current_experiment": "ZN-E006",
-  "next_experiment_id": "ZN-E006",
-  "next_action": "ZN-E006 fetched (split 42: MAPE 0.3386, Acc@15 0.2475, RMSE 347.7, gradient WARNING head+inter_summary NEAR_ZERO_DOMINANT); reviewer analysis.json pending (Codex limit until 15:33; Gemini agy not logged in). Then decide ZN-E007 and the phase-split curve-encoder family.",
+  "current_experiment": null,
+  "next_experiment_id": "ZN-E007",
+  "next_action": "ZN-E007 split 2024 (record only); T002 phase-split encoder; ZN-E008 proposal",
   "active_architecture_parent": "ZN-E005",
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -84,9 +84,8 @@
     {
       "family": "ResConv-MaskedSummary",
       "experiment": "ZN-E005",
-      "status": "KEEP_split2021_pending_42_2024",
-      "follow_ups_used": 3,
-      "consecutive_discards": 0
+      "status": "NOT_CONFIRMED (ZN-E006 gradient gate FAIL); closed",
+      "follow_ups_used": 3
     }
   ],
   "test_status": "unused",
@@ -129,12 +128,12 @@
     },
     "counter": "optimizer_training_compute_seconds",
     "usage": {
-      "experiments": 6,
-      "training_seconds": 589.39
+      "experiments": 7,
+      "training_seconds": 757.96
     },
     "remaining": {
-      "experiments": 144,
-      "training_seconds": 249410.61
+      "experiments": 143,
+      "training_seconds": 249242.04
     },
     "exhausted": false,
     "status": "active"
@@ -203,7 +202,7 @@
   "phase1_scope": "most accurate model; size not limited in Phase 1; compression in Phase 3",
   "agents": {
     "lead": "claude (VS Code)",
-    "reviewer": "codex sol; while out of tokens: gemini-4-argon-high",
+    "reviewer": "gemini-4-argon (user 2026-11-09: switch reviewer to Gemini)",
     "executor": "gemini-3.8-flash-high",
     "reporter": "gemini-4-argon-high",
     "guide": "multiagent.md"

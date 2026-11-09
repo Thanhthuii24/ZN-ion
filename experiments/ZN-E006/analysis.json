@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "experiment_id": "ZN-E006",
+  "run_validity": "VALID",
+  "contract_answer": {
+    "question": "Does the ZN-E005 ResConv-MaskedSummary-H0 configuration generalise to paper split 42 with a finite, healthy-gradient run whose metrics enter the 3-split confirmation aggregate?",
+    "outcome": "REFUTED",
+    "conclusion": "Apply the proposal's per-run disposition and candidate-level aggregate rule exactly. On split 42 (BL_SPLIT=42), ZN-E006 is a complete, finite Tesla T4 run (14 epochs, 644 steps, early stopping after selected epoch 9) achieving MAPE 0.338589, Acc@15 0.2475, RMSE 347.720 cycles, MAE 179.606 cycles, DB-MAPE 0.338589, seen-condition MAPE 0.323669 (Acc@15 0.272308), and unseen-condition MAPE 0.366296 (Acc@15 0.201429), compared with ZN-E005 on split 2021 (MAPE 0.321573, Acc@15 0.4055, RMSE 445.047 cycles). Although split-42 headline MAPE (0.3386) stays well below the paper CPTransformer 3-split reference (0.515), Acc@15 drops by 0.1580 relative to split 2021 (to 0.2475, below the paper CPMLP reference 0.297), and diagnostics.json reports overall_gradient_health WARNING because both required readout layers exceed the strict 0.50 late near-zero-gradient threshold at step 185: inter_summary has late near-zero fraction 0.546227 and head has 0.507692 (both flagged NEAR_ZERO_DOMINANT). Under the proposal's pre-registered per-run disposition (VALID + gradient gate PASS -> KEEP; VALID + gradient gate FAIL -> DISCARD) and the same gradient-gate rule used in ZN-E002, ZN-E004, and ZN-E005, ZN-E006 is DISCARD. Consequently, the candidate-level aggregate over splits 2021/42/2024 is NOT CONFIRMED because the aggregate rule requires all three split runs to be KEEP. Regarding ZN-E007 (split 2024): it cannot change the NOT CONFIRMED disposition, so it is not required for promotion gating; it should only be run if the lead wants a complete 3-split reference record (mean +/- std across 2021/42/2024) for ResConv-MaskedSummary-H0 before opening the new Zn-ion phase-split curve-encoder family (handoff/tasks/T002.md). Masks and activations are HEALTHY, padding is INVARIANT (0.0), and the executed train.py MD5 fb6893f80e3e2f4134f716ed6abe2fe4 matches the reviewed workspace file.",
+    "evidence_paths": [
+      "record.json.proposal.rejection_condition",
+      "record.json.result",
+      "record.json.metrics",
+      "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+      "diagnostics.json.summary.overall_gradient_health",
+      "diagnostics.json.summary.layer_health.inter_summary",
+      "diagnostics.json.summary.layer_health.head",
+      "diagnostics.json.summary.mask_health",
+      "diagnostics.json.summary.padding_invariance",
+      "diagnostics.json.nonfinite_detected",
+      "worker_meta.json",
+      "../ZN-E005/record.json.metrics",
+      "../ZN-E005/diagnostics.json.summary.layer_health"
+    ]
+  },
+  "main_symptom": "On split 42, the unchanged ResConv-MaskedSummary-H0 configuration fails the gradient gate (overall WARNING: inter_summary late near-zero fraction 0.5462 and head 0.5077, both > 0.50) and loses 0.1580 Acc@15 compared with split 2021 (0.2475 vs 0.4055; seen MAPE 0.3237, unseen MAPE 0.3663). While RMSE is lower (347.7 vs 445.0 cycles) because split 42 has only 2 validation cells above 1000 cycles and 1 cell in 500-1000 cycles (vs 3 and 2 in split 2021), severe tail compression persists: the 17 short-life cells (<500 cycles) have MAPE 0.2678, Acc@15 0.2912, and bias -42.1 cycles, whereas the single 500-1000-cycle cell has MAPE 0.7118, Acc@15 0.0, and bias -595.8 cycles (14.72% of total squared error) and the two >1000-cycle cells have MAPE 0.7540, Acc@15 0.0, and bias -931.9 cycles (79.15% of total squared error; combined >=500-cycle cells contribute 93.88% of squared error). Prediction SD is compressed to 77.29 cycles vs target SD 336.44 cycles (ratio 0.2297, correlation 0.4509).",
+  "causes": [
+    {
+      "id": "C1_SPLIT42_READOUT_GRADIENT_SPARSITY",
+      "class": "optimization_warning",
+      "supporting_evidence": [
+        "diagnostics.json.summary.overall_gradient_health",
+        "diagnostics.json.summary.layer_health.inter_summary",
+        "diagnostics.json.summary.layer_health.head",
+        "diagnostics.json.samples",
+        "../ZN-E005/diagnostics.json.summary.layer_health.inter_summary",
+        "../ZN-E005/diagnostics.json.summary.layer_health.head"
+      ],
+      "contradicting_evidence": [
+        "Both layers remain connected and actively updating at step 185: inter_summary has grad_to_parameter_ratio 0.0761 and update_ratio 0.00148, while head has grad_to_parameter_ratio 0.7098 and update_ratio 0.000677.",
+        "All activation groups (cycle_stem, residual_blocks, inter_summary, head) report status HEALTHY with active_feature_fraction_min 1.0 and zero nonfinite values.",
+        "Training loss decreases monotonically from 0.05775 at epoch 1 to 0.03620 at epoch 14 (ratio 0.6268), and validation MAPE improves from 0.4065 at epoch 1 to 0.3386 at epoch 9."
+      ],
+      "interpretation": "In ZN-E005 on split 2021, inter_summary had a late near-zero-gradient fraction of 0.4571, just below the 0.50 warning boundary. On split 42, the same 192-to-64 summary projection and ReLU readout cross that boundary at step 185 (inter_summary 0.546227, head 0.507692), triggering NEAR_ZERO_DOMINANT and failing the formal gradient gate. Because head (64->1) and inter_summary (192->64 + ReLU) cannot be removed, and their gradient sparsity arises when many ReLU units or summary coordinates become inactive or low-sensitivity on a given split, this points to weak, phase-entangled upstream cycle features rather than head depth.",
+      "missing_evidence": [
+        "Gradient snapshots at the selected epoch-9 checkpoint (step 414) in addition to the automatic step-1 and step-185 snapshots.",
+        "A matched run with phase-split curve encoding on split 2021 and confirmation splits to test whether richer per-phase features keep inter_summary and head below the 0.50 near-zero-gradient threshold."
+      ]
+    },
+    {
+      "id": "C2_PHASE_ENTANGLED_CURVE_AND_TAIL_COMPRESSION",
+      "class": "representation_limit",
+      "supporting_evidence": [
+        "record.json.metrics.by_eol.low_<500",
+        "record.json.metrics.by_eol.middle_500-1000",
+        "record.json.metrics.by_eol.high_>1000",
+        "record.json.metrics.prediction_diagnostics",
+        "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+        "../ZN-E005/record.json.metrics.by_eol"
+      ],
+      "contradicting_evidence": [
+        "Prefix progression still helps on split 42: validation MAPE improves from 0.4003 at prefixes 1-10 to 0.2593 at prefixes 76-100 (Acc@15 from 0.100 to 0.432).",
+        "Prediction-target correlation on split 42 is 0.4509, higher than split 2021's 0.2762.",
+        "Split 42 has only 3 validation cells with EOL >= 500 cycles, so tail subgroup metrics carry small-sample variance."
+      ],
+      "interpretation": "Across both splits 2021 and 42, ResConv-MaskedSummary-H0 compresses predictions into a narrow band (85.8 to 441.8 cycles on split 42; SD ratio 0.2297) and fails to predict any cell with EOL >= 500 within 15% (bias -595.8 on 500-1000 and -931.9 on >1000, accounting for 93.88% of total squared error). Moreover, short-life (<500) MAPE degrades from 0.1856 on split 2021 to 0.2678 on split 42 (and unseen-condition MAPE reaches 0.3663 vs seen 0.3237). Because prepare.preprocess_cycle concatenates 150 charge points and 150 discharge points into a single 300-point axis, a shared Conv1D stack blurs the step discontinuity at index 150 and forces identical filters onto electrochemically distinct Zn plating/stripping and cathode insertion/extraction phases. Separating charge and discharge into dedicated Conv1D branches is the primary representation hypothesis (T002).",
+      "missing_evidence": [
+        "A matched split-2021 run of PhaseSplitResConvMaskedSummary (ZN-E008, handoff/tasks/T002.md) holding summary_mode, inter_summary, head, and training constant.",
+        "Split-2024 evaluation (ZN-E007) if a complete 3-split baseline record for the shared-conv family is desired."
+      ]
+    },
+    {
+      "id": "C3_CROSS_SPLIT_REGIME_AND_CHECKPOINT_SENSITIVITY",
+      "class": "validation_uncertainty",
+      "supporting_evidence": [
+        "diagnostics.json.epoch_history",
+        "diagnostics.json.checkpoint_selection",
+        "diagnostics.json.summary.learning_dynamics",
+        "record.json.metrics.by_domain",
+        "../ZN-E005/record.json.metrics"
+      ],
+      "contradicting_evidence": [
+        "Early stopping and checkpoint selection functioned as designed, selecting epoch 9 (both minimum MAPE 0.3386 and highest Acc@15 0.2475) out of 14 completed epochs.",
+        "Padding invariance is exact (0.0 output change) and mask observed fractions are stable (0.510 to 0.536)."
+      ],
+      "interpretation": "With only 20 validation cells per paper split, shifting from split 2021 to split 42 changes the target EOL distribution (mean 351.4, SD 336.4, 17 cells <500 on split 42 vs mean 409.9, SD 407.4, 15 cells <500 on split 2021) and exposes a 0.0426 gap between seen-condition MAPE (0.3237) and unseen-condition MAPE (0.3663). Validation Acc@15 also fluctuates across epochs (0.2475 at epoch 9, 0.1855 at epoch 10, 0.2370 at epoch 11, 0.1695 at epoch 13). This confirms why single-split KEEP results cannot be promoted without passing the 3-split confirmation protocol.",
+      "missing_evidence": [
+        "Whether split 2024 (ZN-E007) exhibits the same unseen-condition gap and readout gradient warning."
+      ]
+    }
+  ],
+  "selected_cause_id": "C2_PHASE_ENTANGLED_CURVE_AND_TAIL_COMPRESSION",
+  "layers": [
+    {
+      "name": "cycle_stem",
+      "role": "Downsample each observed 300-point V/I/Q cycle into local curve features.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.cycle_stem",
+        "diagnostics.json.summary.activation_health.cycle_stem"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "REPLACE",
+      "reason": "Grad-to-parameter ratio (last 0.0177), near-zero fraction (last 0.3156 <= 0.50), update ratio (last 0.00126), and activations are HEALTHY on split 42, but sliding a single Conv1D stem across the [charge 150 | discharge 150] boundary entangles distinct Zn-ion phases. Replace with separate charge_stem and discharge_stem branches in the new PhaseSplitResConvMaskedSummary family (T002)."
+    },
+    {
+      "name": "residual_blocks.0",
+      "role": "First shared residual Conv1D block for within-cycle curve-shape encoding.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.residual_blocks.0",
+        "diagnostics.json.summary.activation_health.residual_blocks"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "REPLACE",
+      "reason": "Individually HEALTHY on split 42 (late near-zero fraction 0.1904, late update ratio 0.000988), but shares filters across charge and discharge halves. Replace with phase-specific ResidualCurveBlock branches in the new phase-split curve-encoder family (T002)."
+    },
+    {
+      "name": "residual_blocks.1",
+      "role": "Second shared residual Conv1D block for within-cycle curve-shape encoding.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.residual_blocks.1",
+        "diagnostics.json.summary.activation_health.residual_blocks"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "REPLACE",
+      "reason": "Individually HEALTHY on split 42 (late near-zero fraction 0.1347, late update ratio 0.000633), but part of the shared-phase curve stack that fails 3-split confirmation. Replace with phase-specific ResidualCurveBlock branches in T002."
+    },
+    {
+      "name": "inter_summary",
+      "role": "Project the masked mean, last-observed, and last-minus-first cycle summary from 192 to 64 dimensions with ReLU.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.inter_summary",
+        "diagnostics.json.summary.activation_health.inter_summary",
+        "diagnostics.json.summary.padding_invariance"
+      ],
+      "persistent_dead_gradient": true,
+      "action": "REPAIR",
+      "reason": "Flagged WARNING (NEAR_ZERO_DOMINANT) on split 42 because its late near-zero-gradient fraction reaches 0.546227 (> 0.50), failing the gradient gate despite nonzero updates (0.00148) and exact padding invariance. Because ResConv head tuning is closed after 3 follow-ups, do not tune inter_summary directly; repair its upstream input diversity via the phase-split curve encoder (T002) while holding the 192->64 summary projection fixed as a matched control."
+    },
+    {
+      "name": "head",
+      "role": "Map the 64-dimensional summary representation directly to standardized EOL.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.head",
+        "diagnostics.json.summary.activation_health.head",
+        "diagnostics.json.summary.branch_gradient_imbalance"
+      ],
+      "persistent_dead_gradient": true,
+      "action": "REPAIR",
+      "reason": "Flagged WARNING (NEAR_ZERO_DOMINANT) on split 42 with a late near-zero-gradient fraction of 0.507692 (> 0.50), just over the threshold because more than half of the 64 upstream ReLU summary features have near-zero gradients at step 185. Retain the linear output layer structure and repair gradient flow by replacing the upstream curve encoder with the phase-split encoder (T002)."
+    }
+  ],
+  "gates": {
+    "gradient": "FAIL",
+    "screen_floor": {
+      "applicable": false,
+      "pass": null,
+      "reason": "ZN-E006 is a confirmation run (14 completed epochs), not a five-epoch screening run."
+    }
+  },
+  "decision": "DISCARD",
+  "next_action": {
+    "type": "NEW_HYPOTHESIS",
+    "summary": "Per the proposal's exact per-run rule (VALID + gradient gate FAIL -> DISCARD), ZN-E006 is DISCARD because diagnostics.json reports overall_gradient_health WARNING with inter_summary (0.5462) and head (0.5077) above the 0.50 late near-zero-gradient limit. This immediately makes the ResConv-MaskedSummary-H0 candidate aggregate NOT CONFIRMED (which requires all three splits 2021/42/2024 to be KEEP, mean MAPE < 0.515, and mean Acc@15 > 0.297). Should ZN-E007 (split 2024) still run? For promotion gating, NO: ZN-E007 cannot overturn NOT CONFIRMED, and skipping it saves a remote run and advances directly to ZN-E008. However, if the lead wants a complete 3-split reference row (2021/42/2024 mean +/- std) for ResConv-MaskedSummary-H0 in the paper comparison table, ZN-E007 (~3 min on Kaggle T4) may still be executed purely for the 3-split record before starting the new family. In either case, no further ResConv tuning is permitted (all 3 A2 follow-ups are exhausted); the next architectural hypothesis is the new Zn-ion phase-split curve-encoder family (PhaseSplitResConvMaskedSummary, handoff/tasks/T002.md), which splits each 300-point cycle at index 150 into dedicated charge and discharge Conv1D + ResidualCurveBlock branches before the unchanged masked mean/last/delta summary and direct head.",
+    "source_cause_id": "C2_PHASE_ENTANGLED_CURVE_AND_TAIL_COMPRESSION",
+    "responsible_block": "Curve Encoder: replace shared Conv1D stack with charge/discharge phase-split branches (handoff/tasks/T002.md)"
+  }
+}
