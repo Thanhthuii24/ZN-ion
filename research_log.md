@@ -103,3 +103,11 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - Metrics: MAPE 0.3386, Acc@15 0.2475, RMSE 347.7, seen 0.324 / unseen 0.366. Bands: <500 (17) MAPE 0.268; 500–1000 (1) bias −596; >1000 (2) bias −932.
 - Aggregate: ZN-E005 NOT CONFIRMED (needs all three KEEP). ResConv family closed (A2 follow-ups used).
 - Next: ZN-E007 split 2024 for the 3-split record only; new family = phase-split curve encoder (T002 -> ZN-E008).
+
+## ZN-E007 — ZN-E005 config, split 2024 (record)
+
+- Run: `VALID`. Decision: `DISCARD` (gradient gate FAIL: head, inter_summary NEAR_ZERO_DOMINANT). Reviewer: Gemini 4 Argon.
+- Metrics: MAPE 0.3360, Acc@15 0.3475, RMSE 356.8, seen 0.356 / unseen 0.158.
+- 3-split ZN-E005 config (2021/42/2024): MAPE 0.332 ± 0.009, Acc@15 0.334 ± 0.080, RMSE 383 ± 54 — beats paper Zn-ion CPTransformer (0.515 ± 0.067 / 0.202) and CPMLP (0.558 ± 0.034 / 0.297), but NOT CONFIRMED by the gate rule.
+- Family-level issue: the ReLU between inter_summary and head gives NEAR_ZERO_DOMINANT on 2 of 3 splits.
+- T002 (executor Gemini 3.8): PhaseSplitResConvMaskedSummary added; refactor of ResidualCurveBlock/ResidualConvMaskedSummary verified behaviour-preserving (same state_dict and outputs for ZN-E002/E003/E005 configs; E005 checkpoint loads).

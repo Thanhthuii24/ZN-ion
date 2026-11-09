@@ -441,16 +441,18 @@ class SimpleConvMean(nn.Module):
 
 
 class ResidualCurveBlock(nn.Module):
-    def __init__(self, channels, dilation):
+    def __init__(self, channels, dilation=1, groups=8):
         super().__init__()
+        if channels % groups != 0:
+            groups = math.gcd(channels, groups)
         self.conv1 = nn.Conv1d(
             channels, channels, kernel_size=3, padding=dilation, dilation=dilation
         )
         self.conv2 = nn.Conv1d(
             channels, channels, kernel_size=3, padding=dilation, dilation=dilation
         )
-        self.norm1 = nn.GroupNorm(8, channels)
-        self.norm2 = nn.GroupNorm(8, channels)
+        self.norm1 = nn.GroupNorm(groups, channels)
+        self.norm2 = nn.GroupNorm(groups, channels)
 
     def forward(self, values):
         residual = values
@@ -953,6 +955,7 @@ class ResidualConvMaskedSummary(nn.Module):
         temporal_norm="group",
     ):
         super().__init__()
+        self.d_model = d_model
         self.summary_mode = summary_mode
         self.cycle_stem = nn.Sequential(
             nn.Conv1d(3, 32, kernel_size=7, stride=2, padding=3),
@@ -973,13 +976,16 @@ class ResidualConvMaskedSummary(nn.Module):
         )
         self.head = nn.Linear(d_model, 1)
 
-    def forward(self, curves, mask):
-        if mask is None:
-            raise ValueError("ResidualConvMaskedSummary requires a cycle mask")
+    def encode_curve_features(self, curves):
         batch, cycles = curves.shape[:2]
         values = self.cycle_stem(curves.reshape(batch * cycles, 3, 300))
         values = self.residual_blocks(values)
-        values = self.curve_pool(values).squeeze(-1).reshape(batch, cycles, -1)
+        return self.curve_pool(values).squeeze(-1).reshape(batch, cycles, -1)
+
+    def forward(self, curves, mask):
+        if mask is None:
+            raise ValueError("ResidualConvMaskedSummary requires a cycle mask")
+        values = self.encode_curve_features(curves)
 
         weights = mask.to(values.dtype).unsqueeze(-1)
         mean = (values * weights).sum(dim=1) / weights.sum(dim=1).clamp_min(1.0)
@@ -1000,6 +1006,91 @@ class ResidualConvMaskedSummary(nn.Module):
         modules = {
             "cycle_stem": self.cycle_stem,
             "residual_blocks": self.residual_blocks,
+            "inter_summary": self.inter_summary,
+        }
+        if len(self.inter_mlp):
+            modules["inter_mlp"] = self.inter_mlp[-1]
+        modules["head"] = self.head
+        return modules
+
+
+class PhaseSplitResConvMaskedSummary(ResidualConvMaskedSummary):
+    """Phase-split residual Conv1D curve encoder + prefix-aware masked summary pooling + MLP."""
+
+    def __init__(
+        self,
+        d_model=64,
+        residual_layers=1,
+        d_ff=256,
+        mlp_layers=0,
+        summary_mode="mean_last_delta",
+        dropout=0.0,
+    ):
+        super().__init__(
+            d_model=d_model,
+            residual_layers=residual_layers,
+            d_ff=d_ff,
+            mlp_layers=mlp_layers,
+            summary_mode=summary_mode,
+            dropout=dropout,
+        )
+        del self.cycle_stem
+        del self.residual_blocks
+
+        if d_model % 2 != 0:
+            raise ValueError(
+                f"PhaseSplitResConvMaskedSummary requires even d_model, got {d_model}"
+            )
+        self.d_model = d_model
+        phase_width = d_model // 2
+        groups = 8 if phase_width % 8 == 0 else 4
+        self.charge_stem = nn.Sequential(
+            nn.Conv1d(3, 16, kernel_size=7, stride=2, padding=3),
+            nn.ReLU(),
+            nn.Conv1d(16, 32, kernel_size=5, stride=2, padding=2),
+            nn.ReLU(),
+            nn.Conv1d(32, phase_width, kernel_size=3, stride=2, padding=1),
+            nn.ReLU(),
+        )
+        self.discharge_stem = nn.Sequential(
+            nn.Conv1d(3, 16, kernel_size=7, stride=2, padding=3),
+            nn.ReLU(),
+            nn.Conv1d(16, 32, kernel_size=5, stride=2, padding=2),
+            nn.ReLU(),
+            nn.Conv1d(32, phase_width, kernel_size=3, stride=2, padding=1),
+            nn.ReLU(),
+        )
+        self.charge_residual = nn.Sequential(
+            *[ResidualCurveBlock(phase_width, dilation=1, groups=groups) for _ in range(residual_layers)]
+        )
+        self.discharge_residual = nn.Sequential(
+            *[ResidualCurveBlock(phase_width, dilation=1, groups=groups) for _ in range(residual_layers)]
+        )
+
+    def _encode_phase(self, phase_curves, stem, residual):
+        batch, cycles = phase_curves.shape[:2]
+        flat = phase_curves.reshape(batch * cycles, 3, phase_curves.shape[-1])
+        values = stem(flat)
+        values = residual(values)
+        return self.curve_pool(values).squeeze(-1).reshape(batch, cycles, -1)
+
+    def encode_charge(self, curves):
+        return self._encode_phase(curves[..., :150], self.charge_stem, self.charge_residual)
+
+    def encode_discharge(self, curves):
+        return self._encode_phase(curves[..., 150:], self.discharge_stem, self.discharge_residual)
+
+    def encode_curve_features(self, curves):
+        charge_feat = self.encode_charge(curves)
+        discharge_feat = self.encode_discharge(curves)
+        return torch.cat([charge_feat, discharge_feat], dim=-1)
+
+    def diagnostic_modules(self):
+        modules = {
+            "charge_stem": self.charge_stem,
+            "discharge_stem": self.discharge_stem,
+            "charge_residual": self.charge_residual,
+            "discharge_residual": self.discharge_residual,
             "inter_summary": self.inter_summary,
         }
         if len(self.inter_mlp):
@@ -4130,6 +4221,15 @@ def build_model(config):
             dropout=config.get("dropout", 0.0),
         )
 
+    if variant == "phase_split_resconv_masked_summary":
+        return PhaseSplitResConvMaskedSummary(
+            d_model=config.get("d_model", 64),
+            residual_layers=config.get("residual_layers", 1),
+            d_ff=config.get("d_ff", 256),
+            mlp_layers=config.get("mlp_layers", 0),
+            summary_mode=config.get("summary_mode", "mean_last_delta"),
+            dropout=config.get("dropout", 0.0),
+        )
     if variant == "residual_conv_masked_summary":
 
         return ResidualConvMaskedSummary(

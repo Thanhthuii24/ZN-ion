@@ -4,14 +4,14 @@
   "research_mode": "model_search_no_physics",
   "phase": "phase1_model",
   "phase_status": "architecture_search",
-  "workflow_status": "running_remote",
+  "workflow_status": "proposal_needed",
   "protocol_status": "locked",
   "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
   "run_approved": true,
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
   "current_experiment": null,
-  "next_experiment_id": "ZN-E007",
-  "next_action": "ZN-E007 split 2024 (record only); T002 phase-split encoder; ZN-E008 proposal",
+  "next_experiment_id": "ZN-E008",
+  "next_action": "ZN-E008 phase-split ResConv (T002 code done)",
   "active_architecture_parent": "ZN-E005",
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -78,6 +78,18 @@
       "mape": 0.434598,
       "acc15": 0.1,
       "note": "collapsed to ~140 cycles"
+    },
+    "own_best_3split": {
+      "config": "ZN-E005 ResConv-MaskedSummary-H0",
+      "runs": [
+        "ZN-E005",
+        "ZN-E006",
+        "ZN-E007"
+      ],
+      "mape": "0.332\u00b10.009",
+      "acc15": "0.334\u00b10.080",
+      "rmse": "383\u00b154",
+      "status": "NOT_CONFIRMED (gradient gate FAIL on 42/2024)"
     }
   },
   "active_candidates": [
@@ -128,12 +140,12 @@
     },
     "counter": "optimizer_training_compute_seconds",
     "usage": {
-      "experiments": 7,
-      "training_seconds": 757.96
+      "experiments": 8,
+      "training_seconds": 1041.68
     },
     "remaining": {
-      "experiments": 143,
-      "training_seconds": 249242.04
+      "experiments": 142,
+      "training_seconds": 248958.32
     },
     "exhausted": false,
     "status": "active"
