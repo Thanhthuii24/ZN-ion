@@ -1130,13 +1130,19 @@ class AnchoredFadeResConvMaskedSummary(ResidualConvMaskedSummary):
         dropout=0.0,
         activation="gelu",
         fade_hidden=64,
+        fade_input="anchor",
     ):
         if activation not in {"relu", "gelu"}:
             raise ValueError(
                 f"activation must be 'relu' or 'gelu', got {activation!r}"
             )
+        if fade_input not in {"anchor", "anchor_rate"}:
+            raise ValueError(
+                f"fade_input must be 'anchor' or 'anchor_rate', got {fade_input!r}"
+            )
         self.activation = activation
         self.fade_hidden = fade_hidden
+        self.fade_input = fade_input
         super().__init__(
             d_model=d_model,
             residual_layers=residual_layers,
@@ -1155,8 +1161,9 @@ class AnchoredFadeResConvMaskedSummary(ResidualConvMaskedSummary):
                 nn.GELU(),
             )
         act_module = nn.GELU() if activation == "gelu" else nn.ReLU()
+        fade_in_dim = 3 * d_model if fade_input == "anchor_rate" else 2 * d_model
         self.fade_encoder = nn.Sequential(
-            nn.Linear(2 * d_model, fade_hidden),
+            nn.Linear(fade_in_dim, fade_hidden),
             act_module,
             nn.Linear(fade_hidden, d_model),
         )
@@ -1169,7 +1176,15 @@ class AnchoredFadeResConvMaskedSummary(ResidualConvMaskedSummary):
     def encode_cycle_states(self, curves, mask=None):
         h = self.encode_curve_features(curves)
         h_1 = h[:, 0:1, :]
-        u = torch.cat([h, h - h_1], dim=-1)
+        d = h - h_1
+        if self.fade_input == "anchor":
+            u = torch.cat([h, d], dim=-1)
+        elif self.fade_input == "anchor_rate":
+            t = torch.arange(h.size(1), device=h.device, dtype=h.dtype).view(1, -1, 1)
+            rate = d / torch.clamp(t, min=1.0)
+            u = torch.cat([h, d, rate], dim=-1)
+        else:
+            raise ValueError(f"Unknown fade_input: {self.fade_input!r}")
         g = self.fade_encoder(u) + h
         if mask is not None:
             g = g * mask.to(g.dtype).unsqueeze(-1)
@@ -4330,6 +4345,7 @@ def build_model(config):
             dropout=config.get("dropout", 0.0),
             activation=config.get("activation", "gelu"),
             fade_hidden=config.get("fade_hidden", 64),
+            fade_input=config.get("fade_input", "anchor"),
         )
     if variant == "residual_conv_masked_summary":
 

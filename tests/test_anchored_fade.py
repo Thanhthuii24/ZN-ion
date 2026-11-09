@@ -134,8 +134,156 @@ def test_finite_forward_and_param_count():
     assert torch.isfinite(output).all(), "Non-finite outputs detected"
 
     num_params = sum(param.numel() for param in model.parameters())
-    print("params:", num_params)
+    print("params (anchor default):", num_params)
     assert num_params == 98113, f"Expected 98113 parameters, got {num_params}"
+    expected = torch.tensor([0.048489369451999664, 0.03065742552280426])
+    assert torch.allclose(output, expected, atol=1e-6, rtol=1e-6), (
+        f"Default anchor output changed! Expected {expected.tolist()}, got {output.tolist()}"
+    )
+
+    # Explicit fade_input="anchor" produces identical output and params
+    torch.manual_seed(7)
+    model_explicit = build_model(dict(config, fade_input="anchor")).eval()
+    with torch.no_grad():
+        output_explicit = model_explicit(inputs, mask)
+    assert torch.allclose(output, output_explicit, atol=1e-7, rtol=1e-7), (
+        "Explicit fade_input='anchor' does not match default output"
+    )
+    assert sum(p.numel() for p in model_explicit.parameters()) == 98113
+
+
+def test_anchor_rate_finite_forward_and_param_count():
+    torch.manual_seed(7)
+    config = {
+        "variant": "anchored_fade_resconv_masked_summary",
+        "d_model": 64,
+        "residual_layers": 2,
+        "d_ff": 64,
+        "mlp_layers": 0,
+        "summary_mode": "mean_last_delta",
+        "dropout": 0.1,
+        "activation": "gelu",
+        "fade_hidden": 64,
+        "fade_input": "anchor_rate",
+    }
+    model = build_model(config).eval()
+    assert model.fade_input == "anchor_rate"
+    assert model.fade_encoder[0].in_features == 3 * 64
+
+    inputs = torch.randn(2, 100, 3, 300)
+    mask = torch.zeros(2, 100)
+    mask[:, :30] = 1.0
+
+    with torch.no_grad():
+        output = model(inputs, mask)
+
+    assert output.shape == (2,), f"Expected shape (2,), got {output.shape}"
+    assert torch.isfinite(output).all(), "Non-finite outputs detected for anchor_rate"
+
+    num_params = sum(param.numel() for param in model.parameters())
+    print("params (anchor_rate):", num_params)
+    assert num_params == 102209, f"Expected 102209 parameters, got {num_params}"
+    expected = torch.tensor([0.01636943221092224, -0.009812891483306885])
+    assert torch.allclose(output, expected, atol=1e-6, rtol=1e-6), (
+        f"anchor_rate output changed! Expected {expected.tolist()}, got {output.tolist()}"
+    )
+
+
+def test_anchor_rate_padding_invariance():
+    torch.manual_seed(42)
+    config = {
+        "variant": "anchored_fade_resconv_masked_summary",
+        "d_model": 64,
+        "residual_layers": 2,
+        "d_ff": 64,
+        "mlp_layers": 0,
+        "summary_mode": "mean_last_delta",
+        "dropout": 0.1,
+        "activation": "gelu",
+        "fade_hidden": 64,
+        "fade_input": "anchor_rate",
+    }
+    model = build_model(config).eval()
+
+    curves = torch.randn(2, 100, 3, 300)
+    mask = torch.zeros(2, 100)
+    mask[:, :30] = 1.0
+
+    with torch.no_grad():
+        out_clean = model(curves, mask)
+
+        curves_noisy = curves.clone()
+        curves_noisy[:, 30:] += torch.randn_like(curves_noisy[:, 30:]) * 20.0
+        out_noisy = model(curves_noisy, mask)
+
+    assert torch.allclose(out_clean, out_noisy, atol=1e-5, rtol=1e-5), (
+        f"anchor_rate padding invariance failed: max diff = {(out_clean - out_noisy).abs().max()}"
+    )
+
+
+def test_anchor_rate_cycle1_dependence():
+    torch.manual_seed(101)
+    config = {
+        "variant": "anchored_fade_resconv_masked_summary",
+        "d_model": 64,
+        "residual_layers": 2,
+        "d_ff": 64,
+        "mlp_layers": 0,
+        "summary_mode": "mean_last_delta",
+        "dropout": 0.1,
+        "activation": "gelu",
+        "fade_hidden": 64,
+        "fade_input": "anchor_rate",
+    }
+    model = build_model(config).eval()
+
+    curves = torch.randn(2, 100, 3, 300)
+    mask = torch.zeros(2, 100)
+    mask[:, :30] = 1.0
+
+    with torch.no_grad():
+        out_base = model(curves, mask)
+
+        # 1. Mutate cycle 0 (index 0 / cycle 1): must change output
+        curves_mod_c0 = curves.clone()
+        curves_mod_c0[:, 0] += torch.randn_like(curves_mod_c0[:, 0]) * 1.0
+        out_c0 = model(curves_mod_c0, mask)
+        diff_c0 = (out_c0 - out_base).abs().max().item()
+        assert diff_c0 > 1e-4, f"anchor_rate: Mutating cycle 0 did not change output (max diff = {diff_c0})"
+
+        # 2. Mutate a padded cycle (index 50 >= 30): must not change output
+        curves_mod_padded = curves.clone()
+        curves_mod_padded[:, 50] += torch.randn_like(curves_mod_padded[:, 50]) * 15.0
+        out_padded = model(curves_mod_padded, mask)
+        assert torch.allclose(out_base, out_padded, atol=1e-5, rtol=1e-5), (
+            f"anchor_rate: Mutating padded cycle 50 changed output: max diff = {(out_base - out_padded).abs().max()}"
+        )
+
+
+def test_fade_input_options_and_validation():
+    base_config = {
+        "variant": "anchored_fade_resconv_masked_summary",
+        "d_model": 64,
+        "residual_layers": 2,
+        "d_ff": 64,
+        "mlp_layers": 0,
+        "summary_mode": "mean_last_delta",
+        "dropout": 0.1,
+        "fade_hidden": 64,
+    }
+
+    # "anchor" and "anchor_rate" allowed
+    m_anchor = build_model(dict(base_config, fade_input="anchor"))
+    assert m_anchor.fade_input == "anchor"
+    m_rate = build_model(dict(base_config, fade_input="anchor_rate"))
+    assert m_rate.fade_input == "anchor_rate"
+
+    # Invalid fade_input rejection
+    try:
+        build_model(dict(base_config, fade_input="invalid_option"))
+        assert False, "Should have raised ValueError for invalid fade_input"
+    except ValueError:
+        pass
 
 
 def test_diagnostic_modules():
@@ -220,6 +368,10 @@ if __name__ == "__main__":
     test_cycle1_dependence()
     test_zne005_backward_compatibility()
     test_finite_forward_and_param_count()
+    test_anchor_rate_finite_forward_and_param_count()
+    test_anchor_rate_padding_invariance()
+    test_anchor_rate_cycle1_dependence()
+    test_fade_input_options_and_validation()
     test_diagnostic_modules()
     test_activation_options_and_validation()
     print("All tests passed successfully!")
