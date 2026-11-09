@@ -144,3 +144,10 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - Metrics: lowest RMSE (415.8) and MAE (223.5) of all runs; corr 0.46, pred SD 142. Bands: 500–1000 bias −425; >1000 bias −978.
 - Reviewer finding: split-2021 MAPE of 8 architectures sits at 0.32–0.34 (pairwise per-cell MAPE corr 0.90) while RMSE improves 40 cycles — a Relative-Huber 1/y floor. Candidate for A5 early Phase-1 closure (needs user agreement).
 - Next: ZN-E012 (follow-up 2) = identity-preserving relative-fade residual.
+
+## ZN-E012 — identity-preserving relative-fade residual, split 2021 (Family 4 follow-up 2)
+
+- Run: `VALID`. Decision: `DISCARD` (§7 path B RMSE 423.4 passes; MAPE 0.3333, Acc@15 0.3225, DB-MAPE guards fail). Gate PASS.
+- Phase 1 closes early (A5-ZN, user 2026-11-09; diagnostics/phase1_breakthrough_diagnosis.md).
+- Freeze candidate (Gemini, §7 among gradient-healthy runs): ZN-E010 AnchoredFade-ResConv-GELU. ZN-E005 is NOT CONFIRMED (gate FAIL on 42/2024).
+- Next: confirm ZN-E010 on splits 42 (ZN-E013) and 2024 (ZN-E014); if CONFIRMED, freeze and unlock Phase 2.

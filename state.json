@@ -4,14 +4,14 @@
   "research_mode": "model_search_no_physics",
   "phase": "phase1_model",
   "phase_status": "architecture_search",
-  "workflow_status": "running_remote",
+  "workflow_status": "proposal_needed",
   "protocol_status": "locked",
   "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
   "run_approved": true,
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
-  "current_experiment": "ZN-E012",
-  "next_experiment_id": "ZN-E012",
-  "next_action": "T006 identity-preserving relative-fade residual; ZN-E012; user decision on A5 early Phase-1 closure",
+  "current_experiment": null,
+  "next_experiment_id": "ZN-E013",
+  "next_action": "ZN-E013/E014: confirm ZN-E010 on splits 42/2024; then freeze and unlock Phase 2",
   "active_architecture_parent": "ZN-E005",
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -110,7 +110,7 @@
       "experiment": "ZN-E010",
       "status": "promising_A2",
       "follow_ups_used": 2,
-      "consecutive_discards": 2
+      "consecutive_discards": 3
     }
   ],
   "test_status": "unused",
@@ -122,14 +122,14 @@
     "hard_cap_valid_architecture_experiments": 50,
     "meaningful_mape_gain": 0.008,
     "meaningful_acc15_gain": 0.02,
-    "valid_architecture_experiments": 9,
+    "valid_architecture_experiments": 10,
     "architecture_families_covered": [
       "residual_conv_masked_summary",
       "residual_conv_temporal_tcn_masked_summary",
       "phase_split_resconv_masked_summary",
       "anchored_fade_resconv_masked_summary"
     ],
-    "valid_runs_since_meaningful_gain": 4,
+    "valid_runs_since_meaningful_gain": 5,
     "promotion_eligible_incomplete_runs": [],
     "meaningful_rmse_gain": 21
   },
@@ -155,12 +155,12 @@
     },
     "counter": "optimizer_training_compute_seconds",
     "usage": {
-      "experiments": 12,
-      "training_seconds": 1543.33
+      "experiments": 13,
+      "training_seconds": 1701.27
     },
     "remaining": {
-      "experiments": 138,
-      "training_seconds": 248456.67
+      "experiments": 137,
+      "training_seconds": 248298.73
     },
     "exhausted": false,
     "status": "active"
@@ -257,5 +257,11 @@
     "evidence": "Shared long-life underprediction (>1000 cycles bias -930..-1070, Acc@15 0) on 8 architectures and 3 splits; split-2021 MAPE floor 0.32-0.34 with per-cell MAPE corr 0.90; Relative Huber dL/dyhat = \u00b1delta/y underweights long-life cells 6-13x",
     "needs": "diagnostics/phase1_breakthrough_diagnosis.md, A4 directions check, user agreement",
     "status": "user agreed 2026-11-09; pending ZN-E012 result, diagnosis doc, best-candidate three-seed confirmation"
+  },
+  "phase1_freeze_candidate": {
+    "experiment": "ZN-E010",
+    "model": "AnchoredFade-ResConv-GELU",
+    "reason": "best gradient-healthy run by \u00a77 metrics (MAPE 0.3325, Acc@15 0.3665, RMSE 425.0, corr 0.48); ZN-E005 NOT CONFIRMED (gate FAIL on 42/2024)",
+    "confirmation": "splits 42 (ZN-E013) and 2024 (ZN-E014), seed 2021, interpreted as the A1-ZN 3-split confirmation"
   }
 }
