@@ -1,7 +1,7 @@
 {
   "benchmark_round": "BATTERYLIFE-ZN-COIN-R1",
   "workflow_version": "three-phase-relative-huber-v1",
-  "research_mode": "model_search_no_physics",
+  "research_mode": "loss_search_physics",
   "phase": "phase2_loss",
   "phase_status": "phase2_start",
   "workflow_status": "proposal_needed",

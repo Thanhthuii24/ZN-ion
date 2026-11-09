@@ -1,0 +1,83 @@
+{
+  "id": "ZN-E015",
+  "phase": "phase2_loss",
+  "training_stage": "full_candidate",
+  "type": "loss",
+  "model": {
+    "display_name": "AnchoredFade-ResConv-GELU",
+    "variant": "anchored_fade_resconv_masked_summary",
+    "d_model": 64,
+    "residual_layers": 2,
+    "d_ff": 64,
+    "mlp_layers": 0,
+    "summary_mode": "mean_last_delta",
+    "dropout": 0.1,
+    "activation": "gelu",
+    "fade_hidden": 64
+  },
+  "reference_experiment": "ZN-E010",
+  "observation": "Frozen Phase-1 model ZN-E010 (AnchoredFade-ResConv-GELU): split 2021 MAPE 0.3325, Acc@15 0.3665, RMSE 425.0; 3-split MAPE 0.332\u00b10.016, Acc@15 0.324\u00b10.067. On every Phase-1 run the >1000-cycle cells are underpredicted by ~830-1070 cycles (ZN-E010: -970) and 500-1000 cells by ~300-600; diagnostics/phase1_breakthrough_diagnosis.md attributes this to Relative Huber dL/dyhat = \u00b1delta/y (6-13x weaker pull on long-life cells) and its gradient clipping above |rel err| 0.15.",
+  "primary_hypothesis": "Adding the registered statistical tail term stat_tail_balance (loss.md \u00a74.7: tau-weighted Huber on relative errors beyond \u00b10.15, under-prediction weighted by w = clip(y/mu,1,3)) with lambda2 = 0.25 x median gradient ratio raises long-life predictions without hurting short-life cells: >1000 and 500-1000 band bias shrinks, and split-2021 MAPE <= 0.3245 or RMSE <= 404.0 or Acc@15 >= 0.3865 vs ZN-E010 under \u00a77.",
+  "question_inherited": "Is the shared long-life underprediction removed by rebalancing the loss tail rather than the architecture?",
+  "unresolved_from_reference": "Whether the Relative-Huber 1/y underweighting is the cause of the long-life bias on ZN-coin.",
+  "why_this_experiment": "Phase 2 opened by A5-ZN; the diagnosis names the loss mechanism; stat_tail_balance is the registered term that targets exactly the 1/y underweighting and clipping (loss.md \u00a74.7, rank 1 in the Li-ion Argon report). Statistical, not physics; label-dependent.",
+  "modification": "Loss only: L = RelativeHuber_0.15 + lambda2 * L_tail, L_tail = mean[tau*Huber_0.5(e+) + (1-tau)*w*Huber_0.25(e-)], r=(yhat-y)/max(y,1), e+=ReLU(r-0.15), e-=ReLU(-r-0.15), w=clip(y/mu,1,3), tau=0.55, mu = train label mean; lambda2 = rho2 * median_b(||grad L_main|| / ||grad L_tail||) on 3 fixed train batches before step 1, rho2 = 0.25 (registered). Model, data and optimiser identical to ZN-E010.",
+  "changed_components": "Objective: added stat_tail_balance auxiliary term (lambda2 calibrated from gradients).",
+  "held_constant_components": "Frozen ZN-E010 architecture (98,113 params, GELU, anchored fade encoder), Relative Huber delta 0.15 main loss, Adam lr 5e-4, batch 128, seed 2021, split 2021, A2-ZN epochs, checkpoint rule, data.",
+  "controlled_variables": "Training seed 2021, split 2021, minimum 5 / maximum 100 epochs, patience 5 after epoch 5, diagnostics every 50 steps; lambda2 never tuned on validation.",
+  "expected_evidence": "MAPE/Acc@15/RMSE/DB-MAPE vs ZN-E010; EOL-band MAPE and bias (500-1000, >1000) and <500 regression; lambda2, gradient ratio R and cosine trajectory, active/under/over fractions (diagnostics physics2_calibration / physics2_steps / loss_balance); gradient gate.",
+  "rejection_condition": "Primary rule (program.md \u00a77, vs frozen reference ZN-E010 MAPE 0.3325 / RMSE 425.0 / Acc@15 0.3665 / DB-MAPE 0.3325). KEEP iff [A: MAPE <= 0.3245 AND RMSE <= 435.0] OR [B: RMSE <= 404.0 AND MAPE <= 0.3355] OR [C: Acc@15 >= 0.3865 AND MAPE <= 0.3355 AND RMSE <= 435.0], AND Acc@15 >= 0.3365 (A/B) AND DB-MAPE <= 0.3425 AND gradient gate PASS AND loss balance in band (loss.md \u00a75.3; BALANCE_FAIL -> DISCARD) AND prediction SD >= 10% of target SD; otherwise DISCARD. Secondary: >1000 / 500-1000 band bias vs ZN-E010 and <500 MAPE regression <= 0.01.",
+  "minimum_evidence_requirements": "At least five complete epochs; finite MAPE, Acc@15, MAE, and RMSE from one checkpoint; sample and unique-cell counts for every domain; gradient, update, activation, prediction, mask, and compute diagnostics.",
+  "required_diagnostics": "Epoch learning curve; selected and minimum-MAPE epochs; cycle_stem, residual_blocks, fade_encoder, inter_summary and head gradients and updates; activation health; prediction spread and bias; prefix, domain and EOL errors; padding sensitivity; parameters, memory, time, throughput. Loss balance: lambda2, R_j median, cosine, active fraction (loss.md \u00a75.3).",
+  "estimated_budget": {
+    "experiments": 1,
+    "training_seconds": 600
+  },
+  "training": {
+    "seed": 2021,
+    "batch_size": 128,
+    "max_epochs": 100,
+    "minimum_epochs": 5,
+    "patience": 5,
+    "learning_rate": 0.0005,
+    "scheduler": "none",
+    "target_transform": "standard",
+    "main_loss": "relative_huber",
+    "relative_huber_delta": 0.15,
+    "checkpoint_mape_tolerance": 0.005,
+    "physics_loss_weight": 0.0,
+    "extra_loss_weight": 0.0,
+    "prefix_consistency_weight": 0.0,
+    "diagnostic_interval_steps": 50,
+    "required_device": "cuda",
+    "physics2_type": "stat_tail_balance",
+    "physics2_rho": 0.25,
+    "tail_tau": 0.55,
+    "tail_scale_max": 3.0
+  },
+  "split": "2021",
+  "architecture_addendum": {
+    "responsible_stage": "Degradation Encoder",
+    "mechanism": "None (frozen model; loss experiment)",
+    "evidence": "Phase-2 loss experiment on the frozen ZN-E010 architecture",
+    "shapes": "[B,100,3,300] -> ResConv [B,100,64] (h_t) -> u_t=[h_t, h_t-h_1] [B,100,128] -> Linear 128->64, GELU, Linear 64->64, +h_t -> g_t [B,100,64] * mask -> masked summary [B,192] -> Linear [B,64] -> GELU -> Linear [B,1]",
+    "mask_path": "h_1 = cycle index 0 (always observed); g_t multiplied by mask; mean over mask==1, last at mask.sum()-1, delta last - first. tests/test_anchored_fade.py: padding invariance and cycle-1 dependence.",
+    "expected_evidence": "MAPE, RMSE, Acc@15, DB-MAPE (= MAPE) vs ZN-E005; EOL bands; gradient gate incl. fade_encoder"
+  },
+  "smoke_evidence": "pending CUDA smoke ZN-E015S",
+  "loss_addendum": {
+    "term": "stat_tail_balance",
+    "kind": "statistical (uses labels), not physics",
+    "formula": "tau*Huber_0.5(ReLU(r-0.15)) + (1-tau)*clip(y/mu,1,3)*Huber_0.25(ReLU(-r-0.15)), r=(yhat-y)/max(y,1)",
+    "params": {
+      "tau": 0.55,
+      "tail_scale_max": 3.0,
+      "rho2": 0.25,
+      "delta_over": 0.5,
+      "delta_under": 0.25
+    },
+    "lambda": "lambda2 = 0.25 x median gradient-norm ratio over 3 fixed train batches (all trainable params, float64), logged; never tuned on validation",
+    "balance_checks": "loss.md \u00a75.3: median R in [0.05, 2.0] after warm-up, no two consecutive R > 5, active fraction > 0; cosine logged",
+    "units": "dimensionless relative error (same scale as the main loss)"
+  }
+}
