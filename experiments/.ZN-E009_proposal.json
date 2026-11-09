@@ -1,0 +1,63 @@
+{
+  "id": "ZN-E009",
+  "phase": "phase1_model",
+  "training_stage": "full_candidate",
+  "type": "architecture",
+  "model": {
+    "display_name": "PhaseSplit-ResConv-GELU",
+    "variant": "phase_split_resconv_masked_summary",
+    "d_model": 64,
+    "residual_layers": 2,
+    "d_ff": 64,
+    "mlp_layers": 0,
+    "summary_mode": "mean_last_delta",
+    "dropout": 0.1,
+    "activation": "gelu"
+  },
+  "reference_experiment": "ZN-E008",
+  "observation": "ZN-E008 (phase-split ResConv, ReLU): MAPE 0.3313, Acc@15 0.3185, RMSE 441.1; gradient gate FAIL: charge_stem 0.589 and discharge_stem 0.629 late near-zero gradient fraction. The same dead-ReLU pattern hit inter_summary/head (the readout ReLU) in ZN-E006/E007 and inter_mlp.0 in ZN-E002/E004.",
+  "primary_hypothesis": "Replacing ReLU by GELU in the phase-split stems and the readout removes the dead-unit near-zero gradients (all blocks below 0.50 late near-zero fraction) and lets the phase-split encoder train fully, reaching ZN-E005-level accuracy: MAPE <= 0.3136 or RMSE <= 424.0 or Acc@15 >= 0.4255 vs ZN-E005 under \u00a77.",
+  "question_inherited": "Is the phase-split family limited by dead ReLU units rather than by the phase split itself?",
+  "unresolved_from_reference": "Whether ZN-E008's weaker accuracy follows from >58% dead stem gradients.",
+  "why_this_experiment": "One A2 repair of the non-promising phase-split family (Gemini ZN-E008 analysis); architecture.md \u00a73 'flat/dead layers'; the ReLU dead-gradient pattern is the recurring gate failure on every run since ZN-E002.",
+  "modification": "Activation only: nn.ReLU -> nn.GELU in charge_stem and discharge_stem (3 each), and F.relu -> F.gelu before the head. ResidualCurveBlock internals, summary, head weights and all shapes unchanged (T003; default 'relu' reproduces ZN-E008 exactly).",
+  "changed_components": "Activation function in the phase-split stems and readout (ReLU -> GELU).",
+  "held_constant_components": "Phase-split architecture and widths (49,857 params), ResidualCurveBlock, masked summary, inter_summary, head, d_model 64, dropout 0.1, Relative Huber delta 0.15, Adam lr 5e-4, batch 128, seed 2021, split 2021, A2-ZN epochs, data.",
+  "controlled_variables": "Training seed 2021, split 2021, minimum 5 / maximum 100 epochs, patience 5 after epoch 5, diagnostics every 50 steps.",
+  "expected_evidence": "MAPE/Acc@15/RMSE/DB-MAPE vs ZN-E005 and ZN-E008; per-block late near-zero fractions (stems, inter_summary, head); EOL bands; pred SD/corr; params/time.",
+  "rejection_condition": "Primary rule (program.md \u00a77, vs active parent ZN-E005 MAPE 0.3216 / RMSE 445.0 / Acc@15 0.4055 / DB-MAPE 0.3216). KEEP iff [A: MAPE <= 0.3136 AND RMSE <= 455.0] OR [B: RMSE <= 424.0 AND MAPE <= 0.3246] OR [C: Acc@15 >= 0.4255 AND MAPE <= 0.3246 AND RMSE <= 455.0], AND Acc@15 >= 0.3755 (A/B) AND DB-MAPE <= 0.3316 AND gradient gate PASS AND prediction SD >= 10% of target SD; otherwise DISCARD and close the phase-split family. Secondary: change vs ZN-E008 and stem near-zero fractions.",
+  "minimum_evidence_requirements": "At least five complete epochs; finite MAPE, Acc@15, MAE, and RMSE from one checkpoint; sample and unique-cell counts for every domain; gradient, update, activation, prediction, mask, and compute diagnostics.",
+  "required_diagnostics": "Epoch learning curve; selected and minimum-MAPE epochs; charge/discharge stem and residual gradients and updates, inter_summary and head gradients; activation health; prediction spread and bias; prefix, domain and EOL errors; padding sensitivity; parameters, memory, time, throughput.",
+  "estimated_budget": {
+    "experiments": 1,
+    "training_seconds": 600
+  },
+  "training": {
+    "seed": 2021,
+    "batch_size": 128,
+    "max_epochs": 100,
+    "minimum_epochs": 5,
+    "patience": 5,
+    "learning_rate": 0.0005,
+    "scheduler": "none",
+    "target_transform": "standard",
+    "main_loss": "relative_huber",
+    "relative_huber_delta": 0.15,
+    "checkpoint_mape_tolerance": 0.005,
+    "physics_loss_weight": 0.0,
+    "extra_loss_weight": 0.0,
+    "prefix_consistency_weight": 0.0,
+    "diagnostic_interval_steps": 50,
+    "required_device": "cuda"
+  },
+  "split": "2021",
+  "architecture_addendum": {
+    "responsible_stage": "Curve Encoder + readout activation",
+    "mechanism": "GELU instead of ReLU (dead-unit repair)",
+    "evidence": "ZN-E008 stems 0.589/0.629 near-zero; readout ReLU near-zero on ZN-E006/E007",
+    "shapes": "[B,100,3,300] -> charge [B*100,3,150] -> stem+2 res -> pool [B,100,32]; discharge same -> [B,100,32]; concat [B,100,64] -> masked summary [B,192] -> Linear [B,64] -> ReLU -> Linear [B,1]",
+    "mask_path": "per-cycle encoding (padded cycles encoded independently, GroupNorm within one cycle's phase only); mean over mask==1, last at mask.sum()-1, delta last - cycle1. tests/test_phase_split_encoder.py: padding invariance and phase isolation.",
+    "expected_evidence": "MAPE, RMSE, Acc@15, DB-MAPE vs ZN-E005 (parent) and ZN-E008 (matched); gradient gate; stem near-zero fractions"
+  },
+  "smoke_evidence": "pending CUDA smoke ZN-E009S"
+}

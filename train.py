@@ -982,6 +982,9 @@ class ResidualConvMaskedSummary(nn.Module):
         values = self.residual_blocks(values)
         return self.curve_pool(values).squeeze(-1).reshape(batch, cycles, -1)
 
+    def readout_activation(self, values):
+        return F.relu(values)
+
     def forward(self, curves, mask):
         if mask is None:
             raise ValueError("ResidualConvMaskedSummary requires a cycle mask")
@@ -1000,7 +1003,7 @@ class ResidualConvMaskedSummary(nn.Module):
         values = self.inter_summary(summary)
         for block in self.inter_mlp:
             values = block(values)
-        return self.head(F.relu(values)).squeeze(-1)
+        return self.head(self.readout_activation(values)).squeeze(-1)
 
     def diagnostic_modules(self):
         modules = {
@@ -1025,7 +1028,13 @@ class PhaseSplitResConvMaskedSummary(ResidualConvMaskedSummary):
         mlp_layers=0,
         summary_mode="mean_last_delta",
         dropout=0.0,
+        activation="relu",
     ):
+        if activation not in {"relu", "gelu"}:
+            raise ValueError(
+                f"activation must be 'relu' or 'gelu', got {activation!r}"
+            )
+        self.activation = activation
         super().__init__(
             d_model=d_model,
             residual_layers=residual_layers,
@@ -1044,21 +1053,22 @@ class PhaseSplitResConvMaskedSummary(ResidualConvMaskedSummary):
         self.d_model = d_model
         phase_width = d_model // 2
         groups = 8 if phase_width % 8 == 0 else 4
+        act_cls = nn.GELU if activation == "gelu" else nn.ReLU
         self.charge_stem = nn.Sequential(
             nn.Conv1d(3, 16, kernel_size=7, stride=2, padding=3),
-            nn.ReLU(),
+            act_cls(),
             nn.Conv1d(16, 32, kernel_size=5, stride=2, padding=2),
-            nn.ReLU(),
+            act_cls(),
             nn.Conv1d(32, phase_width, kernel_size=3, stride=2, padding=1),
-            nn.ReLU(),
+            act_cls(),
         )
         self.discharge_stem = nn.Sequential(
             nn.Conv1d(3, 16, kernel_size=7, stride=2, padding=3),
-            nn.ReLU(),
+            act_cls(),
             nn.Conv1d(16, 32, kernel_size=5, stride=2, padding=2),
-            nn.ReLU(),
+            act_cls(),
             nn.Conv1d(32, phase_width, kernel_size=3, stride=2, padding=1),
-            nn.ReLU(),
+            act_cls(),
         )
         self.charge_residual = nn.Sequential(
             *[ResidualCurveBlock(phase_width, dilation=1, groups=groups) for _ in range(residual_layers)]
@@ -1066,6 +1076,11 @@ class PhaseSplitResConvMaskedSummary(ResidualConvMaskedSummary):
         self.discharge_residual = nn.Sequential(
             *[ResidualCurveBlock(phase_width, dilation=1, groups=groups) for _ in range(residual_layers)]
         )
+
+    def readout_activation(self, values):
+        if self.activation == "gelu":
+            return F.gelu(values)
+        return super().readout_activation(values)
 
     def _encode_phase(self, phase_curves, stem, residual):
         batch, cycles = phase_curves.shape[:2]
@@ -4229,6 +4244,7 @@ def build_model(config):
             mlp_layers=config.get("mlp_layers", 0),
             summary_mode=config.get("summary_mode", "mean_last_delta"),
             dropout=config.get("dropout", 0.0),
+            activation=config.get("activation", "relu"),
         )
     if variant == "residual_conv_masked_summary":
 
