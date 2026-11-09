@@ -260,6 +260,132 @@ def test_anchor_rate_cycle1_dependence():
         )
 
 
+def test_relative_rate_init_identity_and_param_count():
+    torch.manual_seed(7)
+    config = {
+        "variant": "anchored_fade_resconv_masked_summary",
+        "d_model": 64,
+        "residual_layers": 2,
+        "d_ff": 64,
+        "mlp_layers": 0,
+        "summary_mode": "mean_last_delta",
+        "dropout": 0.1,
+        "activation": "gelu",
+        "fade_hidden": 64,
+        "fade_input": "relative_rate",
+    }
+    model = build_model(config).eval()
+    assert model.fade_input == "relative_rate"
+    assert model.fade_encoder[0].in_features == 2 * 64
+
+    # Check zero-initialization of the LAST Linear layer in fade_encoder
+    assert torch.all(model.fade_encoder[-1].weight == 0.0)
+    assert torch.all(model.fade_encoder[-1].bias == 0.0)
+
+    inputs = torch.randn(2, 100, 3, 300)
+    mask = torch.zeros(2, 100)
+    mask[:, :30] = 1.0
+
+    with torch.no_grad():
+        output = model(inputs, mask)
+
+    assert output.shape == (2,), f"Expected shape (2,), got {output.shape}"
+    assert torch.isfinite(output).all(), "Non-finite outputs detected for relative_rate"
+
+    num_params = sum(param.numel() for param in model.parameters())
+    print("params (relative_rate):", num_params)
+    assert num_params == 98113, f"Expected 98113 parameters, got {num_params}"
+
+    # Verify that at init, g == h exactly (encode_cycle_states == encode_curve_features)
+    with torch.no_grad():
+        h = model.encode_curve_features(inputs)
+        g_unmasked = model.encode_cycle_states(inputs, mask=None)
+        assert torch.allclose(g_unmasked, h, atol=1e-7, rtol=1e-7), (
+            f"At init, g != h! max diff = {(g_unmasked - h).abs().max()}"
+        )
+        g_masked = model.encode_cycle_states(inputs, mask=mask)
+        expected_masked = h * mask.unsqueeze(-1)
+        assert torch.allclose(g_masked, expected_masked, atol=1e-7, rtol=1e-7), (
+            f"At init with mask, g != h * mask! max diff = {(g_masked - expected_masked).abs().max()}"
+        )
+
+
+def test_relative_rate_cycle0_passthrough():
+    torch.manual_seed(42)
+    config = {
+        "variant": "anchored_fade_resconv_masked_summary",
+        "d_model": 64,
+        "residual_layers": 2,
+        "d_ff": 64,
+        "mlp_layers": 0,
+        "summary_mode": "mean_last_delta",
+        "dropout": 0.1,
+        "activation": "gelu",
+        "fade_hidden": 64,
+        "fade_input": "relative_rate",
+    }
+    model = build_model(config).eval()
+
+    # Re-randomize fade_encoder weights to non-zero values so fade_encoder is active
+    with torch.no_grad():
+        model.fade_encoder[-1].weight.normal_(0.0, 1.0)
+        model.fade_encoder[-1].bias.normal_(0.0, 1.0)
+
+    curves = torch.randn(2, 100, 3, 300)
+
+    with torch.no_grad():
+        h = model.encode_curve_features(curves)
+        g = model.encode_cycle_states(curves, mask=None)
+
+        # Cycle 0 (t = 0 / 1st cycle) must be passed through unchanged: g[:, 0] == h[:, 0]
+        assert torch.allclose(g[:, 0, :], h[:, 0, :], atol=1e-7, rtol=1e-7), (
+            f"Cycle-0 passthrough failed: max diff = {(g[:, 0, :] - h[:, 0, :]).abs().max()}"
+        )
+
+        # For t > 0, g must differ from h because fade_encoder is active
+        diff_t_gt_0 = (g[:, 1:, :] - h[:, 1:, :]).abs().max().item()
+        assert diff_t_gt_0 > 1e-3, (
+            f"Fade encoder should affect t > 0, but max diff was only {diff_t_gt_0}"
+        )
+
+
+def test_relative_rate_padding_invariance():
+    torch.manual_seed(42)
+    config = {
+        "variant": "anchored_fade_resconv_masked_summary",
+        "d_model": 64,
+        "residual_layers": 2,
+        "d_ff": 64,
+        "mlp_layers": 0,
+        "summary_mode": "mean_last_delta",
+        "dropout": 0.1,
+        "activation": "gelu",
+        "fade_hidden": 64,
+        "fade_input": "relative_rate",
+    }
+    model = build_model(config).eval()
+
+    # Re-randomize fade_encoder weights so fade_encoder is active
+    with torch.no_grad():
+        model.fade_encoder[-1].weight.normal_(0.0, 1.0)
+        model.fade_encoder[-1].bias.normal_(0.0, 1.0)
+
+    curves = torch.randn(2, 100, 3, 300)
+    mask = torch.zeros(2, 100)
+    mask[:, :30] = 1.0
+
+    with torch.no_grad():
+        out_clean = model(curves, mask)
+
+        curves_noisy = curves.clone()
+        curves_noisy[:, 30:] += torch.randn_like(curves_noisy[:, 30:]) * 20.0
+        out_noisy = model(curves_noisy, mask)
+
+    assert torch.allclose(out_clean, out_noisy, atol=1e-5, rtol=1e-5), (
+        f"relative_rate padding invariance failed: max diff = {(out_clean - out_noisy).abs().max()}"
+    )
+
+
 def test_fade_input_options_and_validation():
     base_config = {
         "variant": "anchored_fade_resconv_masked_summary",
@@ -272,11 +398,13 @@ def test_fade_input_options_and_validation():
         "fade_hidden": 64,
     }
 
-    # "anchor" and "anchor_rate" allowed
+    # "anchor", "anchor_rate", and "relative_rate" allowed
     m_anchor = build_model(dict(base_config, fade_input="anchor"))
     assert m_anchor.fade_input == "anchor"
     m_rate = build_model(dict(base_config, fade_input="anchor_rate"))
     assert m_rate.fade_input == "anchor_rate"
+    m_rel = build_model(dict(base_config, fade_input="relative_rate"))
+    assert m_rel.fade_input == "relative_rate"
 
     # Invalid fade_input rejection
     try:
@@ -371,6 +499,9 @@ if __name__ == "__main__":
     test_anchor_rate_finite_forward_and_param_count()
     test_anchor_rate_padding_invariance()
     test_anchor_rate_cycle1_dependence()
+    test_relative_rate_init_identity_and_param_count()
+    test_relative_rate_cycle0_passthrough()
+    test_relative_rate_padding_invariance()
     test_fade_input_options_and_validation()
     test_diagnostic_modules()
     test_activation_options_and_validation()

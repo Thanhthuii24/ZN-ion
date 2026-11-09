@@ -1136,9 +1136,9 @@ class AnchoredFadeResConvMaskedSummary(ResidualConvMaskedSummary):
             raise ValueError(
                 f"activation must be 'relu' or 'gelu', got {activation!r}"
             )
-        if fade_input not in {"anchor", "anchor_rate"}:
+        if fade_input not in {"anchor", "anchor_rate", "relative_rate"}:
             raise ValueError(
-                f"fade_input must be 'anchor' or 'anchor_rate', got {fade_input!r}"
+                f"fade_input must be 'anchor', 'anchor_rate', or 'relative_rate', got {fade_input!r}"
             )
         self.activation = activation
         self.fade_hidden = fade_hidden
@@ -1167,6 +1167,10 @@ class AnchoredFadeResConvMaskedSummary(ResidualConvMaskedSummary):
             act_module,
             nn.Linear(fade_hidden, d_model),
         )
+        if fade_input == "relative_rate":
+            nn.init.zeros_(self.fade_encoder[-1].weight)
+            if self.fade_encoder[-1].bias is not None:
+                nn.init.zeros_(self.fade_encoder[-1].bias)
 
     def readout_activation(self, values):
         if self.activation == "gelu":
@@ -1179,13 +1183,20 @@ class AnchoredFadeResConvMaskedSummary(ResidualConvMaskedSummary):
         d = h - h_1
         if self.fade_input == "anchor":
             u = torch.cat([h, d], dim=-1)
+            g = self.fade_encoder(u) + h
         elif self.fade_input == "anchor_rate":
             t = torch.arange(h.size(1), device=h.device, dtype=h.dtype).view(1, -1, 1)
             rate = d / torch.clamp(t, min=1.0)
             u = torch.cat([h, d, rate], dim=-1)
+            g = self.fade_encoder(u) + h
+        elif self.fade_input == "relative_rate":
+            t = torch.arange(h.size(1), device=h.device, dtype=h.dtype).view(1, -1, 1)
+            rate = d / torch.clamp(t, min=1.0)
+            u = torch.cat([d, rate], dim=-1)
+            c = (t > 0).to(dtype=h.dtype)
+            g = h + c * self.fade_encoder(u)
         else:
             raise ValueError(f"Unknown fade_input: {self.fade_input!r}")
-        g = self.fade_encoder(u) + h
         if mask is not None:
             g = g * mask.to(g.dtype).unsqueeze(-1)
         return g
