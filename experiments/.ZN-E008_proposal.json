@@ -1,0 +1,62 @@
+{
+  "id": "ZN-E008",
+  "phase": "phase1_model",
+  "training_stage": "full_candidate",
+  "type": "architecture",
+  "model": {
+    "display_name": "PhaseSplit-ResConv-MaskedSummary-H0",
+    "variant": "phase_split_resconv_masked_summary",
+    "d_model": 64,
+    "residual_layers": 2,
+    "d_ff": 64,
+    "mlp_layers": 0,
+    "summary_mode": "mean_last_delta",
+    "dropout": 0.1
+  },
+  "reference_experiment": "ZN-E005",
+  "observation": "ZN-E005 config (shared ResConv over all 300 points + masked summary + linear head): 3-split MAPE 0.332\u00b10.009, Acc@15 0.334\u00b10.080, RMSE 383\u00b154; split 2021 MAPE 0.3216 / Acc@15 0.4055 / RMSE 445.0. On every split long-life cells are underpredicted (500-1000 bias -450..-600, >1000 bias -930..-1050). prepare.preprocess_cycle builds each cycle as [charge 150 | discharge 150]; the shared stem's kernels straddle index 150 and both phases share every filter.",
+  "primary_hypothesis": "Encoding charge and discharge halves with separate residual Conv1D branches (each d_model/2 = 32 channels, no kernel crossing the phase boundary) gives phase-specific Zn-ion features (plating/stripping plateaus, end-of-charge polarization) that separate long-life cells: split-2021 MAPE <= 0.3136 or RMSE <= 424.0 vs ZN-E005, with lower 500-1000 and >1000 band MAPE.",
+  "question_inherited": "Does a phase-aware curve encoder reduce long-life underprediction on ZN-coin?",
+  "unresolved_from_reference": "Whether mixing charge/discharge in one shared encoder hides phase-specific ageing signatures.",
+  "why_this_experiment": "User wants a genuinely new, non-CPMLP model; ResConv family closed (A2 follow-ups used). architecture.md \u00a72.1 curve encoder role + \u00a73 'curve inflection loss -> Conv1D'; Zn-ion domain: charge-first/discharge-first cells exist (prepare.ZN_COIN_CHARGE_FIRST), so phase identity matters. One mechanism vs ZN-E005: curve encoder split by phase; summary and head unchanged.",
+  "modification": "Curve encoder only: shared stem (3->32->64->64) + 2 residual blocks over 300 points -> two branches, charge [3,150] and discharge [3,150], each Conv1d 3->16 k7 s2, 16->32 k5 s2, 32->32 k3 s2 + 2 ResidualCurveBlock(32) + avg pool -> concat [B,100,64]. Masked mean/last/last-first summary, Linear(192->64), ReLU, Linear(64->1) unchanged.",
+  "changed_components": "Curve encoder (shared -> phase-split). Params 85,697 -> 49,857 (half-width branches); code T002 (refactor verified behaviour-preserving for older variants).",
+  "held_constant_components": "Masked summary, inter_summary Linear(192->64), linear head (0 MLP blocks), d_model 64, dropout 0.1, Relative Huber delta 0.15, Adam lr 5e-4, batch 128, seed 2021, split 2021, A2-ZN epochs, data.",
+  "controlled_variables": "Training seed 2021, split 2021, minimum 5 / maximum 100 epochs, patience 5 after epoch 5, diagnostics every 50 steps.",
+  "expected_evidence": "MAPE/Acc@15/RMSE/DB-MAPE (tools/rescore.py) vs ZN-E005; EOL-band MAPE and bias; pred SD/corr; charge/discharge branch gradients and updates; padding sensitivity; params/time.",
+  "rejection_condition": "Primary rule (program.md \u00a77, vs ZN-E005 MAPE 0.3216 / RMSE 445.0 / Acc@15 0.4055 / DB-MAPE 0.3216). KEEP iff [A: MAPE <= 0.3136 AND RMSE <= 455.0] OR [B: RMSE <= 424.0 AND MAPE <= 0.3246] OR [C: Acc@15 >= 0.4255 AND MAPE <= 0.3246 AND RMSE <= 455.0], AND Acc@15 >= 0.3755 (A/B) AND DB-MAPE <= 0.3316 AND gradient gate PASS AND prediction SD >= 10% of target SD; otherwise DISCARD. Secondary: EOL-band MAPE/bias.",
+  "minimum_evidence_requirements": "At least five complete epochs; finite MAPE, Acc@15, MAE, and RMSE from one checkpoint; sample and unique-cell counts for every domain; gradient, update, activation, prediction, mask, and compute diagnostics.",
+  "required_diagnostics": "Epoch learning curve; selected and minimum-MAPE epochs; charge/discharge stem and residual gradients and updates, inter_summary and head gradients; activation health; prediction spread and bias; prefix, domain and EOL errors; padding sensitivity; parameters, memory, time, throughput.",
+  "estimated_budget": {
+    "experiments": 1,
+    "training_seconds": 600
+  },
+  "training": {
+    "seed": 2021,
+    "batch_size": 128,
+    "max_epochs": 100,
+    "minimum_epochs": 5,
+    "patience": 5,
+    "learning_rate": 0.0005,
+    "scheduler": "none",
+    "target_transform": "standard",
+    "main_loss": "relative_huber",
+    "relative_huber_delta": 0.15,
+    "checkpoint_mape_tolerance": 0.005,
+    "physics_loss_weight": 0.0,
+    "extra_loss_weight": 0.0,
+    "prefix_consistency_weight": 0.0,
+    "diagnostic_interval_steps": 50,
+    "required_device": "cuda"
+  },
+  "split": "2021",
+  "architecture_addendum": {
+    "responsible_stage": "Curve Encoder",
+    "mechanism": "Phase-split residual Conv1D (separate charge and discharge branches)",
+    "evidence": "Long-life underprediction on all 3 splits; shared kernels straddle the charge/discharge boundary at index 150",
+    "shapes": "[B,100,3,300] -> charge [B*100,3,150] -> stem+2 res -> pool [B,100,32]; discharge same -> [B,100,32]; concat [B,100,64] -> masked summary [B,192] -> Linear [B,64] -> ReLU -> Linear [B,1]",
+    "mask_path": "per-cycle encoding (padded cycles encoded independently, GroupNorm within one cycle's phase only); mean over mask==1, last at mask.sum()-1, delta last - cycle1. tests/test_phase_split_encoder.py: padding invariance and phase isolation.",
+    "expected_evidence": "MAPE, RMSE, Acc@15, DB-MAPE (= MAPE, one domain) vs ZN-E005; EOL bands; gradient gate; charge vs discharge branch gradients"
+  },
+  "smoke_evidence": "pending CUDA smoke ZN-E008S"
+}
