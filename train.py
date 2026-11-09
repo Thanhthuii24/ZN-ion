@@ -982,13 +982,16 @@ class ResidualConvMaskedSummary(nn.Module):
         values = self.residual_blocks(values)
         return self.curve_pool(values).squeeze(-1).reshape(batch, cycles, -1)
 
+    def encode_cycle_states(self, curves, mask=None):
+        return self.encode_curve_features(curves)
+
     def readout_activation(self, values):
         return F.relu(values)
 
     def forward(self, curves, mask):
         if mask is None:
             raise ValueError("ResidualConvMaskedSummary requires a cycle mask")
-        values = self.encode_curve_features(curves)
+        values = self.encode_cycle_states(curves, mask)
 
         weights = mask.to(values.dtype).unsqueeze(-1)
         mean = (values * weights).sum(dim=1) / weights.sum(dim=1).clamp_min(1.0)
@@ -1106,6 +1109,77 @@ class PhaseSplitResConvMaskedSummary(ResidualConvMaskedSummary):
             "discharge_stem": self.discharge_stem,
             "charge_residual": self.charge_residual,
             "discharge_residual": self.discharge_residual,
+            "inter_summary": self.inter_summary,
+        }
+        if len(self.inter_mlp):
+            modules["inter_mlp"] = self.inter_mlp[-1]
+        modules["head"] = self.head
+        return modules
+
+
+class AnchoredFadeResConvMaskedSummary(ResidualConvMaskedSummary):
+    """Residual Conv1D curve encoder + anchored non-linear fade encoder + masked summary."""
+
+    def __init__(
+        self,
+        d_model=64,
+        residual_layers=2,
+        d_ff=64,
+        mlp_layers=0,
+        summary_mode="mean_last_delta",
+        dropout=0.0,
+        activation="gelu",
+        fade_hidden=64,
+    ):
+        if activation not in {"relu", "gelu"}:
+            raise ValueError(
+                f"activation must be 'relu' or 'gelu', got {activation!r}"
+            )
+        self.activation = activation
+        self.fade_hidden = fade_hidden
+        super().__init__(
+            d_model=d_model,
+            residual_layers=residual_layers,
+            d_ff=d_ff,
+            mlp_layers=mlp_layers,
+            summary_mode=summary_mode,
+            dropout=dropout,
+        )
+        if activation == "gelu":
+            self.cycle_stem = nn.Sequential(
+                nn.Conv1d(3, 32, kernel_size=7, stride=2, padding=3),
+                nn.GELU(),
+                nn.Conv1d(32, 64, kernel_size=5, stride=2, padding=2),
+                nn.GELU(),
+                nn.Conv1d(64, d_model, kernel_size=3, stride=2, padding=1),
+                nn.GELU(),
+            )
+        act_module = nn.GELU() if activation == "gelu" else nn.ReLU()
+        self.fade_encoder = nn.Sequential(
+            nn.Linear(2 * d_model, fade_hidden),
+            act_module,
+            nn.Linear(fade_hidden, d_model),
+        )
+
+    def readout_activation(self, values):
+        if self.activation == "gelu":
+            return F.gelu(values)
+        return super().readout_activation(values)
+
+    def encode_cycle_states(self, curves, mask=None):
+        h = self.encode_curve_features(curves)
+        h_1 = h[:, 0:1, :]
+        u = torch.cat([h, h - h_1], dim=-1)
+        g = self.fade_encoder(u) + h
+        if mask is not None:
+            g = g * mask.to(g.dtype).unsqueeze(-1)
+        return g
+
+    def diagnostic_modules(self):
+        modules = {
+            "cycle_stem": self.cycle_stem,
+            "residual_blocks": self.residual_blocks,
+            "fade_encoder": self.fade_encoder,
             "inter_summary": self.inter_summary,
         }
         if len(self.inter_mlp):
@@ -4245,6 +4319,17 @@ def build_model(config):
             summary_mode=config.get("summary_mode", "mean_last_delta"),
             dropout=config.get("dropout", 0.0),
             activation=config.get("activation", "relu"),
+        )
+    if variant == "anchored_fade_resconv_masked_summary":
+        return AnchoredFadeResConvMaskedSummary(
+            d_model=config.get("d_model", 64),
+            residual_layers=config.get("residual_layers", 2),
+            d_ff=config.get("d_ff", 64),
+            mlp_layers=config.get("mlp_layers", 0),
+            summary_mode=config.get("summary_mode", "mean_last_delta"),
+            dropout=config.get("dropout", 0.0),
+            activation=config.get("activation", "gelu"),
+            fade_hidden=config.get("fade_hidden", 64),
         )
     if variant == "residual_conv_masked_summary":
 
