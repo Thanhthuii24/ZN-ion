@@ -278,5 +278,10 @@
       "CPMLP": "0.558\u00b10.034 / 0.297\u00b10.084"
     },
     "target": "0.20 / 0.68 not met (yardstick)"
+  },
+  "git_sync": {
+    "remote": "git@github.com:Thanhthuii24/ZN-ion.git",
+    "branch": "main",
+    "push": "after every reviewed experiment (program.md \u00a79 soft gate)"
   }
 }
