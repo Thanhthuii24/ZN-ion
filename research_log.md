@@ -157,3 +157,10 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - Run: `VALID`. Decision: `KEEP` (confirmation evidence; gradient gate PASS — the GELU model passes where the ReLU ZN-E006 failed).
 - Metrics: MAPE 0.3471, Acc@15 0.2470, RMSE 350.3, seen 0.337 / unseen 0.365. Bands: <500 (17) MAPE 0.275; 500–1000 bias −603; >1000 bias −949.
 - Next: ZN-E014 split 2024, then the aggregate decision.
+
+## ZN-E014 — ZN-E010 config, split 2024 (confirmation) — Phase 1 closed
+
+- Run: `VALID`. Decision: `KEEP` (gate PASS). MAPE 0.3162, Acc@15 0.3575, RMSE 400.8, seen 0.318 / unseen 0.304. >1000-cycle Acc@15 0.123 (first non-zero), bias −827.
+- Aggregate ZN-E010/E013/E014 (splits 2021/42/2024): MAPE 0.332 ± 0.016, Acc@15 0.324 ± 0.067, RMSE 392 ± 38 -> CONFIRMED (Gemini adjudication: ZN-E010's DISCARD was only vs the ZN-E005 parent thresholds; all three are VALID with gate PASS).
+- Phase 1 CLOSED (A5-ZN), TARGET_NOT_MET vs 0.20 / 0.68. Frozen model: ZN-E010 AnchoredFade-ResConv-GELU (98,113 params). Beats paper Zn-ion CPTransformer (0.515 ± 0.067) and CPMLP (0.558 ± 0.034 / 0.297 ± 0.084).
+- Phase 2 (loss) ACTIVE. First target: Relative-Huber dL/dŷ = ±δ/y underweights long-life cells.

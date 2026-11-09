@@ -2,24 +2,24 @@
   "benchmark_round": "BATTERYLIFE-ZN-COIN-R1",
   "workflow_version": "three-phase-relative-huber-v1",
   "research_mode": "model_search_no_physics",
-  "phase": "phase1_model",
-  "phase_status": "architecture_search",
-  "workflow_status": "running_remote",
+  "phase": "phase2_loss",
+  "phase_status": "phase2_start",
+  "workflow_status": "proposal_needed",
   "protocol_status": "locked",
   "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
   "run_approved": true,
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
-  "current_experiment": "ZN-E014",
-  "next_experiment_id": "ZN-E014",
-  "next_action": "ZN-E014 split 2024; then aggregate decision for ZN-E010",
-  "active_architecture_parent": "ZN-E005",
+  "current_experiment": null,
+  "next_experiment_id": "ZN-E015",
+  "next_action": "Phase 2: first loss screen on frozen ZN-E010 (target the Relative-Huber 1/y long-life underweighting; loss.md)",
+  "active_architecture_parent": "ZN-E010",
   "success_criteria": {
     "same_checkpoint_required": true,
     "validation_mape_strictly_below": null,
     "validation_acc15_strictly_above": 0.68,
     "one_seed_is_preliminary_evidence_only": true,
     "final_candidate_requires_three_seed_mean": true,
-    "current_status": "baseline_pending",
+    "current_status": "TARGET_NOT_MET (Phase 1)",
     "note": "Beat the paper Zn-ion best (CPTransformer MAPE 0.515, CPMLP Acc@15 0.297) on 3-split mean."
   },
   "loss_lock": {
@@ -92,27 +92,7 @@
       "status": "NOT_CONFIRMED (gradient gate FAIL on 42/2024)"
     }
   },
-  "active_candidates": [
-    {
-      "family": "ResConv-MaskedSummary",
-      "experiment": "ZN-E005",
-      "status": "NOT_CONFIRMED (ZN-E006 gradient gate FAIL); closed",
-      "follow_ups_used": 3
-    },
-    {
-      "family": "PhaseSplit-ResConv",
-      "experiment": "ZN-E008",
-      "status": "closed (ZN-E009 repair DISCARD)",
-      "follow_ups_used": 1
-    },
-    {
-      "family": "AnchoredFade-ResConv-GELU",
-      "experiment": "ZN-E010",
-      "status": "promising_A2",
-      "follow_ups_used": 2,
-      "consecutive_discards": 3
-    }
-  ],
+  "active_candidates": [],
   "test_status": "unused",
   "prior_run_results_allowed": false,
   "phase1_stopping": {
@@ -135,11 +115,14 @@
   },
   "phase_gates": {
     "phase1_model": {
-      "status": "ACTIVE"
+      "status": "CLOSED",
+      "closed": "2026-11-09",
+      "by": "A5-ZN early closure",
+      "result": "TARGET_NOT_MET"
     },
     "phase2_loss": {
-      "status": "LOCKED",
-      "requires": "Phase 1 closed (A3)"
+      "status": "ACTIVE",
+      "unlocked": "2026-11-09"
     },
     "phase3_tinyml": {
       "status": "LOCKED",
@@ -155,12 +138,12 @@
     },
     "counter": "optimizer_training_compute_seconds",
     "usage": {
-      "experiments": 14,
-      "training_seconds": 1807.6
+      "experiments": 15,
+      "training_seconds": 1950.39
     },
     "remaining": {
-      "experiments": 136,
-      "training_seconds": 248192.4
+      "experiments": 135,
+      "training_seconds": 248049.61
     },
     "exhausted": false,
     "status": "active"
@@ -263,5 +246,37 @@
     "model": "AnchoredFade-ResConv-GELU",
     "reason": "best gradient-healthy run by \u00a77 metrics (MAPE 0.3325, Acc@15 0.3665, RMSE 425.0, corr 0.48); ZN-E005 NOT CONFIRMED (gate FAIL on 42/2024)",
     "confirmation": "splits 42 (ZN-E013) and 2024 (ZN-E014), seed 2021, interpreted as the A1-ZN 3-split confirmation"
+  },
+  "frozen_model": {
+    "experiment": "ZN-E010",
+    "model": "AnchoredFade-ResConv-GELU",
+    "config": {
+      "display_name": "AnchoredFade-ResConv-GELU",
+      "variant": "anchored_fade_resconv_masked_summary",
+      "d_model": 64,
+      "residual_layers": 2,
+      "d_ff": 64,
+      "mlp_layers": 0,
+      "summary_mode": "mean_last_delta",
+      "dropout": 0.1,
+      "activation": "gelu",
+      "fade_hidden": 64
+    },
+    "params": 98113,
+    "confirmation": [
+      "ZN-E010 (2021)",
+      "ZN-E013 (42)",
+      "ZN-E014 (2024)"
+    ],
+    "three_split": {
+      "mape": "0.332\u00b10.016",
+      "acc15": "0.324\u00b10.067",
+      "rmse": "392\u00b138"
+    },
+    "paper_reference": {
+      "CPTransformer": "0.515\u00b10.067 / 0.202\u00b10.084",
+      "CPMLP": "0.558\u00b10.034 / 0.297\u00b10.084"
+    },
+    "target": "0.20 / 0.68 not met (yardstick)"
   }
 }

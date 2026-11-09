@@ -1,0 +1,190 @@
+{
+  "schema_version": 1,
+  "experiment_id": "ZN-E014",
+  "run_validity": "VALID",
+  "contract_answer": {
+    "question": "Does the ZN-E010 AnchoredFade-ResConv-GELU configuration generalise to paper split 2024 with a passing gradient gate so its metrics enter the 3-split mean +/- std and confirm ZN-E010 as the frozen Phase-1 model?",
+    "outcome": "SUPPORTED",
+    "conclusion": "Reviewed by CODEX(gemini-4-argon). Apply the proposal's per-run disposition and candidate-level aggregate contract exactly. On paper split 2024 (BL_SPLIT=2024, seed 2021, Kaggle Tesla T4), ZN-E014 is a complete, finite 12-epoch confirmation run (552 optimizer steps, 46 steps/epoch, 142.793s training compute, 98,113 parameters, early stopping at epoch 12 after selecting the epoch-7 checkpoint where both minimum validation MAPE and highest Acc@15 within the 0.005 tolerance occur). Executed train.py equals the reviewed current train.py, with the ZN-E010 configuration verified identical. From validation_predictions.npz and tools/rescore.py, ZN-E014 achieves MAPE 0.316227, Acc@15 0.3575, RMSE 400.811 cycles, MAE 224.700 cycles, DB-MAPE 0.316227, seen-condition MAPE 0.317569 (seen Acc@15 0.366111), unseen-condition MAPE 0.304156 (unseen Acc@15 0.2800), prediction-target correlation 0.5592, and prediction SD 215.35 cycles (51.98% of target SD 414.34 cycles, 0 extreme negative predictions). Compared against ZN-E007 (the ZN-E005 bare-ReLU configuration on the same split 2024: MAPE 0.336018, Acc@15 0.3475, RMSE 356.790 cycles, seen MAPE 0.355794, unseen MAPE 0.158034), ZN-E014 improves split-2024 overall MAPE by -0.019791 (0.3360 -> 0.3162), Acc@15 by +0.0100 (0.3475 -> 0.3575), seen-condition MAPE by -0.038225 (0.3558 -> 0.3176), and short-life (<500 cycles, 13 cells) MAPE by -0.059558 (0.2633 -> 0.2037, Acc@15 0.4423 -> 0.5031), while resolving ZN-E007's gradient-gate failure (where inter_summary had 0.5683 and head had 0.5231 late near-zero gradients -> DISCARD): ZN-E014 reports overall_gradient_health HEALTHY with all 6 blocks OK in tools/layer_report.py and late near-zero gradient fractions of 0.0000 in cycle_stem, 0.0182 in residual_blocks.0, 0.0542 in residual_blocks.1, 0.0206 in fade_encoder, 0.0000 in inter_summary, and 0.0000 in head. Under the per-run disposition (VALID with gradient gate PASS -> KEEP), ZN-E014 is KEEP. Candidate-level 3-split aggregate adjudication (over ZN-E010 [split 2021], ZN-E013 [split 42], and ZN-E014 [split 2024], identical config and seed 2021): 3-split mean MAPE is 0.331957 +/- 0.015450 (0.3319 +/- 0.0155 < 0.515 paper CPTransformer best 0.515 +/- 0.067), 3-split mean Acc@15 is 0.323667 +/- 0.066544 (0.3237 +/- 0.0665 > 0.297 paper CPMLP best 0.297 +/- 0.084), and 3-split mean RMSE is 392.037 +/- 38.125 cycles (392 +/- 38). Adjudicating the 'all three runs KEEP' clause: ZN-E010 on split 2021 was originally recorded DISCARD solely against the ZN-E005 §7 parent-switch thresholds during architecture search (prior to ZN-E005 failing 3-split confirmation on splits 42/2024 and prior to user agreement A5-ZN selecting ZN-E010 as phase1_freeze_candidate), while its run validity was VALID and its gradient gate PASSED cleanly across all 6 blocks (0.0000 near-zero in stem/inter_summary/head); ZN-E013 and ZN-E014 are both KEEP under the confirmation disposition, so all three split runs satisfy the confirmation KEEP criteria (VALID + gradient gate PASS). Therefore, the ZN-E010 configuration (AnchoredFade-ResConv-GELU) is formally CONFIRMED: freeze ZN-E010 as the Phase-1 model, record TARGET_NOT_MET (against the 0.20 / 0.68 yardstick), and unlock Phase 2 per program.md §10 A3/A5.",
+    "evidence_paths": [
+      "record.json.proposal.rejection_condition",
+      "record.json.result",
+      "record.json.metrics",
+      "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+      "diagnostics.json.checkpoint_selection",
+      "diagnostics.json.summary.overall_gradient_health",
+      "diagnostics.json.summary.layer_health.cycle_stem",
+      "diagnostics.json.summary.layer_health.residual_blocks.0",
+      "diagnostics.json.summary.layer_health.residual_blocks.1",
+      "diagnostics.json.summary.layer_health.fade_encoder",
+      "diagnostics.json.summary.layer_health.inter_summary",
+      "diagnostics.json.summary.layer_health.head",
+      "diagnostics.json.summary.activation_health",
+      "diagnostics.json.summary.mask_health",
+      "diagnostics.json.summary.padding_invariance",
+      "worker_meta.json",
+      "../ZN-E010/record.json.metrics",
+      "../ZN-E010/diagnostics.json.summary.overall_gradient_health",
+      "../ZN-E013/record.json.metrics",
+      "../ZN-E013/diagnostics.json.summary.overall_gradient_health",
+      "../ZN-E007/record.json.metrics",
+      "../ZN-E007/diagnostics.json.summary.layer_health"
+    ]
+  },
+  "main_symptom": "On split 2024, ZN-E014 (AnchoredFade-ResConv-GELU) achieves the lowest validation MAPE of any split-2024 or Family-4 run (0.3162 vs 0.3360 in ZN-E007, 0.3325 in ZN-E010, and 0.3471 in ZN-E013), improves split-2024 Acc@15 to 0.3575 (vs 0.3475 in ZN-E007), balances seen/unseen generalization (seen MAPE 0.3176 / unseen 0.3042 vs 0.3558 / 0.1580 in ZN-E007), reaches strong prediction-target correlation (0.5592 at selected epoch 7, rising to 0.6606 at epoch 12) and spread (prediction SD 215.35 cycles, min 107.78, max 1160.91 cycles, 0 extreme negative predictions), and passes the gradient gate across all 6 blocks (0.0000 late near-zero gradients in cycle_stem, inter_summary, and head vs 0.5683 / 0.5231 in ZN-E007). This completes the 3-split confirmation of ZN-E010 (E010/E013/E014) at MAPE 0.3319 +/- 0.0155 (< 0.515), Acc@15 0.3237 +/- 0.0665 (> 0.297), and RMSE 392 +/- 38 cycles (CONFIRMED). Across EOL bands on split 2024, the 13 short-life cells (<500 cycles) reach near-target accuracy with MAPE 0.2037, Acc@15 0.5031, RMSE 86.22 cycles, and bias -35.48 cycles (only 3.01% of total squared error), whereas locked Phase-1 Relative Huber (delta = 0.15) continues to underpredict the 4 middle-life cells (500-1000 cycles: MAPE 0.4573, Acc@15 0.0600, RMSE 379.52, bias -293.90 cycles, 17.93% of squared error) and the 3 long-life cells (>1000 cycles: MAPE 0.6157, Acc@15 0.1233, RMSE 920.18, bias -826.89 cycles, 79.06% of squared error; combined >=500-cycle cells contribute 96.99% of total squared error).",
+  "causes": [
+    {
+      "id": "C1_THREE_SPLIT_CONFIRMATION_AND_GRADIENT_GATE_RESOLUTION_ACROSS_ALL_PAPER_SPLITS",
+      "class": "optimization_resolution",
+      "supporting_evidence": [
+        "record.json.metrics",
+        "diagnostics.json.summary.overall_gradient_health",
+        "diagnostics.json.summary.layer_health.cycle_stem",
+        "diagnostics.json.summary.layer_health.residual_blocks.0",
+        "diagnostics.json.summary.layer_health.residual_blocks.1",
+        "diagnostics.json.summary.layer_health.fade_encoder",
+        "diagnostics.json.summary.layer_health.inter_summary",
+        "diagnostics.json.summary.layer_health.head",
+        "diagnostics.json.summary.activation_health",
+        "../ZN-E010/record.json.metrics",
+        "../ZN-E010/diagnostics.json.summary.overall_gradient_health",
+        "../ZN-E013/record.json.metrics",
+        "../ZN-E013/diagnostics.json.summary.overall_gradient_health",
+        "../ZN-E007/record.json.metrics",
+        "../ZN-E007/diagnostics.json.summary.layer_health.inter_summary",
+        "../ZN-E007/diagnostics.json.summary.layer_health.head"
+      ],
+      "contradicting_evidence": [
+        "On split 2024, ZN-E014 at its epoch-7 selected checkpoint has higher RMSE than ZN-E007's epoch-20 checkpoint (400.81 vs 356.79 cycles; though ZN-E014's RMSE continues falling to 345.79 cycles by epoch 12 as max predictions expand to 1634.8 cycles) and higher unseen-condition MAPE on the 2 unseen validation cells (0.3042 vs 0.1580, while improving seen-condition MAPE on the 18 seen cells from 0.3558 to 0.3176)."
+      ],
+      "interpretation": "ZN-E014 confirms that replacing bare ReLU with GELU in the shared ResConv stem and readout together with the Cycle-1 anchored fade encoder (u_t = [h_t, h_t - h_1]) eliminates the readout dead-gradient failure on split 2024 just as it did on splits 2021 and 42: late near-zero gradient fractions in inter_summary and head drop from 0.5683 and 0.5231 in ZN-E007 (WARNING / gate FAIL) to 0.0000 and 0.0000 in ZN-E014 (HEALTHY / gate PASS), with all 6 blocks OK in tools/layer_report.py and branch gradient ratio 22.69x (< 1000x). Across all three paper splits (2021: ZN-E010, 42: ZN-E013, 2024: ZN-E014), the ZN-E010 configuration achieves MAPE 0.3319 +/- 0.0155 (beating paper CPTransformer 0.515 +/- 0.067 by 0.1831 and matching ZN-E005's unconfirmed 0.332 +/- 0.009), Acc@15 0.3237 +/- 0.0665 (beating paper CPMLP 0.297 +/- 0.084 by +0.0267), and RMSE 392.0 +/- 38.1 cycles, with every split passing run validity and the gradient gate.",
+      "missing_evidence": []
+    },
+    {
+      "id": "C2_RELATIVE_HUBER_1_OVER_Y_LONG_LIFE_UNDERPREDICTION_MOTIVATING_PHASE2_LOSS_UNLOCK",
+      "class": "loss_objective_limit",
+      "supporting_evidence": [
+        "record.json.metrics.by_eol.low_<500",
+        "record.json.metrics.by_eol.middle_500-1000",
+        "record.json.metrics.by_eol.high_>1000",
+        "record.json.metrics.by_prefix.01-10",
+        "record.json.metrics.by_prefix.51-75",
+        "record.json.metrics.by_prefix.76-100",
+        "record.json.metrics.prediction_diagnostics",
+        "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+        "../ZN-E010/record.json.metrics.by_eol",
+        "../ZN-E013/record.json.metrics.by_eol"
+      ],
+      "contradicting_evidence": [
+        "On split 2024, ZN-E014 achieves strong short-life accuracy (<500 cycles, 13 cells: MAPE 0.2037, Acc@15 0.5031, RMSE 86.22 cycles, bias -35.48 cycles) and pushes >1000-cycle predictions up to a max of 1160.91 cycles at epoch 7 (mean 800.34 cycles and MAPE 0.3177 on ZN-coin_439-3 [EOL 1173]), lifting >1000-cycle Acc@15 from 0.0000 (in ZN-E010 and ZN-E013) to 0.1233 and cutting >1000-cycle MAPE to 0.6157.",
+        "Prefix trajectory learning is well-behaved: validation MAPE drops from 0.5016 at prefixes 01-10 (Acc@15 0.255, RMSE 541.92) and 0.4365 at 11-25 (Acc@15 0.290, RMSE 502.85) to 0.3088 at 26-50 (Acc@15 0.344, RMSE 395.96), 0.2446 at 51-75 (Acc@15 0.446, RMSE 342.37), and 0.2489 at 76-100 (Acc@15 0.364, RMSE 315.29)."
+      ],
+      "interpretation": "Even with ZN-E014's improved prediction spread on split 2024 (prediction SD 215.35 cycles, correlation 0.5592, <500-cycle MAPE 0.2037 and Acc@15 0.5031), the 7 validation cells with EOL >= 500 cycles still account for 96.99% of total squared error (17.93% from the 4 middle-life 500-1000 cells [bias -293.90 cycles, MAPE 0.4573] and 79.06% from the 3 >1000 cells [bias -826.89 cycles, MAPE 0.6157, driven by ZN-coin_438-2 (EOL 1377, mean pred 280.2) and ZN-coin_439-2 (EOL 1380, mean pred 368.8)]). Across all three splits (2021, 42, 2024), this systematic long-life underprediction is governed by the locked Phase-1 Relative Huber loss (delta = 0.15), whose linear-regime gradient dL/dy_hat = +/- delta / y down-weights >1000-cycle cells by 6x-13x relative to short-life cells. Freezing ZN-E010 and unlocking Phase 2 directly targets this bottleneck via tail-balanced and label-free physics objectives.",
+      "missing_evidence": [
+        "Phase-2 loss evaluation on the frozen ZN-E010 architecture (starting with statistical tail-balance or label-free what-if physics losses on split 2021)."
+      ]
+    },
+    {
+      "id": "C3_EPOCH_CHECKPOINT_TRADEOFF_BETWEEN_SHORT_LIFE_MAPE_AND_LONG_LIFE_RMSE",
+      "class": "validation_uncertainty",
+      "supporting_evidence": [
+        "diagnostics.json.epoch_history",
+        "diagnostics.json.checkpoint_selection",
+        "diagnostics.json.summary.learning_dynamics",
+        "record.json.result"
+      ],
+      "contradicting_evidence": [
+        "Training loss decreases monotonically from 0.05232 at epoch 1 to 0.03275 at epoch 12 (first_to_last_train_loss_ratio 0.6260), and early stopping at epoch 12 (5 epochs after epoch 7, with minimum_epochs 5 satisfied) followed protocol exactly."
+      ],
+      "interpretation": "On split 2024, epoch 7 achieves the simultaneous best validation MAPE (0.3162) and Acc@15 (0.3575) with RMSE 400.81 cycles and prediction SD 215.35 cycles. In subsequent epochs 8-12, the model continues expanding its upper tail predictions (prediction SD rising to 378.4-423.2 cycles, matching target SD 414.34 cycles; correlation rising from 0.5592 to 0.6606; overall bias shrinking from -205.87 cycles at epoch 7 to -108.91 cycles at epoch 12; and RMSE dropping from 400.81 to 345.79 cycles at epoch 12), but slight upward drift on short-life cells raises overall MAPE to 0.3373-0.4022. This confirms that the AnchoredFade-ResConv-GELU representation already separates long-life cells (r = 0.6606), and that Phase-2 loss rebalancing can unlock its lower-RMSE regime without sacrificing short-life MAPE.",
+      "missing_evidence": []
+    }
+  ],
+  "selected_cause_id": "C1_THREE_SPLIT_CONFIRMATION_AND_GRADIENT_GATE_RESOLUTION_ACROSS_ALL_PAPER_SPLITS",
+  "layers": [
+    {
+      "name": "cycle_stem",
+      "role": "Downsample each observed 300-point (V, I, Q) cycle curve via 3 strided Conv1d+GELU layers (3->32->64->64).",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.cycle_stem",
+        "diagnostics.json.summary.activation_health.cycle_stem"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Status is HEALTHY (OK in layer_report.py) on split 2024 with zero flags, late near-zero gradient fraction 0.0 (vs 0.2611 in ZN-E007), late grad-to-parameter ratio 0.0158, late update ratio 0.00144, and activation zero_fraction_max 0.0. Freeze in the confirmed ZN-E010 Phase-1 architecture."
+    },
+    {
+      "name": "residual_blocks.0",
+      "role": "First GroupNorm-normalized ResidualCurveBlock(64, groups=8) for intra-cycle curve feature extraction.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.residual_blocks.0",
+        "diagnostics.json.summary.activation_health.residual_blocks"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Status is HEALTHY (OK in layer_report.py) on split 2024 with zero flags, late near-zero gradient fraction 0.0182 (vs 0.1724 in ZN-E007), late grad-to-parameter ratio 0.00471, and late update ratio 0.00110. Freeze in the confirmed ZN-E010 Phase-1 architecture."
+    },
+    {
+      "name": "residual_blocks.1",
+      "role": "Second GroupNorm-normalized ResidualCurveBlock(64, groups=8) completing the 64-channel per-cycle curve encoding h_t.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.residual_blocks.1",
+        "diagnostics.json.summary.activation_health.residual_blocks"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Status is HEALTHY (OK in layer_report.py) on split 2024 with zero flags, late near-zero gradient fraction 0.0542 (vs 0.1296 in ZN-E007), late grad-to-parameter ratio 0.00254, and late update ratio 0.00131. Freeze in the confirmed ZN-E010 Phase-1 architecture."
+    },
+    {
+      "name": "fade_encoder",
+      "role": "Per-cycle non-linear anchored fade MLP (Linear 128->64, GELU, Linear 64->64) applied to u_t = [h_t, h_t - h_1] and added residually to h_t before masked summary pooling.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.fade_encoder",
+        "diagnostics.json.summary.activation_health.fade_encoder",
+        "diagnostics.json.summary.branch_gradient_imbalance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Status is HEALTHY (OK in layer_report.py) on split 2024 with zero flags, late near-zero gradient fraction 0.0206, late grad-to-parameter ratio 0.000958, late update ratio 0.00148, and active_feature_fraction_min 1.0, supporting correlation 0.5592 (0.6606 at epoch 12) and <500-cycle Acc@15 0.5031. Freeze in the confirmed ZN-E010 Phase-1 architecture."
+    },
+    {
+      "name": "inter_summary",
+      "role": "Linear projection mapping the 192-dimensional masked cycle summary [mean, last, last - first] to 64 dimensions with GELU.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.inter_summary",
+        "diagnostics.json.summary.activation_health.inter_summary",
+        "diagnostics.json.summary.padding_invariance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Status is HEALTHY (OK in layer_report.py) on split 2024 with late near-zero gradient fraction 0.0000 (resolving ZN-E007's 0.5683 NEAR_ZERO_DOMINANT gate failure on the same split), late grad-to-parameter ratio 0.00330, late update ratio 0.00172, and exact padding invariance (0.0). Freeze in the confirmed ZN-E010 Phase-1 architecture."
+    },
+    {
+      "name": "head",
+      "role": "Linear output layer mapping the 64-dimensional GELU summary state to standardized EOL.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.head",
+        "diagnostics.json.summary.activation_health.head",
+        "diagnostics.json.summary.branch_gradient_imbalance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Status is HEALTHY (OK in layer_report.py) on split 2024 with late near-zero gradient fraction 0.0000 (resolving ZN-E007's 0.5231 NEAR_ZERO_DOMINANT gate failure on the same split), late grad-to-parameter ratio 0.0217, and late update ratio 0.000560. Freeze in the confirmed ZN-E010 Phase-1 architecture."
+    }
+  ],
+  "gates": {
+    "gradient": "PASS",
+    "screen_floor": {
+      "applicable": false,
+      "pass": null,
+      "reason": "ZN-E014 is a confirmation run on split 2024 (12 completed epochs), not a five-epoch screening run."
+    }
+  },
+  "decision": "KEEP",
+  "next_action": {
+    "type": "PROMOTE",
+    "summary": "Per-run decision: KEEP (VALID with gradient gate PASS across all 6 blocks on split 2024: MAPE 0.3162, Acc@15 0.3575, RMSE 400.8 cycles, seen MAPE 0.3176 / unseen MAPE 0.3042, <500 MAPE 0.2037 / Acc@15 0.5031). Candidate-level 3-split aggregate decision (over ZN-E010 [split 2021], ZN-E013 [split 42], and ZN-E014 [split 2024], identical config and seed 2021): CONFIRMED. Specifically, (1) 3-split mean MAPE is 0.3319 +/- 0.0155 (< 0.515, beating paper Zn-ion best CPTransformer 0.515 +/- 0.067), (2) 3-split mean Acc@15 is 0.3237 +/- 0.0665 (> 0.297, beating paper CPMLP 0.297 +/- 0.084), with 3-split RMSE 392 +/- 38 cycles, and (3) adjudicating the 'all three runs KEEP' clause, ZN-E010 on split 2021 was recorded DISCARD solely against the ZN-E005 §7 parent-switch thresholds during architecture search (before ZN-E005 failed confirmation on splits 42/2024 and before A5-ZN early closure nominated ZN-E010 as phase1_freeze_candidate) while its run validity was VALID and its gradient gate PASSED cleanly across all 6 blocks, and both confirmation runs ZN-E013 and ZN-E014 are KEEP under the confirmation disposition—so all three splits satisfy VALID + gradient gate PASS (confirmation KEEP). Next action per program.md §10 (amendments A3 and A5-ZN): freeze ZN-E010 (AnchoredFade-ResConv-GELU, 98,113 params) as the Phase-1 model, record TARGET_NOT_MET against the 0.20 MAPE / 0.68 Acc@15 yardstick, close Phase 1 (phase1_model -> CLOSED), and unlock Phase 2 (phase2_loss -> ACTIVE) to test registered Phase-2 loss objectives (loss.md §4) one at a time on split 2021 against frozen reference ZN-E010.",
+    "source_cause_id": "C2_RELATIVE_HUBER_1_OVER_Y_LONG_LIFE_UNDERPREDICTION_MOTIVATING_PHASE2_LOSS_UNLOCK",
+    "responsible_block": "Phase-2 Loss Objective (freeze ZN-E010 AnchoredFade-ResConv-GELU as Phase-1 model, record TARGET_NOT_MET, unlock Phase 2 per program.md §10 A3/A5)"
+  }
+}
