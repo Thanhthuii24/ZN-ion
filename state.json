@@ -4,14 +4,14 @@
   "research_mode": "model_search_no_physics",
   "phase": "phase1_model",
   "phase_status": "architecture_search",
-  "workflow_status": "running_remote",
+  "workflow_status": "task_for_executor",
   "protocol_status": "locked",
   "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
   "run_approved": true,
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
-  "current_experiment": "ZN-E008",
-  "next_experiment_id": "ZN-E008",
-  "next_action": "ZN-E008 phase-split ResConv (T002 code done)",
+  "current_experiment": null,
+  "next_experiment_id": "ZN-E009",
+  "next_action": "T003 activation option (GELU) for phase-split stems + readout; ZN-E009 proposal",
   "active_architecture_parent": "ZN-E005",
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -98,6 +98,12 @@
       "experiment": "ZN-E005",
       "status": "NOT_CONFIRMED (ZN-E006 gradient gate FAIL); closed",
       "follow_ups_used": 3
+    },
+    {
+      "family": "PhaseSplit-ResConv",
+      "experiment": "ZN-E008",
+      "status": "non-promising, one A2 repair (ZN-E009)",
+      "follow_ups_used": 0
     }
   ],
   "test_status": "unused",
@@ -109,12 +115,13 @@
     "hard_cap_valid_architecture_experiments": 50,
     "meaningful_mape_gain": 0.008,
     "meaningful_acc15_gain": 0.02,
-    "valid_architecture_experiments": 5,
+    "valid_architecture_experiments": 6,
     "architecture_families_covered": [
       "residual_conv_masked_summary",
-      "residual_conv_temporal_tcn_masked_summary"
+      "residual_conv_temporal_tcn_masked_summary",
+      "phase_split_resconv_masked_summary"
     ],
-    "valid_runs_since_meaningful_gain": 0,
+    "valid_runs_since_meaningful_gain": 1,
     "promotion_eligible_incomplete_runs": [],
     "meaningful_rmse_gain": 21
   },
@@ -140,12 +147,12 @@
     },
     "counter": "optimizer_training_compute_seconds",
     "usage": {
-      "experiments": 8,
-      "training_seconds": 1041.68
+      "experiments": 9,
+      "training_seconds": 1136.69
     },
     "remaining": {
-      "experiments": 142,
-      "training_seconds": 248958.32
+      "experiments": 141,
+      "training_seconds": 248863.31
     },
     "exhausted": false,
     "status": "active"
@@ -229,5 +236,6 @@
     ],
     "source": "BatteryLife data_split_recorder.py",
     "rule": "screen on split 2021; KEEP candidates confirmed on 42 and 2024; compare mean \u00b1 std over the 3 splits (as the paper)"
-  }
+  },
+  "phase2_notes": "Long-life (>1000 cycles) underprediction ~ -1000 on every run; Relative Huber dL/dyhat = \u00b1delta/y underweights long-life cells 6-13x. Phase-2 candidates: stat_tail_balance (loss.md \u00a74.7), cell-balanced weighting, label-free physics P0/P4b/P2."
 }

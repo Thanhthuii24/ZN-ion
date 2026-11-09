@@ -1,0 +1,190 @@
+{
+  "schema_version": 1,
+  "experiment_id": "ZN-E008",
+  "run_validity": "VALID",
+  "contract_answer": {
+    "question": "Does a phase-aware curve encoder that encodes charge [0:150] and discharge [150:300] halves with separate residual Conv1D branches reduce long-life underprediction on ZN-coin and beat ZN-E005 on split 2021 (MAPE <= 0.3136 or RMSE <= 424.0 or Acc@15 >= 0.4255) while passing the gradient gate?",
+    "outcome": "REFUTED",
+    "conclusion": "Reviewed by CODEX(gemini-4-argon). Apply the proposal's primary rule exactly. On split 2021 (seed 2021, Kaggle Tesla T4), ZN-E008 is a complete, finite 18-epoch run (828 steps, 95.01s training compute, 49,857 parameters, early stopping after selected epoch 13) achieving MAPE 0.331310, Acc@15 0.3185, RMSE 441.083 cycles, MAE 234.906 cycles, and DB-MAPE 0.331310 versus matched reference ZN-E005 (MAPE 0.321573, Acc@15 0.4055, RMSE 445.047 cycles, DB-MAPE 0.321573, 85,697 parameters). All three meaningful-gain paths fail: Path A fails MAPE <= 0.3136 (actual 0.3313, regression +0.0097) despite RMSE 441.1 <= 455.0; Path B fails RMSE <= 424.0 (actual 441.1, improvement -3.96 cycles) and MAPE <= 0.3246; Path C fails Acc@15 >= 0.4255 (actual 0.3185, regression -0.0870) and MAPE <= 0.3246. Among common guards, DB-MAPE (0.3313 <= 0.3316) and prediction spread (prediction SD 118.87 cycles = 29.18% of target SD 407.45 >= 10%, correlation 0.3190 vs 0.2756 in ZN-E005, 0 extreme predictions vs 19 in ZN-E005) pass, but the Acc@15 guard (0.3185 < 0.3755) and the formal gradient gate both FAIL: diagnostics.json reports overall_gradient_health WARNING because charge_stem (late near-zero gradient fraction 0.588624 > 0.50) and discharge_stem (0.629134 > 0.50) are flagged NEAR_ZERO_DOMINANT at step 185 (while charge_residual 0.2383, discharge_residual 0.1806, inter_summary 0.4795, and head 0.4615 are HEALTHY). Secondary EOL-band evidence shows slight improvement in the 500-1000-cycle band (MAPE 0.5355 vs 0.5561, bias -441.1 vs -469.2 cycles, RMSE 463.8 vs 481.3) and intermediate prefixes 11-25/26-50 (MAPE 0.3692/0.3082 vs 0.3867/0.3368), but >1000-cycle cells remain unchanged (MAPE 0.8515 vs 0.8453, Acc@15 0.0, bias -1052.9 vs -1048.6 cycles, 87.54% of total squared error), confirming that cross-run >1000-cycle underprediction (~930-1070 cycles across ZN-E001..E008) is primarily driven by the 1/y gradient scaling of the locked Phase-1 Relative Huber loss rather than phase boundary entanglement alone. Masks and activations are HEALTHY, padding is INVARIANT (0.0), and the executed train.py MD5 matches the reviewed file. Decision: DISCARD.",
+    "evidence_paths": [
+      "record.json.proposal.rejection_condition",
+      "record.json.result",
+      "record.json.metrics",
+      "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+      "diagnostics.json.summary.overall_gradient_health",
+      "diagnostics.json.summary.layer_health.charge_stem",
+      "diagnostics.json.summary.layer_health.discharge_stem",
+      "diagnostics.json.summary.layer_health.charge_residual",
+      "diagnostics.json.summary.layer_health.discharge_residual",
+      "diagnostics.json.summary.layer_health.inter_summary",
+      "diagnostics.json.summary.layer_health.head",
+      "diagnostics.json.summary.mask_health",
+      "diagnostics.json.summary.padding_invariance",
+      "worker_meta.json",
+      "../ZN-E005/record.json.metrics"
+    ]
+  },
+  "main_symptom": "Splitting the curve encoder into separate half-width charge [0:150] and discharge [150:300] Conv1D branches fails both the accuracy rules (MAPE 0.3313 vs 0.3216, Acc@15 0.3185 vs 0.4055, RMSE 441.1 vs 445.0 cycles) and the gradient gate (charge_stem 0.5886 and discharge_stem 0.6291 late near-zero gradient fractions, both NEAR_ZERO_DOMINANT > 0.50). While prediction-target correlation rises from 0.2756 to 0.3190, negative outlier predictions disappear (min +100.8 vs -408.5 cycles), and the 500-1000-cycle band improves slightly (MAPE 0.5355 vs 0.5561, bias -441.1 vs -469.2 cycles, 11.06% of squared error), short-life cells (<500 cycles, 15 cells) regress on MAPE from 0.1856 to 0.2000 (Acc@15 0.5407 -> 0.4247, bias -14.4 cycles, 1.40% of squared error) and the 3 long-life cells (>1000 cycles, target mean 1235.3) remain severely underpredicted at mean 182.4 cycles (bias -1052.9 cycles, MAPE 0.8515, Acc@15 0.0, 87.54% of total squared error), matching the ~930-1070-cycle high-EOL ceiling observed across all 5 architectures and 3 splits in ZN-E001..E008.",
+  "causes": [
+    {
+      "id": "C1_RELATIVE_HUBER_INVERSE_TARGET_GRADIENT_SCALING_AND_LONG_LIFE_BIAS",
+      "class": "loss_objective_limit",
+      "supporting_evidence": [
+        "record.json.metrics.by_eol.high_>1000",
+        "record.json.metrics.by_eol.middle_500-1000",
+        "record.json.metrics.by_eol.low_<500",
+        "record.json.metrics.prediction_diagnostics",
+        "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+        "../ZN-E001/record.json.metrics.by_eol",
+        "../ZN-E002/record.json.metrics.by_eol",
+        "../ZN-E003/record.json.metrics.by_eol",
+        "../ZN-E004/record.json.metrics.by_eol",
+        "../ZN-E005/record.json.metrics.by_eol",
+        "../ZN-E006/record.json.metrics.by_eol",
+        "../ZN-E007/record.json.metrics.by_eol"
+      ],
+      "contradicting_evidence": [
+        "In ZN-E008, the 500-1000-cycle band (2 cells, target mean 846.5) improves over ZN-E005 from MAPE 0.5561 to 0.5355, RMSE 481.3 to 463.8 cycles, and bias -469.2 to -441.1 cycles (prediction max 658.6 vs 520.5 cycles), showing that phase-aware features modestly widen mid-life separation.",
+        "On split 2024 at epoch 20 (ZN-E007), predictions reached up to 1514.2 cycles (prediction SD 343.5 cycles, correlation 0.6197), reducing >1000-cycle bias to -555.5 cycles (Acc@15 0.0933), demonstrating that architecture and training duration have non-zero leverage even under Relative Huber."
+      ],
+      "interpretation": "Across ZN-E001..ZN-E008 (5 architectures: MaskedSummaryCPMLP, ResConv-MaskedSummary H9/H2/H0, ResConv-MaskedTCN, PhaseSplit-ResConv-MaskedSummary-H0; and 3 paper splits 2021/42/2024), >1000-cycle cells remain underpredicted by ~932-1071 cycles with Acc@15 = 0.0 on 7 of 8 runs (-1052.9 cycles and 87.54% of total squared error in ZN-E008). This invariance across intra-cycle MLP, shared Conv1D, phase-split Conv1D, causal TCN, and head depths proves that the long-life ceiling is primarily a mathematical property of the locked Phase-1 Relative Huber loss (delta = 0.15, loss.md §1). For any sample outside the +/-15% quadratic zone (|hat_y - y|/y > delta), the gradient w.r.t. the cycle prediction hat_y is dL/d(hat_y) = +/- delta / y (and w.r.t. standardized output f is +/- sigma_train * delta / y). Thus, a long-life cell (y in [1000, 1402], split-2021 >1000 mean 1235.3 cycles) receives a 6.4x to 13.5x smaller per-sample gradient than a short-life cell (y in [104, 500), split-2021 <500 mean 191.9 cycles), and a 500-1000-cycle cell (mean 846.5) receives a 4.4x to 8.1x smaller gradient. Compounded with cohort skew (15 of 20 split-2021 cells are <500 cycles vs 3 cells >1000), short-life cells generate >90% of the total batch gradient push and anchor the model's baseline prediction around ~180-200 cycles. Implications for Phase 1 vs Phase 2: (1) Directly counteracting the 1/y gradient attenuation (e.g., via stat_tail_balance in loss.md §4.7, which weights underprediction excess error by w = clip(y/mu, 1, 3), or Phase-2 what-if physics losses P0/P4b/P2) is Phase-2 loss work and is strictly locked during Phase 1 (program.md §2, §8). (2) However, Phase 1 cannot stop yet: state.json.phase1_stopping requires >= 20 valid architecture experiments and >= 4 architecture families (currently 7 valid architecture runs across 3 families), and freezing a Phase-1 model for Phase 2 requires a 3-split confirmed parent (ZN-E005 is currently NOT CONFIRMED due to gradient-gate failures on splits 42 and 2024). Therefore, remaining Phase-1 experiments must prioritize gradient-gate-clean architectures across >= 4 families and explicit Cycle-1 anchor / relative-fade representations (architecture.md §2.2, program.md §2c D1) that make per-cycle fade slope linearly separable without requiring large tail gradients.",
+      "missing_evidence": [
+        "Phase-2 evaluation of stat_tail_balance and label-free physics losses (P0, P4b, P2) once Phase 1 closes with a 3-split confirmed parent.",
+        "A Phase-1 architecture that explicitly computes relative capacity/voltage fade against early observed cycles (Cycle 1-5 anchor) so the readout does not rely solely on implicit conv features under 1/y down-weighted tail gradients."
+      ]
+    },
+    {
+      "id": "C2_UNNORMALIZED_HALF_WIDTH_PHASE_STEM_RELU_SPARSITY",
+      "class": "optimization_warning",
+      "supporting_evidence": [
+        "diagnostics.json.summary.overall_gradient_health",
+        "diagnostics.json.summary.layer_health.charge_stem",
+        "diagnostics.json.summary.layer_health.discharge_stem",
+        "diagnostics.json.summary.layer_health.charge_residual",
+        "diagnostics.json.summary.layer_health.discharge_residual",
+        "diagnostics.json.summary.activation_health.charge_stem",
+        "diagnostics.json.summary.activation_health.discharge_stem",
+        "diagnostics.json.samples",
+        "../ZN-E005/diagnostics.json.summary.layer_health.cycle_stem"
+      ],
+      "contradicting_evidence": [
+        "Both stems remain connected and actively updating through step 185: charge_stem has grad_to_parameter_ratio 0.0480 and update_ratio 0.000765; discharge_stem has grad_to_parameter_ratio 0.0512 and update_ratio 0.001261.",
+        "All six activation groups report status HEALTHY with active_feature_fraction_min = 1.0 and zero nonfinite values.",
+        "Downstream GroupNorm-equipped charge_residual (late near-zero fraction 0.2383) and discharge_residual (0.1806), as well as inter_summary (0.4795) and head (0.4615), pass the <= 0.50 gradient gate."
+      ],
+      "interpretation": "Replacing the shared cycle_stem (Conv1d 3->32->64->64, late near-zero gradient fraction 0.3569 in ZN-E005) with two half-width unnormalized 3-layer Conv1D+ReLU stems (charge_stem and discharge_stem, each 3->16->32->32) triggered NEAR_ZERO_DOMINANT at both stems from step 1 to step 185 (charge_stem: 0.5241 -> 0.5886; discharge_stem: 0.5997 -> 0.6291, both exceeding the mandatory 0.50 threshold). Because each stem stacks three strided Conv1d+ReLU layers without GroupNorm and processes all 100 cycle slots (of which ~49.8% are zero-padded future cycles before masked temporal pooling, plus flat single-phase voltage plateaus), activation zero_fraction reaches 0.6494 in charge_stem and 0.5684 in discharge_stem (versus 0.3804 and 0.3789 in the GroupNorm-normalized charge_residual and discharge_residual blocks). With only 16 and 32 channels and >56% zero activations, more than half of the stem filter coordinates receive exact zero gradients (|g| <= 1e-12), causing a deterministic gradient-gate failure.",
+      "missing_evidence": [
+        "One targeted A2 repair on PhaseSplitResConvMaskedSummary that normalizes the phase stems (or replaces bare ReLU with smooth GELU/SiLU and restores channel capacity) so stem near-zero gradient fractions stay well below 0.50."
+      ]
+    },
+    {
+      "id": "C3_HALF_WIDTH_CURVE_BOTTLENECK_AND_LATE_PREFIX_REGRESSION",
+      "class": "representation_limit",
+      "supporting_evidence": [
+        "record.json.metrics",
+        "record.json.metrics.by_prefix.11-25",
+        "record.json.metrics.by_prefix.26-50",
+        "record.json.metrics.by_prefix.51-75",
+        "record.json.metrics.by_prefix.76-100",
+        "record.json.metrics.by_eol.low_<500",
+        "record.json.result.num_params",
+        "../ZN-E005/record.json.metrics.by_prefix",
+        "../ZN-E005/record.json.metrics.by_eol.low_<500"
+      ],
+      "contradicting_evidence": [
+        "Intermediate prefixes improve over ZN-E005: prefix 11-25 MAPE drops from 0.3867 to 0.3692 (RMSE 479.7 -> 466.8) and prefix 26-50 MAPE drops from 0.3368 to 0.3082 (RMSE 468.1 -> 447.7).",
+        "Short-life (<500 cycles) RMSE improves from 65.82 to 60.34 cycles because ZN-E008 eliminates the 19 extreme negative predictions (-408.5 min in ZN-E005 vs +100.8 min in ZN-E008)."
+      ],
+      "interpretation": "Splitting the encoder at d_model/2 = 32 per branch cut total model parameters by 41.8% (from 85,697 in ZN-E005 to 49,857 in ZN-E008) while >58% of stem weights had near-zero gradients. Although separating charge and discharge improved mid-prefix accuracy (11-50 cycles) and eliminated negative outlier predictions on short-life cells, it lost late-prefix precision (51-75 MAPE 0.2817 -> 0.3271, Acc@15 0.486 -> 0.284; 76-100 MAPE 0.2770 -> 0.3074, Acc@15 0.434 -> 0.328) and degraded <500-cycle Acc@15 from 0.5407 to 0.4247 (including the 2 charge-first validation cells, whose MAPE rose from 0.0427 to 0.1271). Independent phase pooling also discards local within-cycle charge-to-discharge coupling (e.g., coulombic efficiency and voltage hysteresis across the charge/discharge transition) until the final 64-dim concatenation.",
+      "missing_evidence": [
+        "Whether repairing the dead stem gradients and restoring per-branch representation capacity recovers the late-prefix (51-100) and <500-cycle Acc@15 of ZN-E005."
+      ]
+    }
+  ],
+  "selected_cause_id": "C2_UNNORMALIZED_HALF_WIDTH_PHASE_STEM_RELU_SPARSITY",
+  "layers": [
+    {
+      "name": "charge_stem",
+      "role": "Downsample the 150-point charge phase [0:150] of each cycle via 3 strided Conv1d+ReLU layers (3->16->32->32).",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.charge_stem",
+        "diagnostics.json.summary.activation_health.charge_stem"
+      ],
+      "persistent_dead_gradient": true,
+      "action": "REPAIR",
+      "reason": "Flagged WARNING (NEAR_ZERO_DOMINANT) in diagnostics.json and DEAD in tools/layer_report.py with late near-zero-gradient fraction 0.588624 (> 0.50) and activation zero_fraction_max 0.6494 despite finite updates (last 0.000765). Three stacked unnormalized Conv1d+ReLU layers at narrow 16/32 width suffer severe ReLU dead zones; repair by adding per-cycle GroupNorm in the stem or smooth GELU/SiLU activations in the single allowed A2 repair."
+    },
+    {
+      "name": "discharge_stem",
+      "role": "Downsample the 150-point discharge phase [150:300] of each cycle via 3 strided Conv1d+ReLU layers (3->16->32->32).",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.discharge_stem",
+        "diagnostics.json.summary.activation_health.discharge_stem"
+      ],
+      "persistent_dead_gradient": true,
+      "action": "REPAIR",
+      "reason": "Flagged WARNING (NEAR_ZERO_DOMINANT) in diagnostics.json and DEAD in tools/layer_report.py with late near-zero-gradient fraction 0.629134 (> 0.50) and activation zero_fraction_max 0.5684 despite finite updates (last 0.001261). Repair symmetrically with charge_stem by adding per-cycle GroupNorm or smooth GELU/SiLU activations so stem gradient sparsity stays below 0.50."
+    },
+    {
+      "name": "charge_residual",
+      "role": "Two GroupNorm-normalized ResidualCurveBlock(32, groups=8) layers encoding charge-phase curve topology.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.charge_residual",
+        "diagnostics.json.summary.activation_health.charge_residual"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Status is HEALTHY (OK in layer_report.py) with late grad-to-parameter ratio 0.0141, late near-zero-gradient fraction 0.238321 (<= 0.50), late update ratio 0.000430, and activation zero_fraction_max 0.3804, confirming that per-cycle GroupNorm + residual skip connections prevent gradient sparsity."
+    },
+    {
+      "name": "discharge_residual",
+      "role": "Two GroupNorm-normalized ResidualCurveBlock(32, groups=8) layers encoding discharge-phase curve topology.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.discharge_residual",
+        "diagnostics.json.summary.activation_health.discharge_residual"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Status is HEALTHY (OK in layer_report.py) with late grad-to-parameter ratio 0.0189, late near-zero-gradient fraction 0.180556 (<= 0.50), late update ratio 0.001063, and activation zero_fraction_max 0.3789. Retain while repairing the upstream phase stems."
+    },
+    {
+      "name": "inter_summary",
+      "role": "Project the 192-dimensional masked mean/last/last-minus-first phase-concatenated summary to 64 dimensions.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.inter_summary",
+        "diagnostics.json.summary.activation_health.inter_summary",
+        "diagnostics.json.summary.padding_invariance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Status is HEALTHY on split 2021 with late near-zero-gradient fraction 0.479517 (<= 0.50), late grad-to-parameter ratio 0.0715, late update ratio 0.002731, and exact padding invariance (0.0 output change). Note that 0.4795 is close to the 0.50 threshold that tripped on splits 42/2024 in ZN-E006/E007 due to the post-summary ReLU."
+    },
+    {
+      "name": "head",
+      "role": "Linear readout mapping the 64-dimensional ReLU summary state to standardized EOL.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.head",
+        "diagnostics.json.summary.activation_health.head",
+        "diagnostics.json.summary.branch_gradient_imbalance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Status is HEALTHY on split 2021 with late near-zero-gradient fraction 0.461538 (<= 0.50), late grad-to-parameter ratio 0.5404, late update ratio 0.000838, and healthy branch gradient balance (38.4x < 1000x)."
+    }
+  ],
+  "gates": {
+    "gradient": "FAIL",
+    "screen_floor": {
+      "applicable": false,
+      "pass": null,
+      "reason": "ZN-E008 is a full_candidate run on split 2021 (18 completed epochs), not a five-epoch screening run."
+    }
+  },
+  "decision": "DISCARD",
+  "next_action": {
+    "type": "REPAIR",
+    "summary": "ZN-E008 is VALID + DISCARD against ZN-E005: all §7 paths A/B/C fail (MAPE 0.3313 vs 0.3216, Acc@15 0.3185 vs 0.4055, RMSE 441.1 vs 445.0) and the gradient gate fails because charge_stem (0.5886) and discharge_stem (0.6291) exceed the 0.50 near-zero-gradient limit. Cross-run assessment of the long-life limit (Phase 1 vs Phase 2): Across ZN-E001..E008 (5 architectures, 3 splits), >1000-cycle cells stay underpredicted by ~930-1070 cycles (Acc@15 = 0 on 7/8 runs; -1052.9 cycles and 87.54% of squared error in ZN-E008) because Relative Huber's gradient w.r.t. prediction scales as dL/d(hat_y) = +/- delta/y, giving >1000-cycle cells (mean 1235 cycles) ~6-13x smaller per-sample gradients than <500-cycle cells (mean 192 cycles, 75% of the cohort). While this proves the ~1000-cycle ceiling is fundamentally a loss property best addressed in Phase 2 (e.g., stat_tail_balance in loss.md §4.7 and label-free physics losses P0/P4b/P2), Phase 1 cannot close yet under program.md §10 and state.json.phase1_stopping (requires >= 20 valid architecture runs and >= 4 families, plus a 3-split confirmed parent; currently 7 valid architecture runs, 3 families, and ZN-E005 is NOT CONFIRMED due to split 42/2024 gradient warnings). Recommended next step (ZN-E009): Execute the single allowed A2 targeted repair on PhaseSplitResConvMaskedSummary by adding per-cycle GroupNorm (and/or smooth GELU replacing bare ReLU) in charge_stem and discharge_stem to eliminate the >58% dead stem gradients (and prevent readout ReLU sparsity on splits 42/2024); if that repair still fails §7 vs ZN-E005, close the phase-split family and open Family 4 with an explicit Cycle-1 anchor / relative-fade trajectory encoder (architecture.md §2.2, program.md §2c D1) to establish a 3-split confirmed parent and progress toward Phase-2 loss unlocking.",
+    "source_cause_id": "C2_UNNORMALIZED_HALF_WIDTH_PHASE_STEM_RELU_SPARSITY",
+    "responsible_block": "Curve Encoder: charge_stem and discharge_stem normalization/activation repair (1 allowed A2 repair), followed by Family 4 (Cycle-1 anchor / relative-fade encoder)"
+  }
+}

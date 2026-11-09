@@ -111,3 +111,12 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - 3-split ZN-E005 config (2021/42/2024): MAPE 0.332 ± 0.009, Acc@15 0.334 ± 0.080, RMSE 383 ± 54 — beats paper Zn-ion CPTransformer (0.515 ± 0.067 / 0.202) and CPMLP (0.558 ± 0.034 / 0.297), but NOT CONFIRMED by the gate rule.
 - Family-level issue: the ReLU between inter_summary and head gives NEAR_ZERO_DOMINANT on 2 of 3 splits.
 - T002 (executor Gemini 3.8): PhaseSplitResConvMaskedSummary added; refactor of ResidualCurveBlock/ResidualConvMaskedSummary verified behaviour-preserving (same state_dict and outputs for ZN-E002/E003/E005 configs; E005 checkpoint loads).
+
+## ZN-E008 — Phase-split ResConv + masked summary + linear head, split 2021 (new family)
+
+- Run: `VALID`. Decision: `DISCARD` (§7 paths fail; gradient gate FAIL: charge_stem 0.589, discharge_stem 0.629 near-zero). Reviewer: Gemini 4 Argon.
+- One change vs ZN-E005: curve encoder split into charge/discharge branches. 49,857 params; 18 epochs, best epoch 13.
+- Metrics: MAPE 0.3313, Acc@15 0.3185, RMSE 441.1, DB-MAPE 0.3313; pred SD 119, corr 0.32. Bands: <500 MAPE 0.200; 500–1000 bias −441; >1000 bias −1053 (87.5% of squared error).
+- Cross-run finding: >1000-cycle cells are underpredicted by ~930–1070 cycles on every architecture and split. Relative Huber gives dL/dŷ = ±δ/y, so these cells get 6–13× smaller gradients — a loss property for Phase 2 (stat_tail_balance, cell-balanced weighting, physics P0/P4b/P2).
+- Phase 1 continues (7 valid architecture runs, 3 families; needs ≥20 and ≥4).
+- Next: ZN-E009 = one A2 repair: ReLU -> GELU in the phase-split stems and the readout (dead-ReLU near-zero gradients are the recurring gate failure).
