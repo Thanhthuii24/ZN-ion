@@ -1,0 +1,181 @@
+{
+  "schema_version": 1,
+  "experiment_id": "ZN-E009",
+  "run_validity": "VALID",
+  "contract_answer": {
+    "question": "Is the phase-split family limited by dead ReLU units rather than by the phase split itself, such that replacing ReLU by GELU in the phase-split stems and readout removes the dead-unit near-zero gradients (all blocks below 0.50 late near-zero fraction) and lets PhaseSplit-ResConv-GELU reach ZN-E005-level accuracy (MAPE <= 0.3136 or RMSE <= 424.0 or Acc@15 >= 0.4255 vs ZN-E005 under §7)?",
+    "outcome": "REFUTED",
+    "conclusion": "Reviewed by CODEX(gemini-4-argon). Apply the proposal's primary rule exactly. On split 2021 (seed 2021, Kaggle Tesla T4), ZN-E009 is a complete, finite 12-epoch run (552 optimizer steps, 68.592s training compute, 49,857 parameters, early stopping at epoch 12 after selected epoch 7) achieving MAPE 0.336914, Acc@15 0.3305, RMSE 421.566 cycles, MAE 226.845 cycles, and DB-MAPE 0.336914 versus active parent ZN-E005 (MAPE 0.321573, Acc@15 0.4055, RMSE 445.047 cycles, DB-MAPE 0.321573, 85,697 parameters) and matched reference ZN-E008 (MAPE 0.331310, Acc@15 0.3185, RMSE 441.083 cycles, DB-MAPE 0.331310, 49,857 parameters). Replacing ReLU with GELU in charge_stem, discharge_stem, and the readout completely resolves the dead-unit gradient failure: overall_gradient_health is HEALTHY with zero flags across all 6 blocks (late near-zero gradient fractions: charge_stem 0.0 vs 0.5886 in ZN-E008, discharge_stem 0.0 vs 0.6291, inter_summary 0.0104 vs 0.4795, head 0.0 vs 0.4615, charge_residual 0.0515 vs 0.2383, discharge_residual 0.1004 vs 0.1806; all 6 blocks OK in tools/layer_report.py), and raises prediction spread to the highest on split 2021 so far (prediction SD 140.53 cycles = 34.49% of target SD 407.45 >= 10%, correlation 0.3705 vs 0.3190 in ZN-E008 and 0.2756 in ZN-E005), cutting RMSE by 23.48 cycles vs ZN-E005 (421.57 <= 424.0) and by 19.52 cycles vs ZN-E008. However, all three §7 KEEP paths against ZN-E005 fail when paired with their required guards: Path A fails MAPE <= 0.3136 (actual 0.3369, regression +0.0153 vs ZN-E005); Path B meets the raw RMSE improvement threshold (421.57 <= 424.0) but fails its co-primary MAPE guard (0.3369 > 0.3246); Path C fails Acc@15 >= 0.4255 (actual 0.3305, regression -0.0750 vs ZN-E005). Furthermore, the common guards for Acc@15 (0.3305 < 0.3755) and DB-MAPE (0.3369 > 0.3316) both fail. Because the gradient repair succeeded cleanly yet the phase-split encoder still regresses on <500-cycle MAPE (0.2206 vs 0.2000 in ZN-E008 and 0.1856 in ZN-E005; bias +7.04 cycles, 12 negative outlier predictions down to -265.4 cycles) despite narrowing 500-1000 bias (-413.9 vs -441.1/-469.2) and >1000 bias (-995.4 vs -1052.9/-1048.6), the phase-split family is limited by the half-width phase-split representation itself rather than by dead ReLU units. Masks and activations are HEALTHY, padding is INVARIANT (0.0), and the executed train.py MD5 matches the reviewed file. Decision: DISCARD and close the phase-split family.",
+    "evidence_paths": [
+      "record.json.proposal.rejection_condition",
+      "record.json.result",
+      "record.json.metrics",
+      "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+      "diagnostics.json.summary.overall_gradient_health",
+      "diagnostics.json.summary.layer_health.charge_stem",
+      "diagnostics.json.summary.layer_health.discharge_stem",
+      "diagnostics.json.summary.layer_health.charge_residual",
+      "diagnostics.json.summary.layer_health.discharge_residual",
+      "diagnostics.json.summary.layer_health.inter_summary",
+      "diagnostics.json.summary.layer_health.head",
+      "diagnostics.json.summary.mask_health",
+      "diagnostics.json.summary.padding_invariance",
+      "worker_meta.json",
+      "../ZN-E008/record.json.metrics",
+      "../ZN-E008/diagnostics.json.summary.layer_health",
+      "../ZN-E005/record.json.metrics"
+    ]
+  },
+  "main_symptom": "Replacing ReLU with GELU in the phase-split stems and readout eliminates all dead-ReLU near-zero gradient flags (charge_stem 0.5886 -> 0.0, discharge_stem 0.6291 -> 0.0, inter_summary 0.4795 -> 0.0104, head 0.4615 -> 0.0; overall_gradient_health HEALTHY), lifts prediction SD to 140.53 cycles (correlation 0.3705 vs 0.3190 in ZN-E008 and 0.2756 in ZN-E005), and improves RMSE to 421.57 cycles (vs 441.08 in ZN-E008 and 445.05 in ZN-E005) by reducing mid-life (500-1000 bias -413.9 vs -441.1/-469.2) and long-life (>1000 bias -995.4 vs -1052.9/-1048.6) underprediction. However, overall MAPE regresses to 0.3369 (vs 0.3313 in ZN-E008 and 0.3216 in ZN-E005) and Acc@15 remains at 0.3305 (below the 0.3755 guard vs ZN-E005's 0.4055) because the unregularized half-width phase-split encoder over-disperses short-life (<500 cycles, 15 cells) predictions: <500 MAPE degrades from 0.1856 (ZN-E005) and 0.2000 (ZN-E008) to 0.2206 (bias +7.04 cycles, RMSE 69.47 vs 60.34 in ZN-E008, with 12 extreme negative predictions down to -265.4 cycles and charge-first cell MAPE rising to 0.2735 vs 0.1271 in ZN-E008 and 0.0427 in ZN-E005).",
+  "causes": [
+    {
+      "id": "C1_PHASE_SPLIT_HALF_WIDTH_CURVE_BOTTLENECK_AND_SHORT_LIFE_DISPERSION",
+      "class": "representation_limit",
+      "supporting_evidence": [
+        "record.json.metrics",
+        "record.json.metrics.prediction_diagnostics",
+        "record.json.metrics.by_eol.low_<500",
+        "record.json.metrics.by_prefix.26-50",
+        "record.json.metrics.by_prefix.51-75",
+        "record.json.metrics.by_prefix.76-100",
+        "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+        "../ZN-E008/record.json.metrics",
+        "../ZN-E005/record.json.metrics"
+      ],
+      "contradicting_evidence": [
+        "RMSE improves to 421.57 cycles (beating ZN-E008 by 19.52 cycles and ZN-E005 by 23.48 cycles, clearing the raw Path B RMSE threshold <= 424.0) and MAE drops to 226.84 cycles (vs 234.91 in ZN-E008 and 234.10 in ZN-E005).",
+        "Prediction spread and rank ordering reach split-2021 highs: prediction SD 140.53 cycles (vs 118.87 in ZN-E008 and 115.67 in ZN-E005) and prediction-target correlation 0.3705 (vs 0.3190 and 0.2756), with early prefix 01-10 MAPE improving from 0.4025 (ZN-E008) and 0.3969 (ZN-E005) to 0.3622."
+      ],
+      "interpretation": "With the gradient gate completely clean (0.0% near-zero gradients in both phase stems and head), ZN-E009 provides a decisive test of the phase-split encoder mechanism itself. Unlocking full gradient flow through the two half-width (32-channel) phase branches allows the model to push predictions higher on medium/long-life cells (reducing 500-1000 bias to -413.9 and >1000 bias to -995.4 cycles, cutting overall RMSE to 421.57), but because charge [0:150] and discharge [150:300] are pooled independently before concatenation—discarding point-by-point intra-cycle charge-to-discharge coupling such as coulombic efficiency, voltage hysteresis, and turn-around IR drop—and lack an explicit Cycle-1 reference anchor, the wider prediction spread leaks into the 15 short-life cells (<500 cycles). Specifically, <500-cycle bias shifts from -14.43 (ZN-E008) and -9.46 (ZN-E005) to +7.04 cycles, 12 extreme negative predictions reappear (min -265.4 cycles), charge-first validation cells degrade to MAPE 0.2735 (vs 0.0427 in shared-stem ZN-E005), and <500-cycle MAPE worsens to 0.2206 (75% of validation samples), driving overall MAPE to 0.3369 (+0.0153 vs ZN-E005) and Acc@15 to 0.3305 (-0.0750 vs ZN-E005). Because the single allowed A2 repair of the non-promising PhaseSplit-ResConv family failed §7, the phase-split family is now closed.",
+      "missing_evidence": [
+        "Testing Family 4 (Cycle-1 anchor / relative-fade degradation encoder, architecture.md §2.2 / program.md §2c D1) on top of the shared 64-channel ResConv curve encoder so that higher prediction spread is anchored to each cell's own initial cycle rather than dispersing short-life baseline predictions."
+      ]
+    },
+    {
+      "id": "C2_GELU_ACTIVATION_ELIMINATES_RELU_DEAD_ZONES_ACROSS_STEMS_AND_READOUT",
+      "class": "optimization_resolution",
+      "supporting_evidence": [
+        "diagnostics.json.summary.overall_gradient_health",
+        "diagnostics.json.summary.layer_health.charge_stem",
+        "diagnostics.json.summary.layer_health.discharge_stem",
+        "diagnostics.json.summary.layer_health.inter_summary",
+        "diagnostics.json.summary.layer_health.head",
+        "diagnostics.json.summary.activation_health",
+        "../ZN-E008/diagnostics.json.summary.layer_health",
+        "../ZN-E006/diagnostics.json.summary.layer_health",
+        "../ZN-E007/diagnostics.json.summary.layer_health"
+      ],
+      "contradicting_evidence": [
+        "Removing the ReLU zero-clamping floor in the readout also removes the implicit lower bound on standardized predictions, allowing 12 extreme negative predictions (down to -265.4 cycles) on anomalous short-prefix cycles that ReLU had clamped in ZN-E008 (min +100.8 cycles).",
+        "Faster gradient flow through GELU causes validation MAPE to peak earlier (best epoch 7 vs epoch 13 in ZN-E008 and epoch 8 in ZN-E005) and overfit afterwards (epochs 8-12 MAPE 0.3455-0.3733)."
+      ],
+      "interpretation": "Every dead-unit gradient warning across ZN-E002..ZN-E008 traced to bare ReLU activations: inter_mlp.0 in ZN-E002/E004 (>55% near-zero), the post-summary readout ReLU (inter_summary/head >50% near-zero on splits 42 and 2024 in ZN-E006/E007, and 0.4795/0.4615 on split 2021 in ZN-E008), and the unnormalized 3-layer Conv1D stems in ZN-E008 (0.5886 and 0.6291 near-zero). Replacing ReLU with smooth GELU in the stems and readout reduced late near-zero gradient fractions to 0.0000 in charge_stem, 0.0000 in discharge_stem, 0.0000 in head, and 0.0104 in inter_summary (with charge_residual 0.0515 and discharge_residual 0.1004 also dropping substantially), while activation zero_fraction_max fell from 0.6494/0.5684 to 0.0 in both stems and 0.0 in inter_summary/head. This confirms that GELU completely cures the recurring ReLU dead-gradient failure mode and should be carried forward as the default stem and readout activation in Family 4 so new candidates can pass 3-split confirmation (splits 2021/42/2024) without tripping the 0.50 near-zero gradient gate.",
+      "missing_evidence": [
+        "Evaluating GELU on the shared 64-channel ResConv stem + Cycle-1 anchor / relative-fade architecture (Family 4) across splits 2021, 42, and 2024."
+      ]
+    },
+    {
+      "id": "C3_RELATIVE_HUBER_INVERSE_TARGET_GRADIENT_SCALING_PERSISTS",
+      "class": "loss_objective_limit",
+      "supporting_evidence": [
+        "record.json.metrics.by_eol.high_>1000",
+        "record.json.metrics.by_eol.middle_500-1000",
+        "record.json.metrics.by_eol.low_<500",
+        "validation_predictions.npz[prediction,target,cell_id,prefix_length]"
+      ],
+      "contradicting_evidence": [
+        "Compared with ZN-E008 and ZN-E005, ZN-E009 narrows 500-1000-cycle bias from -441.1 / -469.2 to -413.9 cycles (MAPE 0.5355 / 0.5561 -> 0.5049; RMSE 463.8 / 481.3 -> 433.1) and >1000-cycle bias from -1052.9 / -1048.6 to -995.4 cycles (MAPE 0.8515 / 0.8453 -> 0.8062; RMSE 1065.6 / 1069.7 -> 1017.6), proving that healthier gradient flow and stronger representations can move mid/long-life predictions by ~50-57 cycles even under locked Relative Huber."
+      ],
+      "interpretation": "Even with zero dead stem/readout gradients and the highest prediction spread to date (SD 140.53 cycles, max prediction 666.4 cycles), the 3 validation cells with EOL > 1000 cycles (target mean 1235.3) still have prediction mean 239.9 cycles (bias -995.4 cycles, Acc@15 = 0.0) and account for 87.41% of total squared error (with the 2 cells in 500-1000 accounting for 10.56% and the 15 cells in <500 accounting for only 2.04%). As established across ZN-E001..E009, Relative Huber (delta = 0.15) scales linear-regime gradients as dL/d(hat_y) = +/- delta / y, down-weighting >1000-cycle cells by 6.4x-13.5x relative to <500-cycle cells. While direct loss reweighting (e.g., stat_tail_balance in loss.md §4.7) remains locked until Phase 2, Phase 1 must still test Family 4 (explicit Cycle-1 anchor / relative-fade features, architecture.md §2.2 / program.md §2c D1) so the degradation encoder receives explicit relative-fade trajectories (h_t - h_1 and early-capacity-normalized curves) rather than relying on tail gradients to discover baseline-subtracted aging rates.",
+      "missing_evidence": [
+        "Whether an explicit Cycle-1 anchor / relative-fade degradation encoder (Family 4) further reduces 500-1000 and >1000 underprediction without sacrificing <500-cycle MAPE."
+      ]
+    }
+  ],
+  "selected_cause_id": "C1_PHASE_SPLIT_HALF_WIDTH_CURVE_BOTTLENECK_AND_SHORT_LIFE_DISPERSION",
+  "layers": [
+    {
+      "name": "charge_stem",
+      "role": "Downsample the 150-point charge phase [0:150] of each cycle via 3 strided Conv1d+GELU layers (3->16->32->32).",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.charge_stem",
+        "diagnostics.json.summary.activation_health.charge_stem"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "REMOVE",
+      "reason": "Gradient health is HEALTHY (OK in layer_report.py) with late near-zero gradient fraction 0.0 (down from 0.5886 in ZN-E008), late grad-to-parameter ratio 0.0086, update ratio 0.00138, and activation zero_fraction_max 0.0. However, because the phase-split family fails §7 vs ZN-E005 after its single allowed A2 repair and closes, remove the half-width phase-split stem and return to the full-width shared curve stem (with GELU) for Family 4."
+    },
+    {
+      "name": "discharge_stem",
+      "role": "Downsample the 150-point discharge phase [150:300] of each cycle via 3 strided Conv1d+GELU layers (3->16->32->32).",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.discharge_stem",
+        "diagnostics.json.summary.activation_health.discharge_stem"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "REMOVE",
+      "reason": "Gradient health is HEALTHY (OK in layer_report.py) with late near-zero gradient fraction 0.0 (down from 0.6291 in ZN-E008), late grad-to-parameter ratio 0.0755, update ratio 0.00171, and activation zero_fraction_max 0.0. Remove along with charge_stem as the phase-split family closes, while carrying the validated GELU stem activation into Family 4."
+    },
+    {
+      "name": "charge_residual",
+      "role": "Two GroupNorm-normalized ResidualCurveBlock(32, groups=8) layers encoding charge-phase curve features.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.charge_residual",
+        "diagnostics.json.summary.activation_health.charge_residual"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "REMOVE",
+      "reason": "Status is HEALTHY (OK in layer_report.py) with late near-zero gradient fraction 0.0515 (<= 0.50), late grad-to-parameter ratio 0.00338, and late update ratio 0.000931. Remove the separate 32-channel charge residual branch as the phase-split family closes in favor of the shared 64-channel residual curve encoder in Family 4."
+    },
+    {
+      "name": "discharge_residual",
+      "role": "Two GroupNorm-normalized ResidualCurveBlock(32, groups=8) layers encoding discharge-phase curve features.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.discharge_residual",
+        "diagnostics.json.summary.activation_health.discharge_residual"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "REMOVE",
+      "reason": "Status is HEALTHY (OK in layer_report.py) with late near-zero gradient fraction 0.1004 (<= 0.50), late grad-to-parameter ratio 0.0266, and late update ratio 0.000704. Remove the separate 32-channel discharge residual branch as the phase-split family closes."
+    },
+    {
+      "name": "inter_summary",
+      "role": "Project the 192-dimensional masked cycle summary to 64 dimensions before the GELU readout.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.inter_summary",
+        "diagnostics.json.summary.activation_health.inter_summary",
+        "diagnostics.json.summary.padding_invariance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "REPLACE",
+      "reason": "Status is HEALTHY (OK in layer_report.py) with late near-zero gradient fraction dropping from 0.4795 (ZN-E008) and >0.52 (ZN-E006/E007) to 0.0104 thanks to the post-summary GELU activation, with exact padding invariance (0.0). Replace the plain masked summary projection with Family 4's Cycle-1 anchor / relative-fade degradation encoder (architecture.md §2.2, program.md §2c D1) while retaining GELU."
+    },
+    {
+      "name": "head",
+      "role": "Linear readout mapping the 64-dimensional GELU summary state to standardized EOL.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.head",
+        "diagnostics.json.summary.activation_health.head",
+        "diagnostics.json.summary.branch_gradient_imbalance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Status is HEALTHY (OK in layer_report.py) with late near-zero gradient fraction 0.0 (down from 0.4615 in ZN-E008 and >0.51 in ZN-E006/E007), late grad-to-parameter ratio 0.2020, update ratio 0.000656, and healthy branch balance (59.7x < 1000x). Retain the lightweight linear readout with GELU activation as the default head in Family 4."
+    }
+  ],
+  "gates": {
+    "gradient": "PASS",
+    "screen_floor": {
+      "applicable": false,
+      "pass": null,
+      "reason": "ZN-E009 is a full_candidate run on split 2021 (12 completed epochs), not a five-epoch screening run."
+    }
+  },
+  "decision": "DISCARD",
+  "next_action": {
+    "type": "NEW_HYPOTHESIS",
+    "summary": "ZN-E009 is VALID + DISCARD against active parent ZN-E005: although RMSE improves by 23.48 cycles to 421.57 (<= 424.0) and the gradient gate passes cleanly (all 6 blocks HEALTHY/OK), Path B fails its MAPE guard (0.3369 > 0.3246), Paths A and C fail (MAPE 0.3369 > 0.3136; Acc@15 0.3305 < 0.4255), and both the Acc@15 guard (0.3305 < 0.3755) and DB-MAPE guard (0.3369 > 0.3316) fail. Because ZN-E009 was the single allowed A2 repair for the non-promising PhaseSplit-ResConv family, the phase-split family is now closed. Recommend next_action: Open Family 4 for Phase 1 with a Cycle-1 anchor / relative-fade degradation encoder (architecture.md §2.2 'Anchor / Reference Comparator' h'_t = [h_t, h_t - h_1] and/or program.md §2c D1 early-cycle-normalized trajectory view) built on the shared 64-channel ResConv curve encoder (ZN-E005 backbone), so that per-cycle fade is explicitly anchored to Cycle 1 rather than blurring short-life baselines when prediction spread widens. Carry GELU into Family 4 as the default stem and readout activation: ZN-E009 proved on identical width/topology that replacing ReLU with GELU reduced stem late near-zero gradient fractions from 0.5886/0.6291 to 0.0000/0.0000 and readout inter_summary/head near-zero fractions from 0.4795/0.4615 (and >0.51 on splits 42/2024 in ZN-E006/E007) to 0.0104/0.0000, directly solving the dead-ReLU gate failures that blocked 3-split confirmation of ZN-E005.",
+    "source_cause_id": "C1_PHASE_SPLIT_HALF_WIDTH_CURVE_BOTTLENECK_AND_SHORT_LIFE_DISPERSION",
+    "responsible_block": "Degradation Encoder (Family 4: Cycle-1 anchor / relative-fade comparator on shared ResConv backbone with GELU activation as default)"
+  }
+}

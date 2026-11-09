@@ -120,3 +120,11 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - Cross-run finding: >1000-cycle cells are underpredicted by ~930–1070 cycles on every architecture and split. Relative Huber gives dL/dŷ = ±δ/y, so these cells get 6–13× smaller gradients — a loss property for Phase 2 (stat_tail_balance, cell-balanced weighting, physics P0/P4b/P2).
 - Phase 1 continues (7 valid architecture runs, 3 families; needs ≥20 and ≥4).
 - Next: ZN-E009 = one A2 repair: ReLU -> GELU in the phase-split stems and the readout (dead-ReLU near-zero gradients are the recurring gate failure).
+
+## ZN-E009 — Phase-split ResConv + GELU, split 2021 (one A2 repair)
+
+- Run: `VALID`. Decision: `DISCARD` (§7: path B RMSE 421.6 passes but MAPE 0.3369 > 0.3246; Acc@15 0.3305 < 0.3755). Gradient gate PASS.
+- One change vs ZN-E008: ReLU -> GELU in stems and readout (T003). Stem near-zero 0.589/0.629 -> 0.000/0.000; readout ~0.01.
+- Bands: <500 MAPE 0.221 bias +7; 500–1000 bias −414; >1000 bias −995; pred SD 141 (widest so far), corr 0.37.
+- Phase-split family closed. GELU is the evidence-backed fix for the recurring dead-ReLU gate failure.
+- Next: Family 4 = cycle-1 anchor / relative-fade encoder (architecture.md §2.2) on the ResConv backbone, GELU default.

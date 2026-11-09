@@ -4,14 +4,14 @@
   "research_mode": "model_search_no_physics",
   "phase": "phase1_model",
   "phase_status": "architecture_search",
-  "workflow_status": "running_remote",
+  "workflow_status": "proposal_needed",
   "protocol_status": "locked",
   "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
   "run_approved": true,
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
-  "current_experiment": "ZN-E009",
-  "next_experiment_id": "ZN-E009",
-  "next_action": "T003 activation option (GELU) for phase-split stems + readout; ZN-E009 proposal",
+  "current_experiment": null,
+  "next_experiment_id": "ZN-E010",
+  "next_action": "Family 4: cycle-1 anchor encoder (ResConv backbone, GELU default)",
   "active_architecture_parent": "ZN-E005",
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -102,8 +102,8 @@
     {
       "family": "PhaseSplit-ResConv",
       "experiment": "ZN-E008",
-      "status": "non-promising, one A2 repair (ZN-E009)",
-      "follow_ups_used": 0
+      "status": "closed (ZN-E009 repair DISCARD)",
+      "follow_ups_used": 1
     }
   ],
   "test_status": "unused",
@@ -115,13 +115,13 @@
     "hard_cap_valid_architecture_experiments": 50,
     "meaningful_mape_gain": 0.008,
     "meaningful_acc15_gain": 0.02,
-    "valid_architecture_experiments": 6,
+    "valid_architecture_experiments": 7,
     "architecture_families_covered": [
       "residual_conv_masked_summary",
       "residual_conv_temporal_tcn_masked_summary",
       "phase_split_resconv_masked_summary"
     ],
-    "valid_runs_since_meaningful_gain": 1,
+    "valid_runs_since_meaningful_gain": 2,
     "promotion_eligible_incomplete_runs": [],
     "meaningful_rmse_gain": 21
   },
@@ -147,12 +147,12 @@
     },
     "counter": "optimizer_training_compute_seconds",
     "usage": {
-      "experiments": 9,
-      "training_seconds": 1136.69
+      "experiments": 10,
+      "training_seconds": 1205.28
     },
     "remaining": {
-      "experiments": 141,
-      "training_seconds": 248863.31
+      "experiments": 140,
+      "training_seconds": 248794.72
     },
     "exhausted": false,
     "status": "active"
