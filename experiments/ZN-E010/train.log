@@ -1,0 +1,184 @@
+
+===== ZN-E010 START 2026-11-09 04:53:08 =====
+epoch=1 epoch_steps=46/46 epoch_progress=1.000 steps=46 train_compute=15.62s val_mape=0.417191 val_acc15=0.212000
+epoch=2 epoch_steps=46/46 epoch_progress=2.000 steps=92 train_compute=25.76s val_mape=0.373486 val_acc15=0.219500
+epoch=3 epoch_steps=46/46 epoch_progress=3.000 steps=138 train_compute=36.11s val_mape=0.358846 val_acc15=0.223500
+epoch=4 epoch_steps=46/46 epoch_progress=4.000 steps=184 train_compute=46.59s val_mape=0.335379 val_acc15=0.319500
+epoch=5 epoch_steps=46/46 epoch_progress=5.000 steps=230 train_compute=57.31s val_mape=0.378087 val_acc15=0.246500
+epoch=6 epoch_steps=46/46 epoch_progress=6.000 steps=276 train_compute=68.17s val_mape=0.338339 val_acc15=0.333000
+epoch=7 epoch_steps=46/46 epoch_progress=7.000 steps=322 train_compute=79.18s val_mape=0.332272 val_acc15=0.290500
+epoch=8 epoch_steps=46/46 epoch_progress=8.000 steps=368 train_compute=90.47s val_mape=0.356862 val_acc15=0.272000
+epoch=9 epoch_steps=46/46 epoch_progress=9.000 steps=414 train_compute=101.93s val_mape=0.348322 val_acc15=0.250500
+epoch=10 epoch_steps=46/46 epoch_progress=10.000 steps=460 train_compute=113.30s val_mape=0.332536 val_acc15=0.366500
+epoch=11 epoch_steps=46/46 epoch_progress=11.000 steps=506 train_compute=124.48s val_mape=0.347930 val_acc15=0.288000
+epoch=12 epoch_steps=46/46 epoch_progress=12.000 steps=552 train_compute=135.63s val_mape=0.330927 val_acc15=0.302000
+epoch=13 epoch_steps=46/46 epoch_progress=13.000 steps=598 train_compute=146.83s val_mape=0.332927 val_acc15=0.315000
+epoch=14 epoch_steps=46/46 epoch_progress=14.000 steps=644 train_compute=158.08s val_mape=0.349885 val_acc15=0.275500
+epoch=15 epoch_steps=46/46 epoch_progress=15.000 steps=690 train_compute=169.31s val_mape=0.348569 val_acc15=0.281000
+epoch=16 epoch_steps=46/46 epoch_progress=16.000 steps=736 train_compute=180.56s val_mape=0.357947 val_acc15=0.353500
+epoch=17 epoch_steps=46/46 epoch_progress=17.000 steps=782 train_compute=191.83s val_mape=0.335839 val_acc15=0.274500
+{
+  "metrics": {
+    "mape": 0.3325355886190057,
+    "acc15": 0.3665,
+    "mae": 232.12941213226318,
+    "rmse": 425.0094070668019,
+    "prediction_diagnostics": {
+      "prediction_mean": 195.63369750976562,
+      "prediction_std": 124.31673431396484,
+      "prediction_min": 104.28018188476562,
+      "prediction_max": 856.7443237304688,
+      "target_mean": 413.8999938964844,
+      "target_std": 407.4496154785156,
+      "prediction_to_target_std_ratio": 0.30510946529662375,
+      "mean_signed_relative_error": -0.24495786428451538,
+      "relative_error_std": 0.35596174001693726,
+      "prediction_target_correlation": 0.47852252869960044,
+      "extreme_prediction_count": 0
+    },
+    "by_prefix": {
+      "01-10": {
+        "mape": 0.41486254819073637,
+        "acc15": 0.3,
+        "mae": 278.3084853363037,
+        "rmse": 486.2504251776904,
+        "bias": -270.0828552246094,
+        "relative_bias": -0.3503963053226471,
+        "prediction_mean": 143.81712341308594,
+        "target_mean": 413.8999938964844,
+        "sample_count": 200,
+        "unique_cell_count": 20
+      },
+      "11-25": {
+        "mape": 0.40231051359019343,
+        "acc15": 0.28,
+        "mae": 266.1130264790853,
+        "rmse": 470.7941531931134,
+        "bias": -254.85845947265625,
+        "relative_bias": -0.32235991954803467,
+        "prediction_mean": 159.04153442382812,
+        "target_mean": 413.8999938964844,
+        "sample_count": 300,
+        "unique_cell_count": 20
+      },
+      "26-50": {
+        "mape": 0.330500115424367,
+        "acc15": 0.35,
+        "mae": 235.54683673095704,
+        "rmse": 434.05650615201915,
+        "bias": -221.61924743652344,
+        "relative_bias": -0.23611266911029816,
+        "prediction_mean": 192.28074645996094,
+        "target_mean": 413.8999938964844,
+        "sample_count": 500,
+        "unique_cell_count": 20
+      },
+      "51-75": {
+        "mape": 0.2948690696017558,
+        "acc15": 0.442,
+        "mae": 212.4066955871582,
+        "rmse": 395.87026559503386,
+        "bias": -193.24371337890625,
+        "relative_bias": -0.1820758581161499,
+        "prediction_mean": 220.65628051757812,
+        "target_mean": 413.8999938964844,
+        "sample_count": 500,
+        "unique_cell_count": 20
+      },
+      "76-100": {
+        "mape": 0.2974418420194894,
+        "acc15": 0.386,
+        "mae": 209.57290618896485,
+        "rmse": 387.1041145005193,
+        "bias": -197.25396728515625,
+        "relative_bias": -0.2280685007572174,
+        "prediction_mean": 216.6460418701172,
+        "target_mean": 413.8999938964844,
+        "sample_count": 500,
+        "unique_cell_count": 20
+      }
+    },
+    "by_domain": {
+      "ZN-coin": {
+        "mape": 0.3325355886190057,
+        "acc15": 0.3665,
+        "mae": 232.12941213226318,
+        "rmse": 425.0094070668019,
+        "bias": -218.2662811279297,
+        "relative_bias": -0.24495786428451538,
+        "prediction_mean": 195.63369750976562,
+        "target_mean": 413.8999938964844,
+        "sample_count": 2000,
+        "unique_cell_count": 20
+      }
+    },
+    "by_eol": {
+      "high_>1000": {
+        "mape": 0.7920266490975435,
+        "acc15": 0.0,
+        "mae": 970.0770001220703,
+        "rmse": 994.5217489350858,
+        "bias": -970.0770874023438,
+        "relative_bias": -0.7920266389846802,
+        "prediction_mean": 265.2563171386719,
+        "target_mean": 1235.3333740234375,
+        "sample_count": 300,
+        "unique_cell_count": 3
+      },
+      "low_<500": {
+        "mape": 0.19980738210583182,
+        "acc15": 0.4886666666666667,
+        "mae": 44.422008270263674,
+        "rmse": 65.56513911195458,
+        "bias": -25.937843322753906,
+        "relative_bias": -0.08303709328174591,
+        "prediction_mean": 165.9954833984375,
+        "target_mean": 191.93333435058594,
+        "sample_count": 1500,
+        "unique_cell_count": 15
+      },
+      "middle_500-1000": {
+        "mape": 0.6387605467500029,
+        "acc15": 0.0,
+        "mae": 533.0135591125488,
+        "rmse": 538.9608439345269,
+        "bias": -533.0136108398438,
+        "relative_bias": -0.638760507106781,
+        "prediction_mean": 313.4864501953125,
+        "target_mean": 846.5,
+        "sample_count": 200,
+        "unique_cell_count": 2
+      }
+    }
+  },
+  "result": {
+    "benchmark_round": "BATTERYLIFE-ZN-COIN-R1",
+    "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
+    "type": "architecture",
+    "seed": 2021,
+    "training_compute_seconds": 191.828,
+    "validation_seconds": 38.531,
+    "wall_seconds": 275.105,
+    "num_steps": 782,
+    "runner_version": "r4-relative-huber-v2",
+    "steps_per_sec": 4.076574,
+    "num_params": 98113,
+    "model_bytes_fp32": 392452,
+    "peak_device_memory_bytes": 2619652096,
+    "best_epoch": 10,
+    "minimum_validation_mape": 0.33092676107831576,
+    "checkpoint_mape_tolerance": 0.005,
+    "best_epoch_complete": true,
+    "best_epoch_steps": 46,
+    "steps_per_epoch": 46,
+    "completed_epochs": 17,
+    "last_epoch": 17,
+    "last_epoch_steps": 46,
+    "epoch_progress": 17.0,
+    "stop_reason": "early_stopping",
+    "status": "pending_analysis",
+    "description": "Degradation encoder: insert per-cycle fade encoder g_t = MLP([h_t, h_t - h_1]) + h_t (masked) between the ResConv curve features and the masked summary. Carried default: GELU in the cycle stem and the readout (ZN-E009 evidence). Curve encoder convs, ResidualCurveBlock, summary, inter_summary and head shapes unchanged.",
+    "device": "cuda"
+  }
+}
+===== ZN-E010 COMPLETE =====

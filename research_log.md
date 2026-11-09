@@ -128,3 +128,11 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - Bands: <500 MAPE 0.221 bias +7; 500–1000 bias −414; >1000 bias −995; pred SD 141 (widest so far), corr 0.37.
 - Phase-split family closed. GELU is the evidence-backed fix for the recurring dead-ReLU gate failure.
 - Next: Family 4 = cycle-1 anchor / relative-fade encoder (architecture.md §2.2) on the ResConv backbone, GELU default.
+
+## ZN-E010 — AnchoredFade-ResConv-GELU, split 2021 (Family 4 reference)
+
+- Run: `VALID`. Decision: `DISCARD` (§7: MAPE 0.3325 > 0.3246; RMSE 425.0 misses 424.0 by 1.0; Acc@15 guard 0.3665 < 0.3755). Gradient gate PASS.
+- Mechanism: per-cycle non-linear fade encoder on [h_t, h_t − h_1] before the masked summary; GELU carried default. 98,113 params; best epoch 12, stopped 17.
+- Metrics: MAPE 0.3325, Acc@15 0.3665, RMSE 425.0; corr 0.48 (highest of all runs), pred SD 124. Bands: <500 MAPE 0.200 / Acc@15 0.489; 500–1000 bias −533; >1000 bias −970 (RMSE −75 vs ZN-E005).
+- Reviewer (Gemini): Family 4 PROMISING under A2 (up to 3 follow-ups). Phase 1 now covers 4 families (8 valid architecture runs).
+- Next: ZN-E011 = rate-aware fade input [h_t, h_t − h_1, (h_t − h_1)/t] (one change; Gemini also suggested zero-init, deferred to keep one mechanism).

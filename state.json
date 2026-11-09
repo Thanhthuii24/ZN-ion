@@ -4,14 +4,14 @@
   "research_mode": "model_search_no_physics",
   "phase": "phase1_model",
   "phase_status": "architecture_search",
-  "workflow_status": "running_remote",
+  "workflow_status": "task_for_executor",
   "protocol_status": "locked",
   "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
   "run_approved": true,
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
-  "current_experiment": "ZN-E010",
-  "next_experiment_id": "ZN-E010",
-  "next_action": "Family 4: cycle-1 anchor encoder (ResConv backbone, GELU default)",
+  "current_experiment": null,
+  "next_experiment_id": "ZN-E011",
+  "next_action": "T005 rate-aware fade input; ZN-E011",
   "active_architecture_parent": "ZN-E005",
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -104,6 +104,13 @@
       "experiment": "ZN-E008",
       "status": "closed (ZN-E009 repair DISCARD)",
       "follow_ups_used": 1
+    },
+    {
+      "family": "AnchoredFade-ResConv-GELU",
+      "experiment": "ZN-E010",
+      "status": "promising_A2",
+      "follow_ups_used": 0,
+      "consecutive_discards": 1
     }
   ],
   "test_status": "unused",
@@ -115,13 +122,14 @@
     "hard_cap_valid_architecture_experiments": 50,
     "meaningful_mape_gain": 0.008,
     "meaningful_acc15_gain": 0.02,
-    "valid_architecture_experiments": 7,
+    "valid_architecture_experiments": 8,
     "architecture_families_covered": [
       "residual_conv_masked_summary",
       "residual_conv_temporal_tcn_masked_summary",
-      "phase_split_resconv_masked_summary"
+      "phase_split_resconv_masked_summary",
+      "anchored_fade_resconv_masked_summary"
     ],
-    "valid_runs_since_meaningful_gain": 2,
+    "valid_runs_since_meaningful_gain": 3,
     "promotion_eligible_incomplete_runs": [],
     "meaningful_rmse_gain": 21
   },
@@ -147,12 +155,12 @@
     },
     "counter": "optimizer_training_compute_seconds",
     "usage": {
-      "experiments": 10,
-      "training_seconds": 1205.28
+      "experiments": 11,
+      "training_seconds": 1397.11
     },
     "remaining": {
-      "experiments": 140,
-      "training_seconds": 248794.72
+      "experiments": 139,
+      "training_seconds": 248602.89
     },
     "exhausted": false,
     "status": "active"
