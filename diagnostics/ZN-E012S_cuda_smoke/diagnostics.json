@@ -1,0 +1,647 @@
+{
+  "samples": [
+    {
+      "step": 1,
+      "loss": 0.1692609041929245,
+      "lr": 0.0005,
+      "main_loss": {
+        "name": "relative_huber",
+        "raw": 0.1692609041929245
+      },
+      "mask_observed_fraction": 0.5126562118530273,
+      "empty_masks": 0,
+      "prediction_batch": {
+        "mean": -0.04411865398287773,
+        "std": 0.03321705758571625,
+        "min": -0.10785623639822006,
+        "max": 0.01441992074251175,
+        "target_mean": -0.10001019388437271,
+        "target_std": 0.8283939957618713
+      },
+      "gradients": {
+        "cycle_stem": {
+          "grad_norm": 0.8191236975302062,
+          "parameter_norm": 7.36173969797358,
+          "grad_to_parameter_ratio": 0.11126768007779057,
+          "near_zero_gradient_fraction": 0.0,
+          "nonfinite_gradients": 0
+        },
+        "residual_blocks.0": {
+          "grad_norm": 0.9950423169942275,
+          "parameter_norm": 13.076176992790012,
+          "grad_to_parameter_ratio": 0.07609581283144158,
+          "near_zero_gradient_fraction": 0.014503205128205129,
+          "nonfinite_gradients": 0
+        },
+        "residual_blocks.1": {
+          "grad_norm": 0.7815380231590475,
+          "parameter_norm": 13.072240827449416,
+          "grad_to_parameter_ratio": 0.05978607902616778,
+          "near_zero_gradient_fraction": 0.06217948717948718,
+          "nonfinite_gradients": 0
+        },
+        "inter_summary": {
+          "grad_norm": 0.8917194684902036,
+          "parameter_norm": 4.609842062578965,
+          "grad_to_parameter_ratio": 0.19343818212963676,
+          "near_zero_gradient_fraction": 0.015544041450777202,
+          "nonfinite_gradients": 0
+        },
+        "head": {
+          "grad_norm": 0.5874932076944177,
+          "parameter_norm": 0.5608502652725923,
+          "grad_to_parameter_ratio": 1.0475045552627644,
+          "near_zero_gradient_fraction": 0.0,
+          "nonfinite_gradients": 0
+        },
+        "fade_encoder": {
+          "grad_norm": 0.04141411025608865,
+          "parameter_norm": 4.666429577137995,
+          "grad_to_parameter_ratio": 0.008874903086286322,
+          "near_zero_gradient_fraction": 0.6649484536082474,
+          "nonfinite_gradients": 0
+        }
+      },
+      "activations": {
+        "cycle_stem": {
+          "mean": 0.048768192529678345,
+          "std": 0.19726751744747162,
+          "zero_fraction": 0.0,
+          "nonfinite": 0,
+          "mean_l2_norm": 0.7475022673606873,
+          "active_feature_fraction": 1.0
+        },
+        "residual_blocks": {
+          "mean": 0.7140360474586487,
+          "std": 0.8715208768844604,
+          "zero_fraction": 0.39519616961479187,
+          "nonfinite": 0,
+          "mean_l2_norm": 5.189328670501709,
+          "active_feature_fraction": 1.0
+        },
+        "fade_encoder": {
+          "mean": 0.0,
+          "std": 0.0,
+          "zero_fraction": 1.0,
+          "nonfinite": 0,
+          "mean_l2_norm": 0.0,
+          "active_feature_fraction": 0.0
+        },
+        "inter_summary": {
+          "mean": 0.024596281349658966,
+          "std": 0.45124197006225586,
+          "zero_fraction": 0.0,
+          "nonfinite": 0,
+          "mean_l2_norm": 3.6133155822753906,
+          "active_feature_fraction": 1.0
+        },
+        "head": {
+          "mean": -0.04411865398287773,
+          "std": 0.03321705758571625,
+          "zero_fraction": 0.0,
+          "nonfinite": 0,
+          "mean_l2_norm": 0.04530346766114235,
+          "active_feature_fraction": 1.0
+        }
+      },
+      "update_ratios": {
+        "cycle_stem": 0.010379765470178009,
+        "residual_blocks.0": 0.005974306333045783,
+        "residual_blocks.1": 0.005756817373370031,
+        "inter_summary": 0.011892030507855391,
+        "head": 0.0071875247460186165,
+        "fade_encoder": 0.006905909444378355
+      }
+    },
+    {
+      "step": 47,
+      "loss": 0.04950603097677231,
+      "lr": 0.0005,
+      "main_loss": {
+        "name": "relative_huber",
+        "raw": 0.04950603097677231
+      },
+      "mask_observed_fraction": 0.5114843845367432,
+      "empty_masks": 0,
+      "prediction_batch": {
+        "mean": -0.6672953367233276,
+        "std": 0.06894382834434509,
+        "min": -0.7615044116973877,
+        "max": -0.5232267379760742,
+        "target_mean": 0.008352696895599365,
+        "target_std": 1.0075763463974
+      },
+      "gradients": {
+        "cycle_stem": {
+          "grad_norm": 0.056747182771400874,
+          "parameter_norm": 7.373139515983175,
+          "grad_to_parameter_ratio": 0.007696474839297299,
+          "near_zero_gradient_fraction": 0.0,
+          "nonfinite_gradients": 0
+        },
+        "residual_blocks.0": {
+          "grad_norm": 0.06617049773820476,
+          "parameter_norm": 13.073909621542796,
+          "grad_to_parameter_ratio": 0.005061263206926713,
+          "near_zero_gradient_fraction": 0.041666666666666664,
+          "nonfinite_gradients": 0
+        },
+        "residual_blocks.1": {
+          "grad_norm": 0.049632533913869764,
+          "parameter_norm": 13.074425912945395,
+          "grad_to_parameter_ratio": 0.0037961539760398393,
+          "near_zero_gradient_fraction": 0.11654647435897436,
+          "nonfinite_gradients": 0
+        },
+        "inter_summary": {
+          "grad_norm": 0.12581773957484996,
+          "parameter_norm": 4.6297283400293034,
+          "grad_to_parameter_ratio": 0.027176052315420827,
+          "near_zero_gradient_fraction": 0.0,
+          "nonfinite_gradients": 0
+        },
+        "head": {
+          "grad_norm": 0.09224488689179135,
+          "parameter_norm": 0.5553898490896854,
+          "grad_to_parameter_ratio": 0.16609033644172597,
+          "near_zero_gradient_fraction": 0.0,
+          "nonfinite_gradients": 0
+        },
+        "fade_encoder": {
+          "grad_norm": 0.0061385435587175425,
+          "parameter_norm": 4.690650938201003,
+          "grad_to_parameter_ratio": 0.0013086762668105376,
+          "near_zero_gradient_fraction": 0.019168814432989692,
+          "nonfinite_gradients": 0
+        }
+      },
+      "activations": {
+        "cycle_stem": {
+          "mean": 0.028998231515288353,
+          "std": 0.2120378017425537,
+          "zero_fraction": 0.0,
+          "nonfinite": 0,
+          "mean_l2_norm": 0.6813726425170898,
+          "active_feature_fraction": 1.0
+        },
+        "residual_blocks": {
+          "mean": 0.7174696326255798,
+          "std": 0.9965721964836121,
+          "zero_fraction": 0.4359718859195709,
+          "nonfinite": 0,
+          "mean_l2_norm": 4.96473503112793,
+          "active_feature_fraction": 1.0
+        },
+        "fade_encoder": {
+          "mean": -0.0009366192971356213,
+          "std": 0.0044963546097278595,
+          "zero_fraction": 0.0,
+          "nonfinite": 0,
+          "mean_l2_norm": 0.034832678735256195,
+          "active_feature_fraction": 1.0
+        },
+        "inter_summary": {
+          "mean": -0.10313405096530914,
+          "std": 0.5434789657592773,
+          "zero_fraction": 0.0,
+          "nonfinite": 0,
+          "mean_l2_norm": 4.420159816741943,
+          "active_feature_fraction": 1.0
+        },
+        "head": {
+          "mean": -0.6672953367233276,
+          "std": 0.06894382834434509,
+          "zero_fraction": 0.0,
+          "nonfinite": 0,
+          "mean_l2_norm": 0.6672953367233276,
+          "active_feature_fraction": 1.0
+        }
+      },
+      "update_ratios": {
+        "cycle_stem": 0.0008423626023304278,
+        "residual_blocks.0": 0.0004693146891383651,
+        "residual_blocks.1": 0.0005542447883255042,
+        "inter_summary": 0.0027053615947063908,
+        "head": 0.00021247684730574986,
+        "fade_encoder": 0.003485059702327304
+      }
+    }
+  ],
+  "epoch_history": [
+    {
+      "epoch": 1,
+      "complete": true,
+      "steps": 46,
+      "train_loss_mean": 0.057893448306814484,
+      "train_loss_std": 0.019425544353747215,
+      "train_loss_min": 0.045925773680210114,
+      "train_loss_max": 0.1692609041929245,
+      "loss_balance": {
+        "main_loss_mean": 0.057893448306814484,
+        "raw_physics_loss_mean": null,
+        "weighted_physics_loss_mean": null,
+        "weighted_physics_to_main_ratio": null
+      },
+      "validation": {
+        "mape": 0.41342545695793215,
+        "acc15": 0.2195,
+        "mae": 275.46854467773437,
+        "rmse": 483.68579857282316,
+        "prediction_diagnostics": {
+          "prediction_mean": 149.54815673828125,
+          "prediction_std": 27.9090518951416,
+          "prediction_min": 104.72845458984375,
+          "prediction_max": 195.32794189453125,
+          "target_mean": 413.8999938964844,
+          "target_std": 407.4496154785156,
+          "prediction_to_target_std_ratio": 0.06849694007531397,
+          "mean_signed_relative_error": -0.32239043712615967,
+          "relative_error_std": 0.385038822889328,
+          "prediction_target_correlation": 0.11977521166935426,
+          "extreme_prediction_count": 0
+        }
+      },
+      "learning_rate": 0.0005,
+      "cumulative_training_compute_seconds": 15.896
+    },
+    {
+      "epoch": 2,
+      "complete": true,
+      "steps": 46,
+      "train_loss_mean": 0.05013910332775634,
+      "train_loss_std": 0.004014851412741729,
+      "train_loss_min": 0.04044404998421669,
+      "train_loss_max": 0.06309639662504196,
+      "loss_balance": {
+        "main_loss_mean": 0.05013910332775634,
+        "raw_physics_loss_mean": null,
+        "weighted_physics_loss_mean": null,
+        "weighted_physics_to_main_ratio": null
+      },
+      "validation": {
+        "mape": 0.40542934031967204,
+        "acc15": 0.2045,
+        "mae": 274.7243450241089,
+        "rmse": 484.716815798452,
+        "prediction_diagnostics": {
+          "prediction_mean": 146.50071716308594,
+          "prediction_std": 32.925323486328125,
+          "prediction_min": 18.981964111328125,
+          "prediction_max": 200.22134399414062,
+          "target_mean": 413.8999938964844,
+          "target_std": 407.4496154785156,
+          "prediction_to_target_std_ratio": 0.08080833122804663,
+          "mean_signed_relative_error": -0.34764257073402405,
+          "relative_error_std": 0.35317355394363403,
+          "prediction_target_correlation": 0.13608417397831543,
+          "extreme_prediction_count": 0
+        }
+      },
+      "learning_rate": 0.0005,
+      "cumulative_training_compute_seconds": 26.105
+    }
+  ],
+  "device": "cuda",
+  "padding_invariance": {
+    "status": "INVARIANT",
+    "cached_padding_absolute_max": 0.0,
+    "mean_absolute_standardized_output_change": 0.0,
+    "max_absolute_standardized_output_change": 0.0,
+    "interpretation": "SENSITIVE means the model depends on upstream zero filling. It does not mean the locked cached input leaks future cycles."
+  },
+  "physics_validation": {
+    "status": "NOT_APPLICABLE"
+  },
+  "checkpoint_selection": {
+    "rule": "max_acc15_within_mape_tolerance_then_lower_mape_then_earlier_epoch",
+    "mape_tolerance": 0.005,
+    "minimum_validation_mape": 0.40542934031967204,
+    "selected_epoch": 2,
+    "selected_mape": 0.40542934031967204,
+    "selected_acc15": 0.2045
+  },
+  "nonfinite_detected": false,
+  "summary": {
+    "overall_gradient_health": "HEALTHY",
+    "thresholds": {
+      "disconnected_grad_norm_max": 1e-12,
+      "disconnected_update_ratio_max": 1e-08,
+      "near_zero_fraction_warning": 0.5,
+      "vanishing_grad_ratio_median": 1e-06,
+      "exploding_grad_ratio_max": 100.0,
+      "collapsed_activation_std_max": 1e-08,
+      "collapsed_activation_zero_fraction": 0.999,
+      "physics_gradient_ratio_min": 0.01,
+      "physics_gradient_ratio_max": 1.0,
+      "physics_loss_ratio_max": 1.0,
+      "physics_conflict_cosine_min": -0.3
+    },
+    "layer_health": {
+      "cycle_stem": {
+        "status": "HEALTHY",
+        "flags": [],
+        "grad_norm": {
+          "first": 0.8191236975302062,
+          "last": 0.056747182771400874,
+          "min": 0.056747182771400874,
+          "max": 0.8191236975302062,
+          "median": 0.43793544015080355
+        },
+        "grad_to_parameter_ratio": {
+          "first": 0.11126768007779057,
+          "last": 0.007696474839297299,
+          "min": 0.007696474839297299,
+          "max": 0.11126768007779057,
+          "median": 0.05948207745854393
+        },
+        "near_zero_gradient_fraction": {
+          "first": 0.0,
+          "last": 0.0,
+          "max": 0.0,
+          "median": 0.0
+        },
+        "update_ratio": {
+          "first": 0.010379765470178009,
+          "last": 0.0008423626023304278,
+          "min": 0.0008423626023304278,
+          "max": 0.010379765470178009,
+          "median": 0.005611064036254218
+        },
+        "nonfinite_gradient_count": 0,
+        "recommended_action": [
+          "No gradient-driven repair is indicated; decide with metrics and matched controls."
+        ]
+      },
+      "fade_encoder": {
+        "status": "HEALTHY",
+        "flags": [],
+        "grad_norm": {
+          "first": 0.04141411025608865,
+          "last": 0.0061385435587175425,
+          "min": 0.0061385435587175425,
+          "max": 0.04141411025608865,
+          "median": 0.023776326907403094
+        },
+        "grad_to_parameter_ratio": {
+          "first": 0.008874903086286322,
+          "last": 0.0013086762668105376,
+          "min": 0.0013086762668105376,
+          "max": 0.008874903086286322,
+          "median": 0.0050917896765484295
+        },
+        "near_zero_gradient_fraction": {
+          "first": 0.6649484536082474,
+          "last": 0.019168814432989692,
+          "max": 0.6649484536082474,
+          "median": 0.34205863402061853
+        },
+        "update_ratio": {
+          "first": 0.006905909444378355,
+          "last": 0.003485059702327304,
+          "min": 0.003485059702327304,
+          "max": 0.006905909444378355,
+          "median": 0.00519548457335283
+        },
+        "nonfinite_gradient_count": 0,
+        "recommended_action": [
+          "No gradient-driven repair is indicated; decide with metrics and matched controls."
+        ]
+      },
+      "head": {
+        "status": "HEALTHY",
+        "flags": [],
+        "grad_norm": {
+          "first": 0.5874932076944177,
+          "last": 0.09224488689179135,
+          "min": 0.09224488689179135,
+          "max": 0.5874932076944177,
+          "median": 0.3398690472931045
+        },
+        "grad_to_parameter_ratio": {
+          "first": 1.0475045552627644,
+          "last": 0.16609033644172597,
+          "min": 0.16609033644172597,
+          "max": 1.0475045552627644,
+          "median": 0.6067974458522452
+        },
+        "near_zero_gradient_fraction": {
+          "first": 0.0,
+          "last": 0.0,
+          "max": 0.0,
+          "median": 0.0
+        },
+        "update_ratio": {
+          "first": 0.0071875247460186165,
+          "last": 0.00021247684730574986,
+          "min": 0.00021247684730574986,
+          "max": 0.0071875247460186165,
+          "median": 0.003700000796662183
+        },
+        "nonfinite_gradient_count": 0,
+        "recommended_action": [
+          "No gradient-driven repair is indicated; decide with metrics and matched controls."
+        ]
+      },
+      "inter_summary": {
+        "status": "HEALTHY",
+        "flags": [],
+        "grad_norm": {
+          "first": 0.8917194684902036,
+          "last": 0.12581773957484996,
+          "min": 0.12581773957484996,
+          "max": 0.8917194684902036,
+          "median": 0.5087686040325268
+        },
+        "grad_to_parameter_ratio": {
+          "first": 0.19343818212963676,
+          "last": 0.027176052315420827,
+          "min": 0.027176052315420827,
+          "max": 0.19343818212963676,
+          "median": 0.1103071172225288
+        },
+        "near_zero_gradient_fraction": {
+          "first": 0.015544041450777202,
+          "last": 0.0,
+          "max": 0.015544041450777202,
+          "median": 0.007772020725388601
+        },
+        "update_ratio": {
+          "first": 0.011892030507855391,
+          "last": 0.0027053615947063908,
+          "min": 0.0027053615947063908,
+          "max": 0.011892030507855391,
+          "median": 0.007298696051280891
+        },
+        "nonfinite_gradient_count": 0,
+        "recommended_action": [
+          "No gradient-driven repair is indicated; decide with metrics and matched controls."
+        ]
+      },
+      "residual_blocks.0": {
+        "status": "HEALTHY",
+        "flags": [],
+        "grad_norm": {
+          "first": 0.9950423169942275,
+          "last": 0.06617049773820476,
+          "min": 0.06617049773820476,
+          "max": 0.9950423169942275,
+          "median": 0.5306064073662161
+        },
+        "grad_to_parameter_ratio": {
+          "first": 0.07609581283144158,
+          "last": 0.005061263206926713,
+          "min": 0.005061263206926713,
+          "max": 0.07609581283144158,
+          "median": 0.040578538019184145
+        },
+        "near_zero_gradient_fraction": {
+          "first": 0.014503205128205129,
+          "last": 0.041666666666666664,
+          "max": 0.041666666666666664,
+          "median": 0.028084935897435895
+        },
+        "update_ratio": {
+          "first": 0.005974306333045783,
+          "last": 0.0004693146891383651,
+          "min": 0.0004693146891383651,
+          "max": 0.005974306333045783,
+          "median": 0.0032218105110920743
+        },
+        "nonfinite_gradient_count": 0,
+        "recommended_action": [
+          "No gradient-driven repair is indicated; decide with metrics and matched controls."
+        ]
+      },
+      "residual_blocks.1": {
+        "status": "HEALTHY",
+        "flags": [],
+        "grad_norm": {
+          "first": 0.7815380231590475,
+          "last": 0.049632533913869764,
+          "min": 0.049632533913869764,
+          "max": 0.7815380231590475,
+          "median": 0.41558527853645866
+        },
+        "grad_to_parameter_ratio": {
+          "first": 0.05978607902616778,
+          "last": 0.0037961539760398393,
+          "min": 0.0037961539760398393,
+          "max": 0.05978607902616778,
+          "median": 0.03179111650110381
+        },
+        "near_zero_gradient_fraction": {
+          "first": 0.06217948717948718,
+          "last": 0.11654647435897436,
+          "max": 0.11654647435897436,
+          "median": 0.08936298076923077
+        },
+        "update_ratio": {
+          "first": 0.005756817373370031,
+          "last": 0.0005542447883255042,
+          "min": 0.0005542447883255042,
+          "max": 0.005756817373370031,
+          "median": 0.0031555310808477678
+        },
+        "nonfinite_gradient_count": 0,
+        "recommended_action": [
+          "No gradient-driven repair is indicated; decide with metrics and matched controls."
+        ]
+      }
+    },
+    "activation_health": {
+      "cycle_stem": {
+        "status": "HEALTHY",
+        "flags": [],
+        "std_min": 0.19726751744747162,
+        "std_max": 0.2120378017425537,
+        "zero_fraction_max": 0.0,
+        "mean_l2_norm_min": 0.6813726425170898,
+        "mean_l2_norm_max": 0.7475022673606873,
+        "active_feature_fraction_min": 1.0,
+        "nonfinite_count": 0
+      },
+      "fade_encoder": {
+        "status": "HEALTHY",
+        "flags": [],
+        "std_min": 0.0,
+        "std_max": 0.0044963546097278595,
+        "zero_fraction_max": 1.0,
+        "mean_l2_norm_min": 0.0,
+        "mean_l2_norm_max": 0.034832678735256195,
+        "active_feature_fraction_min": 0.0,
+        "nonfinite_count": 0
+      },
+      "head": {
+        "status": "HEALTHY",
+        "flags": [],
+        "std_min": 0.03321705758571625,
+        "std_max": 0.06894382834434509,
+        "zero_fraction_max": 0.0,
+        "mean_l2_norm_min": 0.04530346766114235,
+        "mean_l2_norm_max": 0.6672953367233276,
+        "active_feature_fraction_min": 1.0,
+        "nonfinite_count": 0
+      },
+      "inter_summary": {
+        "status": "HEALTHY",
+        "flags": [],
+        "std_min": 0.45124197006225586,
+        "std_max": 0.5434789657592773,
+        "zero_fraction_max": 0.0,
+        "mean_l2_norm_min": 3.6133155822753906,
+        "mean_l2_norm_max": 4.420159816741943,
+        "active_feature_fraction_min": 1.0,
+        "nonfinite_count": 0
+      },
+      "residual_blocks": {
+        "status": "HEALTHY",
+        "flags": [],
+        "std_min": 0.8715208768844604,
+        "std_max": 0.9965721964836121,
+        "zero_fraction_max": 0.4359718859195709,
+        "mean_l2_norm_min": 4.96473503112793,
+        "mean_l2_norm_max": 5.189328670501709,
+        "active_feature_fraction_min": 1.0,
+        "nonfinite_count": 0
+      }
+    },
+    "mask_health": {
+      "status": "HEALTHY",
+      "empty_masks_max": 0,
+      "observed_fraction_min": 0.5114843845367432,
+      "observed_fraction_max": 0.5126562118530273,
+      "note": "This checks empty-mask incidence only; architecture-specific padding leakage needs its own invariance/attention diagnostic."
+    },
+    "branch_gradient_imbalance": {
+      "status": "HEALTHY",
+      "largest_block": "head",
+      "smallest_block": "fade_encoder",
+      "largest_to_smallest_ratio": 126.91476162131055,
+      "warning_threshold": 1000.0
+    },
+    "physics_balance": {
+      "status": "NOT_APPLICABLE"
+    },
+    "loss_balance": {
+      "status": "NOT_ASSESSED"
+    },
+    "learning_dynamics": {
+      "status": "AVAILABLE",
+      "epochs_observed": 2,
+      "minimum_mape_epoch": 2,
+      "minimum_validation_mape": 0.40542934031967204,
+      "first_to_minimum_mape_change": 0.007996116638260109,
+      "last_minus_minimum_mape": 0.0,
+      "first_to_last_train_loss_ratio": 0.8660583329228742,
+      "still_improving_at_boundary": true
+    },
+    "padding_invariance": {
+      "status": "INVARIANT",
+      "cached_padding_absolute_max": 0.0,
+      "mean_absolute_standardized_output_change": 0.0,
+      "max_absolute_standardized_output_change": 0.0,
+      "interpretation": "SENSITIVE means the model depends on upstream zero filling. It does not mean the locked cached input leaks future cycles."
+    },
+    "agent_action": "Do not replace a layer from gradients alone; use metrics, time trends, and a matched ablation."
+  }
+}
