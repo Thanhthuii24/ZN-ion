@@ -59,5 +59,5 @@
     "mask_path": "per-cycle encoding (padded cycles encoded independently, GroupNorm within one cycle's phase only); mean over mask==1, last at mask.sum()-1, delta last - cycle1. tests/test_phase_split_encoder.py: padding invariance and phase isolation.",
     "expected_evidence": "MAPE, RMSE, Acc@15, DB-MAPE vs ZN-E005 (parent) and ZN-E008 (matched); gradient gate; stem near-zero fractions"
   },
-  "smoke_evidence": "pending CUDA smoke ZN-E009S"
+  "smoke_evidence": "CUDA smoke ZN-E009S on Kaggle Tesla T4: identical config, 92 optimizer steps, worker preflight passed, finite (val MAPE 0.4071 -> 0.3817, not quality evidence), gradient health HEALTHY in every block (no NEAR_ZERO_DOMINANT, vs ZN-E008S stems WARNING), all activations HEALTHY, executed train.py md5 = reviewed. Artifacts: diagnostics/ZN-E009S_cuda_smoke/."
 }
