@@ -213,6 +213,12 @@
       "date": "2026-11-08",
       "by": "user",
       "summary": "CPMLP and CPMLP-derived models are not v6 candidates or parents; the lead proposes new architectures that still give good results."
+    },
+    {
+      "id": "A5-ZN",
+      "date": "2026-11-09",
+      "by": "user",
+      "summary": "User agrees to early Phase-1 closure under program.md \u00a710 A5: shared long-life underprediction that architecture changes do not move (Relative Huber 1/y floor). A4 directions: D1-like cycle-1-relative fade tested (Family 4, ZN-E010..E012); D2 reference-pair and D3 learned-shape head not run (waived by the user's A5 agreement). Best candidate still needs three-seed confirmation before freezing; then Phase 2 unlocks."
     }
   ],
   "decision_metrics": {
@@ -250,6 +256,6 @@
     "amendment": "A5",
     "evidence": "Shared long-life underprediction (>1000 cycles bias -930..-1070, Acc@15 0) on 8 architectures and 3 splits; split-2021 MAPE floor 0.32-0.34 with per-cell MAPE corr 0.90; Relative Huber dL/dyhat = \u00b1delta/y underweights long-life cells 6-13x",
     "needs": "diagnostics/phase1_breakthrough_diagnosis.md, A4 directions check, user agreement",
-    "status": "asked user 2026-11-09"
+    "status": "user agreed 2026-11-09; pending ZN-E012 result, diagnosis doc, best-candidate three-seed confirmation"
   }
 }
