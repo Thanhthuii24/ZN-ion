@@ -181,3 +181,11 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - Physics: held-out P0 violation 0.150 -> 0.044 (−70%); loss balance SATISFIED (R 0.065 early, then active < 1%).
 - Accuracy: RMSE 418.6, >1000 bias −921 (vs −970); <500 MAPE 0.200 -> 0.217 (uniform ramp also shrinks break-in capacity).
 - Next: ZN-E017 = P4b (accelerate only the falling trend; reference violation 0.303).
+
+## ZN-E017 — Phase 2 loss 3: frozen ZN-E010 + P4b falling-trend physics, split 2021
+
+- Run: `VALID`. Decision: `DISCARD` (BALANCE_FAIL_LARGE, median R 2.07; gradient UNHEALTHY; MAPE 0.4215, Acc@15 0.1905, RMSE 490.8). Reviewer: Gemini.
+- λ = 0.287 (ρ 0.5). Cosine −0.80…−0.88 after warm-up; val MAPE spiked to 7.9 at epoch 6. P4b violation 0.303 -> 0.229.
+- Cause (Gemini): structural on ZN-coin — 23/49 modified train cells dip then recover (break-in), and the falling cells are ultra-short-life and get pushed far out of support. A ρ-only repair would follow an antiparallel gradient.
+- P2 not supported on ZN-coin: Spearman(ΔV_10->100, log EOL) = +0.016 (p 0.905).
+- Next: ZN-E018 = P0c late knee (quadratic ramp spares break-in). If it fails, stop what-if physics and take stock.

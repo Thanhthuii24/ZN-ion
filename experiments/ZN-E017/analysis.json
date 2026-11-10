@@ -1,0 +1,158 @@
+{
+  "schema_version": 1,
+  "experiment_id": "ZN-E017",
+  "run_validity": "VALID",
+  "contract_answer": {
+    "question": "Does a break-in-safe falling-trend physics loss (P4b: whatif_trend_p4b, L_P4b = mean ReLU(f(x~) - sg[f(x)]), x~_{n,2,150:300} = x_{10,2,150:300} + Delta_n + kappa * r_n * min(Delta_n, 0) for n >= 11 and prefix i >= 20, kappa ~ U(0,1), rho = 0.5, calibrated lambda = 0.286571) lower the held-out P4b violation rate by >= 50% vs frozen ZN-E010 without the short-life over-prediction P0 caused, achieving KEEP under program.md §7 on split 2021?",
+    "outcome": "REFUTED",
+    "conclusion": "Reviewed by CODEX(gemini-4-argon). Apply the proposal's primary rule exactly. First, on run_validity: ZN-E017 is VALID (not INVALID). It completed 9 full epochs (414 optimizer steps, 200.232s training compute, 98,113 parameters, early stopping at epoch 9 with minimum-MAPE and selected checkpoint at epoch 1) with finite metrics and zero non-finite gradients or activations (nonfinite_detected = false, padding_invariance = INVARIANT at 0.0, mask_health = HEALTHY, branch_gradient_imbalance = 69.92x < 1000x, and all 6 architectural blocks HEALTHY in diagnostics.json.summary.layer_health and OK in tools/layer_report.py). Although diagnostics.json.summary.overall_gradient_health is marked UNHEALTHY, train.py:summarize_diagnostics sets that flag solely because physics_balance triggers PHYSICS_GRADIENT_DOMINATES (median R = 2.066764 > 1.0) and PHYSICS_GRADIENT_CONFLICT (median gradient_cosine = -0.794725 < -0.3). Per loss.md §5.3, a dominant auxiliary gradient (median R_j = 2.0668 > 2.0 -> BALANCE_FAIL_LARGE) is a VALID run whose mandatory decision is DISCARD (whereas INVALID is reserved for NaN/Inf or disconnected encoder gradients). Second, on metrics against frozen reference ZN-E010 (MAPE 0.332536, Acc@15 0.3665, RMSE 425.009 cycles, MAE 232.129 cycles, DB-MAPE 0.332536), ZN-E017 regresses severely across every headline and subgroup metric: MAPE 0.421451 (+0.088915), Acc@15 0.1905 (-0.1760), RMSE 490.777 cycles (+65.768), MAE 282.322 cycles (+50.193), and DB-MAPE 0.421451 (+0.088915). During training, strong gradient opposition between L_P4b and L_main (step 1: R = 0.1540, cos = +0.9851, active = 0.1284; step 185: R = 3.7605, cos = -0.7947, active = 0.2277; step 250: R = 2.0668, cos = -0.8826, active = 0.2857) drives predictions wildly negative after epoch 1 (validation MAPE spikes to 1.2878 at epoch 4, 8.1934 at epoch 5, 7.9078 at epoch 6 [prediction_min -184,797.9 cycles], and 3.3212 at epoch 7 before recovering to 0.4554 at epoch 9), forcing checkpoint selection at epoch 1 where predictions are near-collapsed (137.64 ± 23.83 cycles, prediction_to_target_std_ratio = 0.0585 < 0.10). By EOL band, <500 MAPE worsens from 0.1998 to 0.2764 (Acc@15 0.4887 -> 0.2540, bias -25.94 -> -56.56), 500-1000 bias worsens from -533.01 to -697.87 cycles (MAPE 0.6388 -> 0.8216), and >1000 bias worsens from -970.08 to -1093.68 cycles (MAPE 0.7920 -> 0.8799). Held-out P4b violation falls only 22.9% pooled (0.2975 -> 0.2294; 0.1901 / 0.2302 / 0.2679 at kappa = 0.25 / 0.5 / 1.0 vs ZN-E010 0.2883 / 0.2975 / 0.3031), missing the >= 50% target. ZN-E017 fails all three KEEP paths (A/B/C), the DB-MAPE and Acc@15 guardrails, the loss-balance gate (BALANCE_FAIL_LARGE), the prediction-spread gate (5.85% < 10%), and the physics gate. Decision is DISCARD.",
+    "evidence_paths": [
+      "record.json.proposal.rejection_condition",
+      "record.json.result",
+      "record.json.metrics",
+      "record.json.metrics.by_eol",
+      "record.json.metrics.physics_violation_rate",
+      "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+      "diagnostics.json.physics_calibration",
+      "diagnostics.json.physics_validation",
+      "diagnostics.json.checkpoint_selection",
+      "diagnostics.json.epoch_history",
+      "diagnostics.json.summary.overall_gradient_health",
+      "diagnostics.json.summary.layer_health",
+      "diagnostics.json.summary.physics_balance",
+      "diagnostics.json.summary.loss_balance",
+      "diagnostics.json.summary.padding_invariance",
+      "worker_meta.json",
+      "../ZN-E010/record.json.metrics"
+    ]
+  },
+  "main_symptom": "Adding P4b falling-trend acceleration physics (whatif_trend_p4b, lambda = 0.2866, rho = 0.5) to frozen ZN-E010 triggers severe gradient conflict (cosine -0.7947 at step 185 and -0.8826 at step 250) and physics-gradient dominance (R = 3.7605 at step 185, 2.0668 at step 250; median R = 2.0668 > 2.0, BALANCE_FAIL_LARGE), driving validation predictions into a negative runaway across epochs 2-8 (val MAPE 0.5053 -> 0.6216 -> 1.2878 -> 8.1934 -> 7.9078 -> 3.3212 -> 1.1311, with epoch-6 min prediction -184,797.9 cycles) and forcing checkpoint selection at epoch 1 with near-collapsed predictions (137.64 ± 23.83 cycles, 5.85% of target SD), MAPE 0.4215 (+0.0889 vs ZN-E010), Acc@15 0.1905 (-0.1760), RMSE 490.78 (+65.77), <500 MAPE 0.2764, 500-1000 bias -697.87, >1000 bias -1093.68, and held-out P4b violation 0.2294 (vs ZN-E010 0.2975 pooled / 0.3031 at kappa=1.0).",
+  "causes": [
+    {
+      "id": "C1_P4B_AMPLIFIES_TRANSIENT_EARLY_DIPS_ON_RECOVERING_LONG_LIFE_CELLS_AND_PUSHES_FALLING_SHORT_LIFE_CELLS_OUT_OF_SUPPORT",
+      "class": "physics_perturbation_domain_mismatch",
+      "supporting_evidence": [
+        "record.json.proposal.modification",
+        "record.json.metrics",
+        "record.json.metrics.by_eol.high_>1000",
+        "record.json.metrics.by_eol.middle_500-1000",
+        "record.json.metrics.by_eol.low_<500",
+        "diagnostics.json.physics_validation",
+        "diagnostics.json.epoch_history",
+        "diagnostics.json.summary.physics_balance",
+        "diagnostics.json.summary.loss_balance",
+        "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+        "../ZN-E010/record.json.metrics"
+      ],
+      "contradicting_evidence": [
+        "At step 1 (before weights move along the P4b direction), R = 0.1540 is inside [0.05, 2.0] and gradient_cosine is +0.9851.",
+        "At the selected epoch-1 checkpoint, held-out P4b violation rate is lower than converged ZN-E010 (0.2294 vs 0.2975 pooled; 0.2679 vs 0.3031 at kappa = 1.0), though primarily because epoch-1 predictions are compressed to 137.64 ± 23.83 cycles."
+      ],
+      "interpretation": "Direct inspection of the 59 ZN-coin training cells reveals why P4b (x~_n = x_10 + Delta_n + kappa * r_n * min(Delta_n, 0) for n >= 11, Delta_n = x_n - x_10) strongly fights the label loss on ZN-coin. Unlike Li-ion, ZERO long-life or medium-life ZN-coin training cells fall monotonically after cycle 10. Among the 49/59 training cells where Delta_n < 0 occurs in cycles 11..100 (10/59 never dip below Q_10 at all), the cells split into two disjoint regimes: (1) 23/49 cells (mean EOL 769.7 cycles, max 1481, including every >1000-cycle training cell such as ZN-coin_437-3 [EOL 1481], 439-2 [1380], 438-2 [1377], 436-3 [1232], and 434-2 [1010]) exhibit non-monotonic dip-then-recover trajectories—their discharge capacity dips below Q_10 in early cycles (typically n = 11..35, by -2.4% to -24.6%) and then recovers strongly upward (+12% to +25% above Q_10 by cycle 100 in 22/23 cells, or in ZN-coin_440-2 [train EOL 186] / ZN-coin_440-1 [val EOL 1023] drops -25% at cycle 16 and recovers steadily toward Q_10 across cycles 17..100 while remaining < Q_10). On cells recovering while still below Q_10 (like 440-1/440-2), multiplying negative Delta_n by the growing ramp r_n = (n-10)/90 reverses the positive recovery slope into a synthetic falling trajectory; on cells that dip at n = 11..35 and then rise above Q_10, P4b deepens the early trough while leaving the later rising cycles untouched, which increases the post-trough upward recovery slope seen by the summary encoder and makes x~ look longer-lived (f(x~) > f(x)) on long-life cells. Penalizing ReLU(f(x~) - sg[f(x)]) therefore pushes the encoder to assign lower predictions to dip-and-recover cells whose true labels are 765-1481 cycles, directly opposing L_main. (2) Conversely, the 26/49 monotonically falling training cells (no recovery > 1% Q) are exclusively ultra-short-life cells (mean EOL 125.0 cycles, max 167 cycles) that already lose 14%-19% capacity by cycle 100; P4b doubles those drops to 28%-38%, pushing x~ far outside the training data support (max real drop 23.1%) where the unbounded GELU+Linear readout extrapolates wildly negative.",
+      "missing_evidence": []
+    },
+    {
+      "id": "C2_UNCLIPPED_ONE_SIDED_WHATIF_GRADIENT_OVERRUNS_SATURATED_RELATIVE_HUBER_AND_CAUSES_BALANCE_FAIL_LARGE",
+      "class": "loss_balance_feedback_instability",
+      "supporting_evidence": [
+        "diagnostics.json.physics_calibration",
+        "diagnostics.json.samples",
+        "diagnostics.json.epoch_history",
+        "diagnostics.json.summary.physics_balance",
+        "diagnostics.json.summary.loss_balance",
+        "record.json.result"
+      ],
+      "contradicting_evidence": [
+        "Initial step-0 unsigned calibration followed loss.md §5.2 exactly (batch ratios 0.5731, 0.5064, 0.6329; median 0.5731; lambda = 0.286571 at rho = 0.5) and produced R = 0.1540 at step 1."
+      ],
+      "interpretation": "In 43.7% of i >= 20 training prefixes (2090/4779), min(Delta_n, 0) == 0 everywhere so x~ == x; on many others, only a brief early dip is perturbed where r_n is small. This dilutes the batch-mean unsigned calibration gradient ||grad L_cal|| at step 0, yielding a calibrated weight lambda = 0.286571 (2.07x larger than P0's 0.138297). Once training begins, a positive-feedback loop develops between the unclipped linear hinge L_P4b = ReLU(f(x~) - sg[f(x)]) and the Huber-clipped main loss: because L_P4b applies stop-gradient to f(x), every active sample pushes the shared encoder solely through -grad f(x~), driving both f(x~) and f(x) downward on falling/dipping trajectories (batch prediction mean drops to -9.81 std units [min -163.64] at step 185 and -56.79 std units [min -799.62] at step 250; validation prediction min hits -137,214.8 cycles at epoch 5 and -184,797.9 cycles at epoch 6). As predictions plunge below the ±15% Huber threshold, L_main saturates in its linear regime with fixed gradient magnitude dL_main/df = ±0.15 * s / y, whereas ||grad f(x~)|| grows with activation scale (fade_encoder L2 norm rises from 1.40 at step 1 to 37.40 at step 185 and 86.85 at step 250; cycle_stem grad norm jumps from 0.99 to 62.10). Consequently, the weighted-to-main gradient ratio explodes from R = 0.1540 at step 1 to R = 3.7605 at step 185 (cos = -0.7947) and R = 2.0668 at step 250 (cos = -0.8826), violating loss.md §5.3 (median R = 2.0668 > 2.0, BALANCE_FAIL_LARGE) as L_P4b overpowers L_main's upward restorative pull.",
+      "missing_evidence": []
+    }
+  ],
+  "selected_cause_id": "C1_P4B_AMPLIFIES_TRANSIENT_EARLY_DIPS_ON_RECOVERING_LONG_LIFE_CELLS_AND_PUSHES_FALLING_SHORT_LIFE_CELLS_OUT_OF_SUPPORT",
+  "layers": [
+    {
+      "name": "cycle_stem",
+      "role": "Frozen 3-layer strided Conv1d+GELU per-cycle curve stem (3->32->64->64).",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.cycle_stem",
+        "diagnostics.json.summary.activation_health.cycle_stem"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Phase-2 frozen architecture block; layer_health status is HEALTHY (tools/layer_report.py status OK) with late near-zero gradient fraction 0.0, late grad-to-parameter ratio 8.1633 (<= 100), and late update ratio 0.00471."
+    },
+    {
+      "name": "residual_blocks.0",
+      "role": "First frozen GroupNorm ResidualCurveBlock(64, groups=8).",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.residual_blocks.0",
+        "diagnostics.json.summary.activation_health.residual_blocks"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Phase-2 frozen architecture block; layer_health status is HEALTHY (tools/layer_report.py status OK) with late near-zero gradient fraction 0.0345, late grad-to-parameter ratio 1.1768, and late update ratio 0.00287."
+    },
+    {
+      "name": "residual_blocks.1",
+      "role": "Second frozen GroupNorm ResidualCurveBlock(64, groups=8).",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.residual_blocks.1",
+        "diagnostics.json.summary.activation_health.residual_blocks"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Phase-2 frozen architecture block; layer_health status is HEALTHY (tools/layer_report.py status OK) with late near-zero gradient fraction 0.1007, late grad-to-parameter ratio 0.3252, and late update ratio 0.00317."
+    },
+    {
+      "name": "fade_encoder",
+      "role": "Frozen Cycle-1 anchored per-cycle fade MLP (Linear 128->64, GELU, Linear 64->64) on u_t = [h_t, h_t - h_1] with residual +h_t.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.fade_encoder",
+        "diagnostics.json.summary.activation_health.fade_encoder",
+        "diagnostics.json.summary.branch_gradient_imbalance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Phase-2 frozen architecture block; layer_health status is HEALTHY (tools/layer_report.py status OK) with late near-zero gradient fraction 0.0662, late grad-to-parameter ratio 0.1168, and late update ratio 0.00573."
+    },
+    {
+      "name": "inter_summary",
+      "role": "Frozen Linear(192->64) projection on masked [mean, last, last - first] cycle summary.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.inter_summary",
+        "diagnostics.json.summary.activation_health.inter_summary",
+        "diagnostics.json.summary.padding_invariance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Phase-2 frozen architecture block; layer_health status is HEALTHY (tools/layer_report.py status OK) with late near-zero gradient fraction 0.0, late grad-to-parameter ratio 0.1953, late update ratio 0.00654, and exact padding invariance (0.0)."
+    },
+    {
+      "name": "head",
+      "role": "Frozen Linear(64->1) readout after GELU.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.head",
+        "diagnostics.json.summary.activation_health.head"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Phase-2 frozen architecture block; layer_health status is HEALTHY (tools/layer_report.py status OK) with late near-zero gradient fraction 0.0, late grad-to-parameter ratio 5.6628, and late update ratio 0.00521."
+    }
+  ],
+  "gates": {
+    "gradient": "FAIL",
+    "screen_floor": {
+      "applicable": false,
+      "pass": null,
+      "reason": "ZN-E017 is a full_candidate run on split 2021 (9 completed epochs under A2-ZN), not a 5-epoch screening run."
+    }
+  },
+  "decision": "DISCARD",
+  "next_action": {
+    "type": "NEW_HYPOTHESIS",
+    "summary": "Move on to P0c late-knee fade physics (physics_type='whatif_knee_p0c', x~_{n,2,150:300} = x_{n,2,150:300} * (1 - alpha * r_n^2), alpha ~ U(0, alpha_max=0.150), physics_loss_weight=1.0 calibrated via rho=0.5, physics_anchor_gradient='stop') on frozen ZN-E010 (ONE change vs ZN-E010, next in the loss.md §4.6 order P0 -> P4b -> P0c). Why NOT a loss.md §5.3 rho-only repair of P4b: P4b showed zero promising signal under program.md §7 A2 and its gradient conflict (cos = -0.80 to -0.88) is structural on ZN-coin—23/49 modified train cells (mean EOL 769.7, including all >1000 cells) have non-monotonic early dips followed by break-in recovery where multiplying min(Delta_n, 0) by r_n distorts recovery slopes, while the 26/49 monotonically falling cells are all ultra-short-life (EOL <= 167) and get pushed to -28%..-38% out-of-support capacity drops; shrinking rho only takes a smaller step along an antiparallel gradient. Why P0c over P2: on ZN-coin train cells, P2 discharge voltage sag (V_10 - V_100) is positive in only 24/59 cells and is uncorrelated with life (Spearman(Delta V, log EOL) = +0.0159, p = 0.905), whereas capacity fade has Spearman(phi, log EOL) = -0.9567 (p = 3.1e-32). P0 (ZN-E016) was the only physics term with healthy gradients, positive cosine (+0.28..+0.38), SATISFIED balance (-70.2% violations, 0.149 -> 0.044), and improved RMSE (418.6) and >1000 bias (-921.0 vs -970.1), failing only because its linear ramp r_n perturbed early break-in cycles 11-50 on <500 cells. P0c's quadratic ramp r_n^2 = ((n-10)/90)^2 is 6x smaller at cycle 25 (0.028 vs 0.167) and 3x smaller at cycle 40 (0.111 vs 0.333), leaving the early break-in/dip window nearly untouched while applying bounded (<=15%) late-cycle knee fade. If P0c also fails §7, stop what-if physics and take stock.",
+    "source_cause_id": "C1_P4B_AMPLIFIES_TRANSIENT_EARLY_DIPS_ON_RECOVERING_LONG_LIFE_CELLS_AND_PUSHES_FALLING_SHORT_LIFE_CELLS_OUT_OF_SUPPORT",
+    "responsible_block": "Objective / Phase-2 Loss (replace whatif_trend_p4b with quadratic-ramp late-knee physics whatif_knee_p0c on frozen ZN-E010)"
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "id": "ZN-E018",
+  "phase": "phase2_loss",
+  "training_stage": "full_candidate",
+  "type": "loss",
+  "model": {
+    "display_name": "AnchoredFade-ResConv-GELU",
+    "variant": "anchored_fade_resconv_masked_summary",
+    "d_model": 64,
+    "residual_layers": 2,
+    "d_ff": 64,
+    "mlp_layers": 0,
+    "summary_mode": "mean_last_delta",
+    "dropout": 0.1,
+    "activation": "gelu",
+    "fade_hidden": 64
+  },
+  "reference_experiment": "ZN-E010",
+  "observation": "ZN-E016 (P0 linear-ramp fade): only healthy physics term so far \u2014 violation 0.150 -> 0.044, SATISFIED, cosine +0.28..+0.38, RMSE 418.6, >1000 bias -921 \u2014 but MAPE 0.3433 because the linear ramp shrinks early break-in cycles of <500 cells (<500 MAPE 0.200 -> 0.217). ZN-E017 (P4b) failed structurally (R 2.07, cos -0.85, UNHEALTHY). P2 is unsupported on ZN-coin (Spearman(Delta V, log EOL) = +0.016). Frozen ZN-E010 P0c violation 0.149.",
+  "primary_hypothesis": "A late-knee what-if (capacity x (1 - alpha r_n^2)), whose quadratic ramp barely touches cycles 11-50 (r^2 = 0.028 at cycle 25 vs 0.167 linear), keeps P0's physics benefit (held-out P0c violation -50% vs ZN-E010's 0.149, healthy balance) without the short-life break-in distortion, so accuracy does not fall: KEEP under \u00a77 vs ZN-E010.",
+  "question_inherited": "Was P0's accuracy loss caused by perturbing early break-in cycles?",
+  "unresolved_from_reference": "Whether a late-only fade rule gives physics consistency without hurting <500-cycle cells.",
+  "why_this_experiment": "loss.md \u00a74.6 order P0 -> P4(b) -> P0c -> P2; Gemini ZN-E017 analysis; P0c is the natural repair of P0's early-cycle side effect while staying a registered physics term (one change vs ZN-E016: ramp r_n -> r_n^2).",
+  "modification": "Loss only: L = RelativeHuber_0.15 + lambda * mean ReLU(f(x~) - sg[f(x)]), x~_{n,Q,dis} = x_{n,Q,dis} (1 - alpha r_n^2) on observed cycles, alpha ~ U(0, 0.150); lambda = 0.5 x median gradient ratio (unsigned calibration). Model and training identical to ZN-E010.",
+  "changed_components": "Objective: added P0c late-knee physics term (label-free).",
+  "held_constant_components": "Frozen ZN-E010 architecture (98,113 params, GELU, anchored fade encoder), Relative Huber delta 0.15 main loss, Adam lr 5e-4, batch 128, seed 2021, split 2021, A2-ZN epochs, checkpoint rule, data.",
+  "controlled_variables": "Training seed 2021, split 2021, minimum 5 / maximum 100 epochs, patience 5 after epoch 5, diagnostics every 50 steps; lambda2 never tuned on validation.",
+  "expected_evidence": "MAPE/Acc@15/RMSE/DB-MAPE vs ZN-E010 and ZN-E016; held-out P0c violation vs 0.149; <500 band vs ZN-E010 (0.200) and ZN-E016 (0.217); lambda, R, cosine, active fraction; EOL-band bias; gradient gate.",
+  "rejection_condition": "Primary rule (program.md \u00a77, vs frozen reference ZN-E010 MAPE 0.3325 / RMSE 425.0 / Acc@15 0.3665 / DB-MAPE 0.3325). KEEP iff [A: MAPE <= 0.3245 AND RMSE <= 435.0] OR [B: RMSE <= 404.0 AND MAPE <= 0.3355] OR [C: Acc@15 >= 0.3865 AND MAPE <= 0.3355 AND RMSE <= 435.0], AND Acc@15 >= 0.3365 (A/B) AND DB-MAPE <= 0.3425 AND gradient gate PASS AND loss balance PASS or SATISFIED (loss.md \u00a75.3; BALANCE_FAIL -> DISCARD) AND prediction SD >= 10% of target SD; otherwise DISCARD. Physics claim only if the held-out violation rate falls vs ZN-E010 and accuracy does not get worse (loss.md \u00a74.6). If DISCARD, what-if physics stops and the lead takes stock (Gemini ZN-E017 analysis).",
+  "minimum_evidence_requirements": "At least five complete epochs; finite MAPE, Acc@15, MAE, and RMSE from one checkpoint; sample and unique-cell counts for every domain; gradient, update, activation, prediction, mask, and compute diagnostics.",
+  "required_diagnostics": "Epoch learning curve; selected and minimum-MAPE epochs; cycle_stem, residual_blocks, fade_encoder, inter_summary and head gradients and updates; activation health; prediction spread and bias; prefix, domain and EOL errors; padding sensitivity; parameters, memory, time, throughput. Loss balance: lambda2, R_j median, cosine, active fraction (loss.md \u00a75.3).",
+  "estimated_budget": {
+    "experiments": 1,
+    "training_seconds": 600
+  },
+  "training": {
+    "seed": 2021,
+    "batch_size": 128,
+    "max_epochs": 100,
+    "minimum_epochs": 5,
+    "patience": 5,
+    "learning_rate": 0.0005,
+    "scheduler": "none",
+    "target_transform": "standard",
+    "main_loss": "relative_huber",
+    "relative_huber_delta": 0.15,
+    "checkpoint_mape_tolerance": 0.005,
+    "physics_loss_weight": 1.0,
+    "extra_loss_weight": 0.0,
+    "prefix_consistency_weight": 0.0,
+    "diagnostic_interval_steps": 50,
+    "required_device": "cuda",
+    "physics_type": "whatif_knee_p0c",
+    "physics_rho": 0.5,
+    "physics_anchor_gradient": "stop"
+  },
+  "split": "2021",
+  "architecture_addendum": {
+    "responsible_stage": "Degradation Encoder",
+    "mechanism": "None (frozen model; loss experiment)",
+    "evidence": "Phase-2 loss experiment on the frozen ZN-E010 architecture",
+    "shapes": "[B,100,3,300] -> ResConv [B,100,64] (h_t) -> u_t=[h_t, h_t-h_1] [B,100,128] -> Linear 128->64, GELU, Linear 64->64, +h_t -> g_t [B,100,64] * mask -> masked summary [B,192] -> Linear [B,64] -> GELU -> Linear [B,1]",
+    "mask_path": "h_1 = cycle index 0 (always observed); g_t multiplied by mask; mean over mask==1, last at mask.sum()-1, delta last - first. tests/test_anchored_fade.py: padding invariance and cycle-1 dependence.",
+    "expected_evidence": "MAPE, RMSE, Acc@15, DB-MAPE (= MAPE) vs ZN-E005; EOL bands; gradient gate incl. fade_encoder"
+  },
+  "smoke_evidence": "pending CUDA smoke ZN-E018S",
+  "loss_addendum": {
+    "term": "whatif_knee_p0c (P0c knee)",
+    "kind": "physics, label-free",
+    "formula": "mean ReLU(f(x~) - sg[f(x)]), x~_{n,Q,dis} = x_{n,Q,dis}(1 - alpha r_n^2)",
+    "params": {
+      "rho": 0.5,
+      "alpha_max": "P90 train fade per domain (ZN-coin 0.15)",
+      "margin": 0.0,
+      "ramp": "r_n^2, r_n = clip((n-10)/90,0,1)",
+      "anchor_gradient": "stop"
+    },
+    "lambda": "rho x median gradient-norm ratio on 3 fixed train batches, unsigned calibration loss, float64, logged",
+    "balance_checks": "loss.md \u00a75.3 band on R (0.05..2.0), cosine, active fraction; SATISFIED rule; held-out violation rate vs ZN-E010",
+    "physics_check": "Zn-ion: Spearman(phi, log EOL) = -0.957 on 59 train cells; EOL is capacity-threshold defined, so lower capacity at fixed other inputs cannot lengthen life",
+    "units": "standardized output units (cycles / s), dimensionless"
+  }
+}
