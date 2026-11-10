@@ -16,7 +16,7 @@
     "fade_hidden": 64
   },
   "reference_experiment": "ZN-E010",
-  "observation": "Frozen ZN-E010: split 2021 MAPE 0.3325, Acc@15 0.3665, RMSE 425.0; long-life underprediction on every run. ZN-E015 (statistical stat_tail_balance) did not lift long-life cells: the tail term keeps the 1/y scaling. KDE rarity weighting (alpha 0.5) on the 2021 train cells gives w(1235)=1.26 vs w(190)=0.92 (only 1.37x), so it is not evidence-led either. Zn-ion physics check on the 59 train cells with >= 100 cycles: Spearman(relative discharge-capacity fade phi_10->100, log EOL) = -0.957; 32/59 cells show break-in (phi < 0); domain P90 phi = 0.15.",
+  "observation": "Frozen ZN-E010: split 2021 MAPE 0.3325, Acc@15 0.3665, RMSE 425.0; long-life underprediction on every run. ZN-E015 (statistical stat_tail_balance) did not lift long-life cells: the tail term keeps the 1/y scaling. KDE rarity weighting (alpha 0.5) on the 2021 train cells gives w(1235)=1.26 vs w(190)=0.92 (only 1.37x), so it is not evidence-led either. Zn-ion physics check on the 59 train cells with >= 100 cycles: Spearman(relative discharge-capacity fade phi_10->100, log EOL) = -0.957; 32/59 cells show break-in (phi < 0); domain P90 phi = 0.15. Frozen ZN-E010 held-out violation rates: P0 0.150, P0c 0.149, P4b 0.303, P2 0.226 (alpha = alpha_max).",
   "primary_hypothesis": "The label-free physics rule 'a uniformly faster-fading battery cannot live longer' (P0, loss.md \u00a74.6), which holds strongly on ZN-coin (Spearman -0.957), lowers the held-out what-if violation rate by >= 50% vs ZN-E010 without hurting accuracy, and by teaching a fade-to-life ordering helps separate slow-fading long-life cells: KEEP under \u00a77 vs ZN-E010.",
   "question_inherited": "Does a label-free Zn-ion fade-monotonicity physics loss improve ZN-E010's accuracy and physical consistency?",
   "unresolved_from_reference": "Whether ZN-E010 violates the fade-to-life ordering and whether enforcing it helps the long-life tail.",
@@ -63,7 +63,7 @@
     "mask_path": "h_1 = cycle index 0 (always observed); g_t multiplied by mask; mean over mask==1, last at mask.sum()-1, delta last - first. tests/test_anchored_fade.py: padding invariance and cycle-1 dependence.",
     "expected_evidence": "MAPE, RMSE, Acc@15, DB-MAPE (= MAPE) vs ZN-E005; EOL bands; gradient gate incl. fade_encoder"
   },
-  "smoke_evidence": "pending CUDA smoke ZN-E016S",
+  "smoke_evidence": "CUDA smoke ZN-E016S on Kaggle Tesla T4: identical config, 92 optimizer steps, worker preflight passed, finite (val MAPE 0.4204 -> 0.3774), lambda = 0.1383 (rho 0.5, batch ratios 0.267/0.278/0.277), executed train.py md5 = reviewed. P0 active fraction 0 and held-out violation 0 at 92 steps (untrained model); overall gradient WARNING without block flags at smoke length. Reference evidence: the frozen ZN-E010 violates P0 on ~15% of val samples, P0c ~15%, P4b ~30%, P2 ~22.5% (diagnostics/ZN-E010_whatif_violations.md).",
   "loss_addendum": {
     "term": "whatif_fade_p0 (P0 uniform fade)",
     "kind": "physics, label-free",
