@@ -1,0 +1,83 @@
+{
+  "id": "ZN-E016",
+  "phase": "phase2_loss",
+  "training_stage": "full_candidate",
+  "type": "loss",
+  "model": {
+    "display_name": "AnchoredFade-ResConv-GELU",
+    "variant": "anchored_fade_resconv_masked_summary",
+    "d_model": 64,
+    "residual_layers": 2,
+    "d_ff": 64,
+    "mlp_layers": 0,
+    "summary_mode": "mean_last_delta",
+    "dropout": 0.1,
+    "activation": "gelu",
+    "fade_hidden": 64
+  },
+  "reference_experiment": "ZN-E010",
+  "observation": "Frozen ZN-E010: split 2021 MAPE 0.3325, Acc@15 0.3665, RMSE 425.0; long-life underprediction on every run. ZN-E015 (statistical stat_tail_balance) did not lift long-life cells: the tail term keeps the 1/y scaling. KDE rarity weighting (alpha 0.5) on the 2021 train cells gives w(1235)=1.26 vs w(190)=0.92 (only 1.37x), so it is not evidence-led either. Zn-ion physics check on the 59 train cells with >= 100 cycles: Spearman(relative discharge-capacity fade phi_10->100, log EOL) = -0.957; 32/59 cells show break-in (phi < 0); domain P90 phi = 0.15.",
+  "primary_hypothesis": "The label-free physics rule 'a uniformly faster-fading battery cannot live longer' (P0, loss.md \u00a74.6), which holds strongly on ZN-coin (Spearman -0.957), lowers the held-out what-if violation rate by >= 50% vs ZN-E010 without hurting accuracy, and by teaching a fade-to-life ordering helps separate slow-fading long-life cells: KEEP under \u00a77 vs ZN-E010.",
+  "question_inherited": "Does a label-free Zn-ion fade-monotonicity physics loss improve ZN-E010's accuracy and physical consistency?",
+  "unresolved_from_reference": "Whether ZN-E010 violates the fade-to-life ordering and whether enforcing it helps the long-life tail.",
+  "why_this_experiment": "loss.md \u00a74.6 mandatory physics order P0 -> P4 -> P0c -> P2 (P4 is unsafe here: 32/59 train cells rise, the R4-E064 failure mode; P4b is the safe variant later). P0 is label-free, in standardized units (no 1/y factor), and its rule is strongly supported by ZN-coin train data. Statistical alternatives are weak (tail term 1.19x, rarity 1.37x).",
+  "modification": "Loss only: L = RelativeHuber_0.15 + lambda * L_P0, L_P0 = mean ReLU(f(x~) - sg[f(x)]), x~ = discharge-capacity channel scaled by (1 - alpha r_n) on observed cycles, r_n = clip((n-10)/90,0,1), alpha ~ U(0, alpha_max(d)), alpha_max = P90 train fade (0.15; dedicated RNG seed+10000). lambda = rho * median ||grad L_main|| / ||grad L_cal|| on 3 fixed train batches with the unsigned calibration loss (loss.md \u00a75.2), rho = 0.5.",
+  "changed_components": "Objective: added label-free physics term P0 (uniform-fade what-if), lambda calibrated from gradients.",
+  "held_constant_components": "Frozen ZN-E010 architecture (98,113 params, GELU, anchored fade encoder), Relative Huber delta 0.15 main loss, Adam lr 5e-4, batch 128, seed 2021, split 2021, A2-ZN epochs, checkpoint rule, data.",
+  "controlled_variables": "Training seed 2021, split 2021, minimum 5 / maximum 100 epochs, patience 5 after epoch 5, diagnostics every 50 steps; lambda2 never tuned on validation.",
+  "expected_evidence": "MAPE/Acc@15/RMSE/DB-MAPE vs ZN-E010; held-out P0 violation rate (alpha in {0.25,0.5,1.0} x alpha_max) for ZN-E016 and ZN-E010; lambda, R, cosine, active fraction (summary.loss_balance); EOL-band bias; gradient gate.",
+  "rejection_condition": "Primary rule (program.md \u00a77, vs frozen reference ZN-E010 MAPE 0.3325 / RMSE 425.0 / Acc@15 0.3665 / DB-MAPE 0.3325). KEEP iff [A: MAPE <= 0.3245 AND RMSE <= 435.0] OR [B: RMSE <= 404.0 AND MAPE <= 0.3355] OR [C: Acc@15 >= 0.3865 AND MAPE <= 0.3355 AND RMSE <= 435.0], AND Acc@15 >= 0.3365 (A/B) AND DB-MAPE <= 0.3425 AND gradient gate PASS AND loss balance PASS or SATISFIED (loss.md \u00a75.3; BALANCE_FAIL -> DISCARD) AND prediction SD >= 10% of target SD; otherwise DISCARD. Physics claim only if the held-out violation rate falls vs ZN-E010 and accuracy does not get worse (loss.md \u00a74.6).",
+  "minimum_evidence_requirements": "At least five complete epochs; finite MAPE, Acc@15, MAE, and RMSE from one checkpoint; sample and unique-cell counts for every domain; gradient, update, activation, prediction, mask, and compute diagnostics.",
+  "required_diagnostics": "Epoch learning curve; selected and minimum-MAPE epochs; cycle_stem, residual_blocks, fade_encoder, inter_summary and head gradients and updates; activation health; prediction spread and bias; prefix, domain and EOL errors; padding sensitivity; parameters, memory, time, throughput. Loss balance: lambda2, R_j median, cosine, active fraction (loss.md \u00a75.3).",
+  "estimated_budget": {
+    "experiments": 1,
+    "training_seconds": 600
+  },
+  "training": {
+    "seed": 2021,
+    "batch_size": 128,
+    "max_epochs": 100,
+    "minimum_epochs": 5,
+    "patience": 5,
+    "learning_rate": 0.0005,
+    "scheduler": "none",
+    "target_transform": "standard",
+    "main_loss": "relative_huber",
+    "relative_huber_delta": 0.15,
+    "checkpoint_mape_tolerance": 0.005,
+    "physics_loss_weight": 1.0,
+    "extra_loss_weight": 0.0,
+    "prefix_consistency_weight": 0.0,
+    "diagnostic_interval_steps": 50,
+    "required_device": "cuda",
+    "physics_type": "whatif_fade_p0",
+    "physics_rho": 0.5,
+    "physics_anchor_gradient": "stop"
+  },
+  "split": "2021",
+  "architecture_addendum": {
+    "responsible_stage": "Degradation Encoder",
+    "mechanism": "None (frozen model; loss experiment)",
+    "evidence": "Phase-2 loss experiment on the frozen ZN-E010 architecture",
+    "shapes": "[B,100,3,300] -> ResConv [B,100,64] (h_t) -> u_t=[h_t, h_t-h_1] [B,100,128] -> Linear 128->64, GELU, Linear 64->64, +h_t -> g_t [B,100,64] * mask -> masked summary [B,192] -> Linear [B,64] -> GELU -> Linear [B,1]",
+    "mask_path": "h_1 = cycle index 0 (always observed); g_t multiplied by mask; mean over mask==1, last at mask.sum()-1, delta last - first. tests/test_anchored_fade.py: padding invariance and cycle-1 dependence.",
+    "expected_evidence": "MAPE, RMSE, Acc@15, DB-MAPE (= MAPE) vs ZN-E005; EOL bands; gradient gate incl. fade_encoder"
+  },
+  "smoke_evidence": "pending CUDA smoke ZN-E016S",
+  "loss_addendum": {
+    "term": "whatif_fade_p0 (P0 uniform fade)",
+    "kind": "physics, label-free",
+    "formula": "mean ReLU(f(x~) - sg[f(x)]), x~_{n,Q,dis} = x_{n,Q,dis} (1 - alpha r_n), observed cycles only",
+    "params": {
+      "rho": 0.5,
+      "alpha_max": "P90 train fade per domain (ZN-coin 0.15)",
+      "margin": 0.0,
+      "ramp": "r_n = clip((n-10)/90,0,1)",
+      "anchor_gradient": "stop"
+    },
+    "lambda": "rho x median gradient-norm ratio on 3 fixed train batches, unsigned calibration loss, float64, logged",
+    "balance_checks": "loss.md \u00a75.3 band on R (0.05..2.0), cosine, active fraction; SATISFIED rule; held-out violation rate vs ZN-E010",
+    "physics_check": "Zn-ion: Spearman(phi, log EOL) = -0.957 on 59 train cells; EOL is capacity-threshold defined, so lower capacity at fixed other inputs cannot lengthen life",
+    "units": "standardized output units (cycles / s), dimensionless"
+  }
+}
