@@ -189,3 +189,15 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - Cause (Gemini): structural on ZN-coin — 23/49 modified train cells dip then recover (break-in), and the falling cells are ultra-short-life and get pushed far out of support. A ρ-only repair would follow an antiparallel gradient.
 - P2 not supported on ZN-coin: Spearman(ΔV_10->100, log EOL) = +0.016 (p 0.905).
 - Next: ZN-E018 = P0c late knee (quadratic ramp spares break-in). If it fails, stop what-if physics and take stock.
+
+## ZN-E018 — Phase 2 loss 4: frozen ZN-E010 + P0c late-knee physics, split 2021
+
+- Run: `VALID`. Decision: `DISCARD` (§7: MAPE 0.3254 misses 0.3245; Acc@15 0.3185 < 0.3365). Reviewer: Gemini.
+- λ = 0.140 (ρ 0.5). P0c violation 0.149 -> 0.055 (−63%); balance mostly inactive (median R 0.0045; R 0.105 cos 0.58 at step 250).
+- MAPE 0.3254 (lowest of Phase 2), <500 MAPE 0.192 (ZN-E010 0.200, ZN-E016 0.217): the quadratic ramp removes P0's break-in side effect. RMSE 445.2, >1000 bias −1064.
+
+## Phase 2 stock-take (after ZN-E015…E018)
+
+- No loss met §7 vs frozen ZN-E010. Statistical tail/rarity weights are too weak (1.19× / 1.37× long-life pull); P4b conflicts structurally; P2 is unsupported on ZN-coin.
+- Label-free P0 / P0c make the model physically consistent (held-out violations −70% / −63%) at about equal accuracy — a physics-consistency result, not an accuracy gain.
+- Reviewer recommendation: close Phase 2 with ZN-E010 kept (A3), report P0/P0c as physics-consistency ablations; optional 3-split confirmation of P0c or P0 needs user approval. Awaiting the user.
