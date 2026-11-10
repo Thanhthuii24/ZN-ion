@@ -1,0 +1,178 @@
+{
+  "schema_version": 1,
+  "experiment_id": "ZN-E015",
+  "run_validity": "VALID",
+  "contract_answer": {
+    "question": "Is the shared long-life underprediction on ZN-coin removed by adding the registered statistical tail term stat_tail_balance (loss.md §4.7: tau-weighted Huber on relative errors beyond ±0.15, under-prediction weighted by w = clip(y/mu, 1, 3), lambda2 = 0.25 x median gradient ratio) to frozen ZN-E010, achieving KEEP under program.md §7 on split 2021?",
+    "outcome": "REFUTED",
+    "conclusion": "Reviewed by CODEX(gemini-4-argon). Apply the proposal's primary rule exactly. On split 2021 (seed 2021, Kaggle Tesla T4), ZN-E015 is a complete, finite 10-epoch run (460 optimizer steps, 113.571s training compute, 98,113 parameters, early stopping at epoch 10 with both minimum-MAPE and epsilon-Pareto selected checkpoint at epoch 5) achieving MAPE 0.327912, Acc@15 0.2995, RMSE 436.661 cycles, MAE 229.174 cycles, and DB-MAPE 0.327912 versus frozen reference ZN-E010 (MAPE 0.332536, Acc@15 0.3665, RMSE 425.009 cycles, MAE 232.129 cycles, DB-MAPE 0.332536). Against frozen ZN-E010 under program.md §7, ZN-E015 fails all three primary KEEP paths: Path A fails on both MAPE (0.327912 > 0.3245, improving by only -0.004624 vs the required -0.0080) and the accompanying RMSE guard (436.661 > 435.0, +11.652 cycles regression); Path B fails on RMSE (436.661 > 404.0); and Path C fails on both Acc@15 (0.2995 < 0.3865, -0.0670 regression) and RMSE (436.661 > 435.0). It also fails the shared Path A/B Acc@15 floor (0.2995 < 0.3365) and the 20-cell ZN-coin domain Acc@15 guardrail (-0.0670 < -0.05). By EOL band, 500-1000 bias shrinks by 128.08 cycles (-533.01 -> -404.94, MAPE 0.6388 -> 0.4903) and <500 MAPE stays within the <= 0.01 secondary guard (0.1998 -> 0.2016, +0.0018), but <500 Acc@15 drops by -0.0893 (0.4887 -> 0.3993) and >1000 bias worsens by -80.67 cycles (-970.08 -> -1050.74, MAPE 0.7920 -> 0.8511, RMSE 994.52 -> 1063.65, Acc@15 0.0). Gradient health PASSES (overall_gradient_health HEALTHY across all 6 blocks, padding invariance 0.0) and prediction spread PASSES (SD 124.32 cycles = 30.51% of target SD >= 10%, correlation 0.3628 vs 0.4785 in ZN-E010). Although diagnostics.json.summary.loss_balance is NOT_ASSESSED because train.py only wires primary physics_loss into loss_gradient_interaction (while standalone physics2 logs lambda2 = 0.138554 with initial R = 0.25 in physics2_calibration and step-250 raw = 0.02632, weighted = 0.00365, active_fraction = 0.59375 in physics2_steps), this logging gap does not affect run_validity (VALID) or the decision because ZN-E015 already fails every accuracy path (A, B, C), the RMSE guard, and the Acc@15 guard, requiring Decision: DISCARD.",
+    "evidence_paths": [
+      "record.json.proposal.rejection_condition",
+      "record.json.result",
+      "record.json.metrics",
+      "record.json.metrics.by_eol",
+      "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+      "diagnostics.json.physics2_calibration",
+      "diagnostics.json.physics2_steps",
+      "diagnostics.json.checkpoint_selection",
+      "diagnostics.json.summary.overall_gradient_health",
+      "diagnostics.json.summary.layer_health",
+      "diagnostics.json.summary.loss_balance",
+      "diagnostics.json.summary.padding_invariance",
+      "worker_meta.json",
+      "../ZN-E010/record.json.metrics"
+    ]
+  },
+  "main_symptom": "Adding stat_tail_balance (lambda2 = 0.1386, rho2 = 0.25, tau = 0.55, w = clip(y/mu, 1, 3)) to frozen ZN-E010 reduces 500-1000 cycle under-prediction bias from -533.01 to -404.94 cycles (lifting ZN-coin_432-3 [EOL 923] mean prediction from 426.3 to 592.5 and ZN-coin_433-3 [EOL 770] from 200.7 to 290.6) and edges overall MAPE down by 0.0046 (0.3325 -> 0.3279), but fails all §7 KEEP paths because >1000-cycle bias worsens from -970.08 to -1050.74 cycles (ZN-coin_436-1 [EOL 1402] mean prediction drops from 492.9 to 282.1; RMSE 425.01 -> 436.66 cycles; correlation 0.4785 -> 0.3628) and overall Acc@15 drops from 0.3665 to 0.2995 (<500 Acc@15 0.4887 -> 0.3993) as minimum validation MAPE is reached prematurely at epoch 5 (step 230) before high-life predictions finish separating.",
+  "causes": [
+    {
+      "id": "C1_STAT_TAIL_BALANCE_INHERITS_1_OVER_Y_GRADIENT_SCALING_AND_1_19X_EFFECTIVE_WEIGHT_CAP",
+      "class": "loss_formulation_scaling_limit",
+      "supporting_evidence": [
+        "record.json.proposal.modification",
+        "record.json.metrics",
+        "record.json.metrics.by_eol.high_>1000",
+        "record.json.metrics.by_eol.middle_500-1000",
+        "record.json.metrics.by_eol.low_<500",
+        "diagnostics.json.physics2_calibration",
+        "diagnostics.json.physics2_steps",
+        "diagnostics.json.epoch_history",
+        "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+        "../ZN-E010/record.json.metrics",
+        "../ZN-E010/validation_predictions.npz[prediction,target,cell_id,prefix_length]"
+      ],
+      "contradicting_evidence": [
+        "In the 500-1000 band (2 cells, 200 samples), stat_tail_balance reduces under-prediction bias by 128.08 cycles (-533.01 -> -404.94) and band MAPE from 0.6388 to 0.4903, and on ZN-coin_445-2 (EOL 415) mean prediction rises from 244.5 to 305.9 cycles (Acc@15 0.00 -> 0.23).",
+        "At step 250, stat_tail_balance is active on 59.38% of training samples (raw loss 0.02632, weighted 0.003647, ~10.4% of L_main = 0.035)."
+      ],
+      "interpretation": "The lead hypothesis is confirmed both mathematically and empirically. Because e- = ReLU(-(yhat - y)/y - 0.15) is a function of relative error, its derivative with respect to raw prediction yhat is de-/dyhat = -1/y. In the linear Huber regime (|rel_err| > 0.15 + delta_under = 0.40, which holds for all 5 validation cells with EOL >= 500), the per-sample gradient magnitude of the combined objective L = L_main + lambda2 * L_tail with respect to yhat on an under-predicted sample is [delta_main + lambda2 * (1 - tau) * delta_under * w(y)] / y = [0.15 + 0.13855 * 0.45 * 0.25 * clip(y/mu, 1, 3)] / y = [0.15 + 0.01559 * clip(y/404.5, 1, 3)] / y. Two structural bottlenecks prevent this term from solving the >1000-cycle bias: (1) Even within L_tail alone, w = clip(y/404.5, 1, 3) caps at 3x vs the 6.4x-13.5x 1/y deficit between short-life cells (y ~ 104-192) and long-life cells (y ~ 1023-1402), so w(y)/y still decays as 1/y. (2) Worse, because lambda2 * (1 - tau) * delta_under = 0.01559 is only 10.4% of delta_main = 0.15, increasing w from 1 (short-life) to 3 (long-life) changes the total per-sample gradient numerator from 0.1656 to 0.1968—an effective relative reweighting of only 1.19x. Meanwhile, on over-predicted short-life cells (y ~ 104-183), the e+ branch (tau = 0.55, delta_over = 0.5) also scales as 1/y (6x-13x stronger per cycle on short-life cells), pushing down shared representations and shifting <500-cycle predictions out of the ±15% band (<500 Acc@15 0.4887 -> 0.3993; e.g. ZN-coin_402-1 Acc@15 1.00 -> 0.30, ZN-coin_445-3 0.55 -> 0.09) while causing validation MAPE to bottom out early at epoch 5 (step 230) when ZN-coin_436-1 (EOL 1402) has only reached mean 282.1 cycles (vs 492.9 at epoch 10 in ZN-E010).",
+      "missing_evidence": [
+        "Testing a loss that either directly reweights the main loss per sample without 10% additive dilution (e.g. rarity_alpha in loss.md §4.7) or operates in standardized cycle units without 1/y attenuation (label-free what-if physics P0/P4b in loss.md §4.6)."
+      ]
+    },
+    {
+      "id": "C2_PHYSICS2_LOSS_BALANCE_LOGGING_GAP_IN_TRAIN_PY",
+      "class": "diagnostic_instrumentation_gap",
+      "supporting_evidence": [
+        "diagnostics.json.physics2_calibration",
+        "diagnostics.json.physics2_steps",
+        "diagnostics.json.summary.loss_balance",
+        "diagnostics.json.summary.physics_balance",
+        "diagnostics.json.samples"
+      ],
+      "contradicting_evidence": [
+        "The training forward/backward math (loss = main_loss + lambda_phys2 * l2) executed as specified, and physics2_calibration confirms exact step-0 gradient calibration (batch_ratios = [0.5641, 0.5531, 0.5542], rho2 = 0.25 => initial R = 0.25 in [0.05, 2.0]) while physics2_steps confirms active_fraction = 0.59375 at step 250."
+      ],
+      "interpretation": "In train.py (lines 7012, 7096-7108, 7134, 7215, and summarize_diagnostics lines 5007-5126), loss_gradient_interaction and sample['physics_loss']—which populate diagnostics.json.summary.loss_balance—are gated on physics_loss_weight > 0 (phys_loss is not None). When a Phase-2 loss is run via standalone physics2_type with physics_loss_weight = 0.0, train.py logs only raw loss, weighted loss, and active_fraction every 250 steps in physics2_steps, leaving summary.loss_balance.status = 'NOT_ASSESSED' with no mid-training gradient ratio R or cosine trajectory. For ZN-E015, this gap does not alter run_validity (VALID) or the decision (DISCARD) because ZN-E015 independently fails all three accuracy paths (A, B, and C), the RMSE guard, and the Acc@15 guard. However, under loss.md §5.3 ('The reviewer checks them before any KEEP'), a standalone physics2 run that cleared accuracy thresholds could not be verified for KEEP without R and cosine logging. Therefore, wiring lambda_phys2 into sampled / loss_gradient_interaction / summary.loss_balance in train.py is required before any future standalone physics2_type run.",
+      "missing_evidence": [
+        "Per-250-step weighted_to_main_gradient_ratio (R) and gradient_cosine in diagnostics.json.summary.loss_balance for standalone physics2_type runs."
+      ]
+    },
+    {
+      "id": "C3_HEALTHY_GRADIENT_GATE_PRESERVED_ACROSS_ALL_SIX_FROZEN_BLOCKS",
+      "class": "optimization_health",
+      "supporting_evidence": [
+        "diagnostics.json.summary.overall_gradient_health",
+        "diagnostics.json.summary.layer_health.cycle_stem",
+        "diagnostics.json.summary.layer_health.residual_blocks.0",
+        "diagnostics.json.summary.layer_health.residual_blocks.1",
+        "diagnostics.json.summary.layer_health.fade_encoder",
+        "diagnostics.json.summary.layer_health.inter_summary",
+        "diagnostics.json.summary.layer_health.head",
+        "diagnostics.json.summary.activation_health",
+        "diagnostics.json.summary.padding_invariance"
+      ],
+      "contradicting_evidence": [
+        "Passing the gradient and activation gates across all 6 blocks does not prevent early saturation of validation MAPE at epoch 5 under stat_tail_balance."
+      ],
+      "interpretation": "All six blocks of the frozen ZN-E010 architecture remain HEALTHY throughout ZN-E015 training: late near-zero gradient fractions are 0.0000 in cycle_stem, 0.0159 in residual_blocks.0, 0.0698 in residual_blocks.1, 0.0206 in fade_encoder, 0.0000 in inter_summary, and 0.0000 in head; branch gradient imbalance is 69.97x (< 1000x); nonfinite_detected is false; and padding_invariance is INVARIANT (0.0). Thus the failure to improve overall accuracy is strictly a property of the stat_tail_balance objective rather than optimization pathology.",
+      "missing_evidence": []
+    }
+  ],
+  "selected_cause_id": "C1_STAT_TAIL_BALANCE_INHERITS_1_OVER_Y_GRADIENT_SCALING_AND_1_19X_EFFECTIVE_WEIGHT_CAP",
+  "layers": [
+    {
+      "name": "cycle_stem",
+      "role": "Frozen 3-layer strided Conv1d+GELU per-cycle curve stem (3->32->64->64).",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.cycle_stem",
+        "diagnostics.json.summary.activation_health.cycle_stem"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Phase-2 frozen architecture block; status is HEALTHY with late near-zero gradient fraction 0.0, late grad-to-parameter ratio 0.0157, and late update ratio 0.00145."
+    },
+    {
+      "name": "residual_blocks.0",
+      "role": "First frozen GroupNorm ResidualCurveBlock(64, groups=8).",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.residual_blocks.0",
+        "diagnostics.json.summary.activation_health.residual_blocks"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Phase-2 frozen architecture block; status is HEALTHY with late near-zero gradient fraction 0.0159, late grad-to-parameter ratio 0.00814, and late update ratio 0.00103."
+    },
+    {
+      "name": "residual_blocks.1",
+      "role": "Second frozen GroupNorm ResidualCurveBlock(64, groups=8).",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.residual_blocks.1",
+        "diagnostics.json.summary.activation_health.residual_blocks"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Phase-2 frozen architecture block; status is HEALTHY with late near-zero gradient fraction 0.0698, late grad-to-parameter ratio 0.00409, and late update ratio 0.00107."
+    },
+    {
+      "name": "fade_encoder",
+      "role": "Frozen Cycle-1 anchored per-cycle fade MLP (Linear 128->64, GELU, Linear 64->64) on u_t = [h_t, h_t - h_1] with residual +h_t.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.fade_encoder",
+        "diagnostics.json.summary.activation_health.fade_encoder",
+        "diagnostics.json.summary.branch_gradient_imbalance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Phase-2 frozen architecture block; status is HEALTHY with late near-zero gradient fraction 0.0206, late grad-to-parameter ratio 0.00270, and late update ratio 0.00220."
+    },
+    {
+      "name": "inter_summary",
+      "role": "Frozen Linear(192->64) projection on masked [mean, last, last - first] cycle summary.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.inter_summary",
+        "diagnostics.json.summary.activation_health.inter_summary",
+        "diagnostics.json.summary.padding_invariance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Phase-2 frozen architecture block; status is HEALTHY with late near-zero gradient fraction 0.0, late grad-to-parameter ratio 0.0227, late update ratio 0.00289, and exact padding invariance (0.0)."
+    },
+    {
+      "name": "head",
+      "role": "Frozen Linear(64->1) readout after GELU.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.head",
+        "diagnostics.json.summary.activation_health.head"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Phase-2 frozen architecture block; status is HEALTHY with late near-zero gradient fraction 0.0, late grad-to-parameter ratio 0.1892, and late update ratio 0.00103."
+    }
+  ],
+  "gates": {
+    "gradient": "PASS",
+    "screen_floor": {
+      "applicable": false,
+      "pass": null,
+      "reason": "ZN-E015 is a full_candidate run on split 2021 (10 completed epochs under A2-ZN), not a 5-epoch screening run."
+    }
+  },
+  "decision": "DISCARD",
+  "next_action": {
+    "type": "NEW_HYPOTHESIS",
+    "summary": "1. Fix the train.py loss-balance logging gap first (small diagnostic plumbing fix: wire lambda_phys2 into sampled / loss_gradient_interaction / summary.loss_balance so every auxiliary loss logs R and gradient_cosine under loss.md §5.3). 2. Single most evidence-led Phase-2 next experiment (ZN-E016): Do not spend a follow-up tuning stat_tail_balance, because its additive Huber_0.25(e-) term still differentiates through e- = (-yhat + y)/y (inheriting -1/y scaling) and only shifts the total gradient weight on long-life cells by 1.19x while its e+ branch perturbs short-life Acc@15 (-0.0670). Instead, test the registered multiplicative sample-level KDE rarity weighting on the main Relative Huber loss (rarity_alpha = 0.5, rarity_max_w = 5.0, rarity_bw = 0.25 in loss.md §4.7) OR move directly to the first registered label-free physics loss whatif_fade_p0 (loss.md §4.6 mandatory order P0 -> P4b -> P0c -> P2, physics_type='whatif_fade_p0', physics_loss_weight > 0 calibrated with rho = 0.5). Between the two, testing rarity_alpha = 0.5 (or P0 uniform fade) directly tests whether true 4-5x multiplicative reweighting of the 17/59 training cells with EOL >= 500 (rarity_alpha) or scale-free standardized-unit trajectory regularization on ZN-E010's anchored fade encoder (whatif_fade_p0, which has no 1/y factor and already logs full R/cosine in summary.loss_balance) breaks the long-life underprediction without sacrificing <500 Acc@15.",
+    "source_cause_id": "C1_STAT_TAIL_BALANCE_INHERITS_1_OVER_Y_GRADIENT_SCALING_AND_1_19X_EFFECTIVE_WEIGHT_CAP",
+    "responsible_block": "Objective / Phase-2 Loss (replace additive stat_tail_balance with multiplicative rarity_alpha=0.5 or label-free whatif_fade_p0 on frozen ZN-E010; fix physics2 R/cosine logging in train.py)"
+  }
+}

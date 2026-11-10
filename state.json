@@ -4,14 +4,14 @@
   "research_mode": "loss_search_physics",
   "phase": "phase2_loss",
   "phase_status": "phase2_start",
-  "workflow_status": "running_remote",
+  "workflow_status": "task_for_executor",
   "protocol_status": "locked",
   "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
   "run_approved": true,
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
-  "current_experiment": "ZN-E015",
-  "next_experiment_id": "ZN-E015",
-  "next_action": "Phase 2: first loss screen on frozen ZN-E010 (target the Relative-Huber 1/y long-life underweighting; loss.md)",
+  "current_experiment": null,
+  "next_experiment_id": "ZN-E016",
+  "next_action": "T007 physics2 balance logging; ZN-E016 rarity_alpha 0.5",
   "active_architecture_parent": "ZN-E010",
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -138,12 +138,12 @@
     },
     "counter": "optimizer_training_compute_seconds",
     "usage": {
-      "experiments": 15,
-      "training_seconds": 1950.39
+      "experiments": 16,
+      "training_seconds": 2063.96
     },
     "remaining": {
-      "experiments": 135,
-      "training_seconds": 248049.61
+      "experiments": 134,
+      "training_seconds": 247936.04
     },
     "exhausted": false,
     "status": "active"

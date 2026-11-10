@@ -1,0 +1,178 @@
+
+===== ZN-E015 START 2026-11-09 10:18:30 =====
+[physics2] stat_tail_balance: lambda2 = 1.385538e-01 (rho2=0.25, ratios=[0.5641, 0.5531, 0.5542])
+epoch=1 epoch_steps=46/46 epoch_progress=1.000 steps=46 train_compute=10.82s val_mape=0.417170 val_acc15=0.209500
+epoch=2 epoch_steps=46/46 epoch_progress=2.000 steps=92 train_compute=21.72s val_mape=0.359504 val_acc15=0.255000
+epoch=3 epoch_steps=46/46 epoch_progress=3.000 steps=138 train_compute=32.78s val_mape=0.371931 val_acc15=0.217000
+epoch=4 epoch_steps=46/46 epoch_progress=4.000 steps=184 train_compute=44.21s val_mape=0.351827 val_acc15=0.318500
+epoch=5 epoch_steps=46/46 epoch_progress=5.000 steps=230 train_compute=56.06s val_mape=0.327912 val_acc15=0.299500
+epoch=6 epoch_steps=46/46 epoch_progress=6.000 steps=276 train_compute=67.82s val_mape=0.347196 val_acc15=0.244000
+epoch=7 epoch_steps=46/46 epoch_progress=7.000 steps=322 train_compute=79.27s val_mape=0.344487 val_acc15=0.292000
+epoch=8 epoch_steps=46/46 epoch_progress=8.000 steps=368 train_compute=90.64s val_mape=0.333229 val_acc15=0.314500
+epoch=9 epoch_steps=46/46 epoch_progress=9.000 steps=414 train_compute=102.03s val_mape=0.349073 val_acc15=0.322000
+epoch=10 epoch_steps=46/46 epoch_progress=10.000 steps=460 train_compute=113.57s val_mape=0.333674 val_acc15=0.304000
+{
+  "metrics": {
+    "mape": 0.32791179306018914,
+    "acc15": 0.2995,
+    "mae": 229.17360195159912,
+    "rmse": 436.66128088312064,
+    "prediction_diagnostics": {
+      "prediction_mean": 199.52845764160156,
+      "prediction_std": 124.31828308105469,
+      "prediction_min": 4.613433837890625,
+      "prediction_max": 709.541259765625,
+      "target_mean": 413.8999938964844,
+      "target_std": 407.4496154785156,
+      "prediction_to_target_std_ratio": 0.30511326642204145,
+      "mean_signed_relative_error": -0.23242318630218506,
+      "relative_error_std": 0.3607323467731476,
+      "prediction_target_correlation": 0.3627820024120704,
+      "extreme_prediction_count": 0
+    },
+    "by_prefix": {
+      "01-10": {
+        "mape": 0.40642844852858984,
+        "acc15": 0.215,
+        "mae": 275.86796684265136,
+        "rmse": 486.0166319961562,
+        "bias": -268.24249267578125,
+        "relative_bias": -0.34770432114601135,
+        "prediction_mean": 145.65748596191406,
+        "target_mean": 413.8999938964844,
+        "sample_count": 200,
+        "unique_cell_count": 20
+      },
+      "11-25": {
+        "mape": 0.38677019780471633,
+        "acc15": 0.14333333333333334,
+        "mae": 258.50961288452146,
+        "rmse": 467.558018094309,
+        "bias": -241.190673828125,
+        "relative_bias": -0.27309349179267883,
+        "prediction_mean": 172.70932006835938,
+        "target_mean": 413.8999938964844,
+        "sample_count": 300,
+        "unique_cell_count": 20
+      },
+      "26-50": {
+        "mape": 0.3378395595144387,
+        "acc15": 0.262,
+        "mae": 232.45410736083986,
+        "rmse": 443.7134638415154,
+        "bias": -211.3951873779297,
+        "relative_bias": -0.1985587328672409,
+        "prediction_mean": 202.5048065185547,
+        "target_mean": 413.8999938964844,
+        "sample_count": 500,
+        "unique_cell_count": 20
+      },
+      "51-75": {
+        "mape": 0.28314506214470136,
+        "acc15": 0.454,
+        "mae": 208.55267041015625,
+        "rmse": 413.8945466194314,
+        "bias": -191.78518676757812,
+        "relative_bias": -0.17997238039970398,
+        "prediction_mean": 222.1148223876953,
+        "target_mean": 413.8999938964844,
+        "sample_count": 500,
+        "unique_cell_count": 20
+      },
+      "76-100": {
+        "mape": 0.2960290524873508,
+        "acc15": 0.31,
+        "mae": 210.23467556762697,
+        "rmse": 410.91458525232247,
+        "bias": -202.29440307617188,
+        "relative_bias": -0.24822382628917694,
+        "prediction_mean": 211.60560607910156,
+        "target_mean": 413.8999938964844,
+        "sample_count": 500,
+        "unique_cell_count": 20
+      }
+    },
+    "by_domain": {
+      "ZN-coin": {
+        "mape": 0.32791179306018914,
+        "acc15": 0.2995,
+        "mae": 229.17360195159912,
+        "rmse": 436.66128088312064,
+        "bias": -214.37155151367188,
+        "relative_bias": -0.23242318630218506,
+        "prediction_mean": 199.52845764160156,
+        "target_mean": 413.8999938964844,
+        "sample_count": 2000,
+        "unique_cell_count": 20
+      }
+    },
+    "by_eol": {
+      "high_>1000": {
+        "mape": 0.8510949172562619,
+        "acc15": 0.0,
+        "mae": 1050.7427766927083,
+        "rmse": 1063.647277012642,
+        "bias": -1050.7427978515625,
+        "relative_bias": -0.8510949611663818,
+        "prediction_mean": 184.590576171875,
+        "target_mean": 1235.3333740234375,
+        "sample_count": 300,
+        "unique_cell_count": 3
+      },
+      "low_<500": {
+        "mape": 0.20162138866674112,
+        "acc15": 0.3993333333333333,
+        "mae": 41.42467194620768,
+        "rmse": 56.8375786259123,
+        "bias": -21.6885929107666,
+        "relative_bias": -0.07430324703454971,
+        "prediction_mean": 170.24473571777344,
+        "target_mean": 191.93333435058594,
+        "sample_count": 1500,
+        "unique_cell_count": 15
+      },
+      "middle_500-1000": {
+        "mape": 0.4903151397169407,
+        "acc15": 0.0,
+        "mae": 404.9368148803711,
+        "rmse": 430.678093011287,
+        "bias": -404.9367980957031,
+        "relative_bias": -0.49031513929367065,
+        "prediction_mean": 441.5632019042969,
+        "target_mean": 846.5,
+        "sample_count": 200,
+        "unique_cell_count": 2
+      }
+    }
+  },
+  "result": {
+    "benchmark_round": "BATTERYLIFE-ZN-COIN-R1",
+    "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
+    "type": "loss",
+    "seed": 2021,
+    "training_compute_seconds": 113.571,
+    "validation_seconds": 23.246,
+    "wall_seconds": 169.364,
+    "num_steps": 460,
+    "runner_version": "r4-relative-huber-v2",
+    "steps_per_sec": 4.050325,
+    "num_params": 98113,
+    "model_bytes_fp32": 392452,
+    "peak_device_memory_bytes": 2805445632,
+    "best_epoch": 5,
+    "minimum_validation_mape": 0.32791179306018914,
+    "checkpoint_mape_tolerance": 0.005,
+    "best_epoch_complete": true,
+    "best_epoch_steps": 46,
+    "steps_per_epoch": 46,
+    "completed_epochs": 10,
+    "last_epoch": 10,
+    "last_epoch_steps": 46,
+    "epoch_progress": 10.0,
+    "stop_reason": "early_stopping",
+    "status": "pending_analysis",
+    "description": "Loss only: L = RelativeHuber_0.15 + lambda2 * L_tail, L_tail = mean[tau*Huber_0.5(e+) + (1-tau)*w*Huber_0.25(e-)], r=(yhat-y)/max(y,1), e+=ReLU(r-0.15), e-=ReLU(-r-0.15), w=clip(y/mu,1,3), tau=0.55, mu = train label mean; lambda2 = rho2 * median_b(||grad L_main|| / ||grad L_tail||) on 3 fixed train batches before step 1, rho2 = 0.25 (registered). Model, data and optimiser identical to ZN-E010.",
+    "device": "cuda"
+  }
+}
+===== ZN-E015 COMPLETE =====

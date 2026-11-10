@@ -164,3 +164,12 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - Aggregate ZN-E010/E013/E014 (splits 2021/42/2024): MAPE 0.332 ± 0.016, Acc@15 0.324 ± 0.067, RMSE 392 ± 38 -> CONFIRMED (Gemini adjudication: ZN-E010's DISCARD was only vs the ZN-E005 parent thresholds; all three are VALID with gate PASS).
 - Phase 1 CLOSED (A5-ZN), TARGET_NOT_MET vs 0.20 / 0.68. Frozen model: ZN-E010 AnchoredFade-ResConv-GELU (98,113 params). Beats paper Zn-ion CPTransformer (0.515 ± 0.067) and CPMLP (0.558 ± 0.034 / 0.297 ± 0.084).
 - Phase 2 (loss) ACTIVE. First target: Relative-Huber dL/dŷ = ±δ/y underweights long-life cells.
+
+## ZN-E015 — Phase 2 loss 1: frozen ZN-E010 + stat_tail_balance, split 2021
+
+- Run: `VALID`. Decision: `DISCARD` (§7: MAPE 0.3279 misses 0.3245; Acc@15 0.2995 < 0.3365). Gradient gate PASS. Reviewer: Gemini.
+- Loss: RelativeHuber_0.15 + λ2·L_tail, τ 0.55, w = clip(y/μ,1,3), λ2 = 0.1386 (ρ2 0.25, batch ratios 0.55). Active fraction 0.59 at step 250.
+- Bands: 500–1000 bias −405 (ZN-E010 −533); >1000 bias −1051 (ZN-E010 −970); <500 Acc@15 0.399 (−0.09).
+- Cause: d e⁻/dŷ = −1/y, so the tail term keeps the 1/y scaling; the clipped weight adds only ~1.19× pull on long-life cells.
+- Process gap: summary.loss_balance is computed only for the primary physics term, so physics2 R/cosine were not logged (T007).
+- Next: ZN-E016 = KDE rarity weighting (α 0.5) on the main loss (multiplicative, registered in loss.md §4.7).
