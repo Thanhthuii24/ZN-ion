@@ -4,14 +4,14 @@
   "research_mode": "loss_search_physics",
   "phase": "phase2_loss",
   "phase_status": "phase2_start",
-  "workflow_status": "running_remote",
+  "workflow_status": "proposal_needed",
   "protocol_status": "locked",
   "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
   "run_approved": true,
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
-  "current_experiment": "ZN-E016",
-  "next_experiment_id": "ZN-E016",
-  "next_action": "ZN-E016 P0 uniform-fade physics loss (T007 physics2 logging deferred until physics2 is used again)",
+  "current_experiment": null,
+  "next_experiment_id": "ZN-E017",
+  "next_action": "ZN-E017 P4b falling-trend acceleration physics on frozen ZN-E010",
   "active_architecture_parent": "ZN-E010",
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -138,12 +138,12 @@
     },
     "counter": "optimizer_training_compute_seconds",
     "usage": {
-      "experiments": 16,
-      "training_seconds": 2063.96
+      "experiments": 17,
+      "training_seconds": 2372.28
     },
     "remaining": {
-      "experiments": 134,
-      "training_seconds": 247936.04
+      "experiments": 133,
+      "training_seconds": 247627.72
     },
     "exhausted": false,
     "status": "active"

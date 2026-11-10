@@ -173,3 +173,11 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - Cause: d e⁻/dŷ = −1/y, so the tail term keeps the 1/y scaling; the clipped weight adds only ~1.19× pull on long-life cells.
 - Process gap: summary.loss_balance is computed only for the primary physics term, so physics2 R/cosine were not logged (T007).
 - Next: ZN-E016 = KDE rarity weighting (α 0.5) on the main loss (multiplicative, registered in loss.md §4.7).
+
+## ZN-E016 — Phase 2 loss 2: frozen ZN-E010 + P0 uniform-fade physics, split 2021
+
+- Run: `VALID`. Decision: `DISCARD` (§7: MAPE 0.3433 > ZN-E010 0.3325; Acc@15 0.348). Gate PASS. Reviewer: Gemini.
+- Loss: RelativeHuber_0.15 + λ·mean ReLU(f(x̃) − sg[f(x)]), P0 x̃ = Q_dis·(1 − α r_n), α ~ U(0, 0.150), λ = 0.138 (ρ 0.5).
+- Physics: held-out P0 violation 0.150 -> 0.044 (−70%); loss balance SATISFIED (R 0.065 early, then active < 1%).
+- Accuracy: RMSE 418.6, >1000 bias −921 (vs −970); <500 MAPE 0.200 -> 0.217 (uniform ramp also shrinks break-in capacity).
+- Next: ZN-E017 = P4b (accelerate only the falling trend; reference violation 0.303).
