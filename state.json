@@ -4,14 +4,14 @@
   "research_mode": "loss_search_physics",
   "phase": "phase2_loss",
   "phase_status": "phase2_start",
-  "workflow_status": "awaiting_user_decision",
+  "workflow_status": "proposal_needed",
   "protocol_status": "locked",
   "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
   "run_approved": true,
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
   "current_experiment": null,
   "next_experiment_id": "ZN-E019",
-  "next_action": "User decision: close Phase 2 (ZN-E010) or confirm P0/P0c on splits 42/2024",
+  "next_action": "ZN-E019 (split 42) / ZN-E020 (split 2024): ZN-E018 config confirmation",
   "active_architecture_parent": "ZN-E010",
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -202,6 +202,12 @@
       "date": "2026-11-09",
       "by": "user",
       "summary": "User agrees to early Phase-1 closure under program.md \u00a710 A5: shared long-life underprediction that architecture changes do not move (Relative Huber 1/y floor). A4 directions: D1-like cycle-1-relative fade tested (Family 4, ZN-E010..E012); D2 reference-pair and D3 learned-shape head not run (waived by the user's A5 agreement). Best candidate still needs three-seed confirmation before freezing; then Phase 2 unlocks."
+    },
+    {
+      "id": "A6-ZN",
+      "date": "2026-11-13",
+      "by": "user",
+      "summary": "User chose to confirm the P0c physics-informed variant (ZN-E018 config) on splits 42 and 2024 as a 3-split physics-consistency result for the thesis, then close Phase 2; ZN-E010 stays the accuracy-frozen model unless the aggregate says otherwise."
     }
   ],
   "decision_metrics": {
@@ -296,6 +302,7 @@
     "user_options": [
       "close Phase 2 with ZN-E010 kept, unlock Phase 3",
       "3-split physics-consistency confirmation of ZN-E018 (P0c) or ZN-E016 (P0)"
-    ]
+    ],
+    "user_decision": "confirm P0c (ZN-E018) on splits 42/2024 (ZN-E019, ZN-E020), then close Phase 2"
   }
 }

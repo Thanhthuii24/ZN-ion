@@ -1,0 +1,83 @@
+{
+  "id": "ZN-E019",
+  "phase": "phase2_loss",
+  "training_stage": "confirmation",
+  "type": "loss",
+  "model": {
+    "display_name": "AnchoredFade-ResConv-GELU",
+    "variant": "anchored_fade_resconv_masked_summary",
+    "d_model": 64,
+    "residual_layers": 2,
+    "d_ff": 64,
+    "mlp_layers": 0,
+    "summary_mode": "mean_last_delta",
+    "dropout": 0.1,
+    "activation": "gelu",
+    "fade_hidden": 64
+  },
+  "reference_experiment": "ZN-E018",
+  "observation": "ZN-E018 (frozen ZN-E010 + P0c, split 2021): MAPE 0.3254, Acc@15 0.3185, RMSE 445.2, P0c violation 0.149 -> 0.055 (-63%). User decision A6-ZN: confirm this physics-informed variant on all paper splits. Matched no-physics run on split 42: ZN-E013.",
+  "primary_hypothesis": "On split 42 the P0c loss again cuts the held-out P0c violation >= 50% vs ZN-E013 at about equal accuracy, so the 3-split physics-consistency result holds.",
+  "question_inherited": "Is the P0c physics-consistency gain reproducible on the other paper splits?",
+  "unresolved_from_reference": "Split dependence of the P0c effect (violation and accuracy) on split 42.",
+  "why_this_experiment": "User decision A6-ZN (2026-11-13): 3-split confirmation of the P0c variant for the thesis physics-informed row; state.json split_protocol.",
+  "modification": "None vs ZN-E018: identical model, loss (P0c, rho 0.5, lambda recalibrated on this split's train batches by the same rule) and training; only BL_SPLIT=42.",
+  "changed_components": "Data split only (BL_SPLIT=42); lambda is re-calibrated by the fixed loss.md \u00a75.2 rule on this split.",
+  "held_constant_components": "Frozen ZN-E010 architecture (98,113 params, GELU, anchored fade encoder), Relative Huber delta 0.15 main loss, Adam lr 5e-4, batch 128, seed 2021, split 2021, A2-ZN epochs, checkpoint rule, data.",
+  "controlled_variables": "Training seed 2021, A2-ZN epochs, rho 0.5, alpha_max from this split's train cells. Sole changed variable: split 42.",
+  "expected_evidence": "Split-42 MAPE/Acc@15/RMSE/DB-MAPE, held-out P0c violation vs ZN-E013, lambda, loss balance, gradient health; contributes to the 3-split aggregate.",
+  "rejection_condition": "Per-run disposition: VALID (finite, protocol, completeness) -> KEEP as physics-consistency confirmation evidence; protocol/finite/completeness failure -> INVALID, no decision. Aggregate (after ZN-E020, over ZN-E018/E019/E020 = splits 2021/42/2024 vs the ZN-E010 config on the same splits ZN-E010/E013/E014): the P0c variant is CONFIRMED as physics-informed iff (a) on every split the held-out P0c violation rate falls >= 50% vs the ZN-E010-config run on that split, AND (b) 3-split mean MAPE <= 0.342 (ZN-E010 3-split 0.332 + 0.010) AND mean Acc@15 >= 0.294 (0.324 - 0.030) AND 3-split mean MAPE < 0.515 (paper CPTransformer). If CONFIRMED it is reported as the physics-informed companion of ZN-E010 (loss.md \u00a74.6 claim rule); ZN-E010 stays the accuracy model unless the P0c 3-split mean is better on both MAPE and Acc@15. Phase 2 then closes (A6-ZN).",
+  "minimum_evidence_requirements": "At least five complete epochs; finite MAPE, Acc@15, MAE, and RMSE from one checkpoint; sample and unique-cell counts for every domain; gradient, update, activation, prediction, mask, and compute diagnostics.",
+  "required_diagnostics": "Epoch learning curve; selected and minimum-MAPE epochs; cycle_stem, residual_blocks, fade_encoder, inter_summary and head gradients and updates; activation health; prediction spread and bias; prefix, domain and EOL errors; padding sensitivity; parameters, memory, time, throughput. Loss balance: lambda2, R_j median, cosine, active fraction (loss.md \u00a75.3).",
+  "estimated_budget": {
+    "experiments": 1,
+    "training_seconds": 600
+  },
+  "training": {
+    "seed": 2021,
+    "batch_size": 128,
+    "max_epochs": 100,
+    "minimum_epochs": 5,
+    "patience": 5,
+    "learning_rate": 0.0005,
+    "scheduler": "none",
+    "target_transform": "standard",
+    "main_loss": "relative_huber",
+    "relative_huber_delta": 0.15,
+    "checkpoint_mape_tolerance": 0.005,
+    "physics_loss_weight": 1.0,
+    "extra_loss_weight": 0.0,
+    "prefix_consistency_weight": 0.0,
+    "diagnostic_interval_steps": 50,
+    "required_device": "cuda",
+    "physics_type": "whatif_knee_p0c",
+    "physics_rho": 0.5,
+    "physics_anchor_gradient": "stop"
+  },
+  "split": "42",
+  "architecture_addendum": {
+    "responsible_stage": "Degradation Encoder",
+    "mechanism": "None (frozen model; loss experiment)",
+    "evidence": "Phase-2 loss experiment on the frozen ZN-E010 architecture",
+    "shapes": "[B,100,3,300] -> ResConv [B,100,64] (h_t) -> u_t=[h_t, h_t-h_1] [B,100,128] -> Linear 128->64, GELU, Linear 64->64, +h_t -> g_t [B,100,64] * mask -> masked summary [B,192] -> Linear [B,64] -> GELU -> Linear [B,1]",
+    "mask_path": "h_1 = cycle index 0 (always observed); g_t multiplied by mask; mean over mask==1, last at mask.sum()-1, delta last - first. tests/test_anchored_fade.py: padding invariance and cycle-1 dependence.",
+    "expected_evidence": "MAPE, RMSE, Acc@15, DB-MAPE (= MAPE) vs ZN-E005; EOL bands; gradient gate incl. fade_encoder"
+  },
+  "smoke_evidence": "Identical code and config to ZN-E018 (Kaggle T4 full run) and ZN-E018S; only the split changes.",
+  "loss_addendum": {
+    "term": "whatif_knee_p0c (P0c knee)",
+    "kind": "physics, label-free",
+    "formula": "mean ReLU(f(x~) - sg[f(x)]), x~_{n,Q,dis} = x_{n,Q,dis}(1 - alpha r_n^2)",
+    "params": {
+      "rho": 0.5,
+      "alpha_max": "P90 train fade per domain (ZN-coin 0.15)",
+      "margin": 0.0,
+      "ramp": "r_n^2, r_n = clip((n-10)/90,0,1)",
+      "anchor_gradient": "stop"
+    },
+    "lambda": "rho x median gradient-norm ratio on 3 fixed train batches, unsigned calibration loss, float64, logged",
+    "balance_checks": "loss.md \u00a75.3 band on R (0.05..2.0), cosine, active fraction; SATISFIED rule; held-out violation rate vs ZN-E010",
+    "physics_check": "Zn-ion: Spearman(phi, log EOL) = -0.957 on 59 train cells; EOL is capacity-threshold defined, so lower capacity at fixed other inputs cannot lengthen life",
+    "units": "standardized output units (cycles / s), dimensionless"
+  }
+}
