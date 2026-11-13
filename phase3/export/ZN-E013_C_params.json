@@ -1,0 +1,6 @@
+{
+ "label_mu": 410.8333333333333,
+ "label_s": 407.78667489537014,
+ "d_model": 64,
+ "summary": "[mean, last, last-first] of g over observed cycles"
+}

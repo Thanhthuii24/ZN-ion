@@ -1,0 +1,33 @@
+{
+ "experiment": "ZN-E013",
+ "split": "42",
+ "val_prefixes": 2000,
+ "calibration": "train cells only, 720 E / 720 H samples",
+ "val_mape_fp32_chain": 0.34710867915287785,
+ "val_mape_ort_int8_chain": 0.3468465423183795,
+ "val_mape_st_c_int8_chain": 0.3468465495181033,
+ "delta_st_int8_vs_fp32": -0.0002621296347745661,
+ "pass_delta_0.001": true,
+ "st_report": {
+  "E": [
+   "weights (ro)       :   294,468 B (287.57 KiB) (1 segment) / +1,080(+0.4%) vs float model",
+   "activations (rw)   :   39,040 B (38.12 KiB) (1 segment) *"
+  ],
+  "F": [
+   "weights (ro)       :   13,320 B (13.01 KiB) (1 segment) / -36,356(-73.2%) vs float model",
+   "activations (rw)   :   1,344 B (1.31 KiB) (1 segment) *"
+  ],
+  "H": [
+   "weights (ro)       :   13,132 B (12.82 KiB) (1 segment) / -36,548(-73.6%) vs float model",
+   "activations (rw)   :   1,280 B (1.25 KiB) (1 segment) *"
+  ]
+ },
+ "excluded": {
+  "E": "",
+  "F": "",
+  "H": ""
+ },
+ "fp32_parts": [
+  "E"
+ ]
+}

@@ -348,7 +348,7 @@
       "weights exceed the 64 KB internal flash even at int8 -> XSPI2 external flash (external loader) or compression",
       "full-window activations exceed 620 KB SRAM -> per-cycle streaming export required"
     ],
-    "status": "P3 blocked at Step 0: board connected (ST-LINK V3J12, /dev/cu.usbmodem11302) but STM32CubeProgrammer (CLI + XSPI2 external loader) and the STM32H7RS pack in STM32Cube AI Studio are not installed; st-info cannot identify STM32H7S3 (chipid 0x000)",
+    "status": "A step 2 done (deploy variant chosen); A steps 3-6 (generate, firmware, C-part test, build, review) in progress",
     "P0": {
       "ZN-E010": "max rel EOL diff 3.3e-6, ONNX val MAPE 0.33254",
       "ZN-E018": "max rel EOL diff 5.1e-6, ONNX val MAPE 0.32539",
@@ -359,6 +359,13 @@
       "low": "ROM 316.6 KB, MAPE 0.33294 (+0.0004) PASS",
       "medium": "ROM 301.8 KB, MAPE 0.34554 (+0.013) FAIL",
       "conclusion": "Conv encoder E (287.6 KB fp32) dominates and is not compressed by -c; weights cannot fit the 64 KB internal flash -> XSPI2 external flash or static INT8 (E ~72 KB, still > 64 KB)"
+    },
+    "P2_int8": {
+      "all_int8": "fails every split (+0.0086/+0.0148/+0.0011)",
+      "E_int8_only": "fails 2024 (+0.0047)",
+      "FH_int8": "fails 2021/42",
+      "H_int8_only": "fails 2024 (+0.0043)",
+      "chosen": "E fp32 + F INT8 + H fp32: delta -0.0002 / -0.0013 / +0.0009 (all pass); weights 287.6 + 13.0 + 49.0 = 349.6 KB (external flash)"
     }
   }
 }

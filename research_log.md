@@ -245,3 +245,9 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - C-model chain E -> F -> C glue -> H on 2,000 val prefixes: MAPE 0.332536 = PyTorch (max rel 6.1e-6). All ops supported.
 - `-c low`: ROM 316.6 KB, MAPE 0.33294 (+0.0004, PASS). `-c medium`: 301.8 KB, MAPE 0.34554 (+0.013, FAIL). Compression touches Gemm only; the conv encoder E is not compressed.
 - Conclusion: weights cannot fit the 64 KB internal flash (even static INT8 E ≈ 72 KB) -> XSPI2 external flash, or prune the encoder. RAM is not a constraint (39 KB of 620 KB).
+
+## Phase 3 A2 (host) — static INT8 PTQ and mixed precision (all 3 splits)
+
+- Static QDQ, per-channel symmetric INT8 weights, train-cell calibration (const_to_init as v5). ST C-model chains on host with float32 I/O.
+- All INT8 (E/F/H): Δ MAPE +0.0086 / +0.0148 / +0.0011 (2021/42/2024) — FAIL. INT8 E only: fails 2024 (+0.0047). INT8 F+H: fails 2021/42. INT8 H only: fails 2024 (+0.0043).
+- Chosen: **E fp32 + F INT8 + H fp32**: Δ −0.0002 / −0.0013 / +0.0009 — PASS on every split. Weights 287.6 + 13.0 + 49.0 ≈ 350 KB -> XSPI2 external flash. The conv encoder E is the precision-sensitive part.

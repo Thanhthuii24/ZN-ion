@@ -1,0 +1,254 @@
+ST Edge AI Core v4.1.0-20732 33a7f37f5
+Created date          : 2026-11-13 15:34:46
+Parameters            : validate -m /Users/jasmine/DATN/v6_auto/phase3/export/ZN-E014_H.onnx --target stm32h7 --input-data-type float32 --output-data-type float32 -vi /Users/jasmine/DATN/v6_auto/phase3/board/ZN-E014_H_fp_in.npz --workspace /Users/jasmine/DATN/v6_auto/phase3/board/val_ZN-E014_H_fp_ws --output /Users/jasmine/DATN/v6_auto/phase3/board/val_ZN-E014_H_fp
+
+Exec/report summary (validate)
+----------------------------------------------------------------------------------------
+model file         :   /Users/jasmine/DATN/v6_auto/phase3/export/ZN-E014_H.onnx         
+type               :   onnx                                                             
+c_name             :   network                                                          
+compression        :   lossless                                                         
+options            :   allocate-inputs, allocate-outputs, use-lite-runtime, use-st-ai   
+optimization       :   balanced                                                         
+target/series      :   stm32h7/stm32h7                                                  
+workspace dir      :   /Users/jasmine/DATN/v6_auto/phase3/board/val_ZN-E014_H_fp_ws     
+output dir         :   /Users/jasmine/DATN/v6_auto/phase3/board/val_ZN-E014_H_fp        
+vinput files       :   /Users/jasmine/DATN/v6_auto/phase3/board/ZN-E014_H_fp_in.npz     
+model_fmt          :   float                                                            
+model_name         :   ZNE014_H                                                         
+model_hash         :   0xb2963123b9a677e1c016b642eb2a9df8                               
+params #           :   12,420 items (48.52 KiB)                                         
+----------------------------------------------------------------------------------------
+input 1/1          :   'summary', f32<1x1x192>, 768 Bytes, activations                  
+output 1/1         :   'y', f32<1x1x1>, 4 Bytes, activations                            
+macc               :   13,057                                                           
+weights (ro)       :   50,184 B (49.01 KiB) (1 segment) / +504(+1.0%) vs float model    
+activations (rw)   :   1,024 B (1024 B) (1 segment) *                                   
+ram (total)        :   1,024 B (1024 B) = 1,024 + 0 + 0                                 
+----------------------------------------------------------------------------------------
+(*) 'input'/'output' buffers are allocated in the activations buffer
+
+Model name - ZNE014_H
+------ ----------------------------------------- -------------- --------------- -------- ---------------------- --- ----------------- ------------------ ------------------ 
+m_id   layer (type,original)                     oshape         param/size          macc           connected to   | c_size            c_macc             c_type             
+------ ----------------------------------------- -------------- --------------- -------- ---------------------- --- ----------------- ------------------ ------------------ 
+4      summ_weight (Placeholder, Gemm)           [b:64,c:192]   12,288/49,152                                     | +256(+0.5%)       +12,352(+100.0%)   Dense_[0]          
+       summ_bias (Placeholder, Gemm)             [b:64]         64/256                                            | -256(-100.0%)                        
+------ ----------------------------------------- -------------- --------------- -------- ---------------------- --- ----------------- ------------------ ------------------ 
+5      _Constant_output_0 (Placeholder, Div)     []             1/4                                               |                   +320(+100.0%)      Eltwise/div_[1]    
+------ ----------------------------------------- -------------- --------------- -------- ---------------------- --- ----------------- ------------------ ------------------ 
+7      _Constant_1_output_0 (Placeholder, Add)   []             1/4                                               | +508(+12700.0%)   +128(+100.0%)      ScaleBias_[3]      
+------ ----------------------------------------- -------------- --------------- -------- ---------------------- --- ----------------- ------------------ ------------------ 
+1      _Constant_2_output_0 (Placeholder, Mul)   []             1/4                                               | -4(-100.0%)                          
+------ ----------------------------------------- -------------- --------------- -------- ---------------------- --- ----------------- ------------------ ------------------ 
+10     head_weight (Placeholder, Gemm)           [b:1,c:64]     64/256                                            | +4(+1.6%)         +65(+100.0%)       Dense_[o][5]       
+       head_bias (Placeholder, Gemm)             [b:1]          1/4                                               | -4(-100.0%)                          
+------ ----------------------------------------- -------------- --------------- -------- ---------------------- --- ----------------- ------------------ ------------------ 
+0      summary (Input, )                         [b:1,c:192]                                                      |                                      
+------ ----------------------------------------- -------------- --------------- -------- ---------------------- --- ----------------- ------------------ ------------------ 
+4      _summ_Gemm_output_0 (Gemm, Gemm)          [b:1,c:64]                       12,352                summary   |                   -12,352(-100.0%)   
+                                                                                                    summ_weight   | 
+                                                                                                      summ_bias   | 
+------ ----------------------------------------- -------------- --------------- -------- ---------------------- --- ----------------- ------------------ ------------------ 
+5      _Div_output_0 (Eltwise, Div)              [b:1,c:64]                          320    _summ_Gemm_output_0   |                   -320(-100.0%)      
+                                                                                             _Constant_output_0   | 
+------ ----------------------------------------- -------------- --------------- -------- ---------------------- --- ----------------- ------------------ ------------------ 
+6      _Erf_output_0 (Nonlinearity, Erf)         [b:1,c:64]                          128          _Div_output_0   |                                      Nonlinearity_[2]   
+------ ----------------------------------------- -------------- --------------- -------- ---------------------- --- ----------------- ------------------ ------------------ 
+7      _Add_output_0 (Eltwise, Add)              [b:1,c:64]                           64          _Erf_output_0   |                   -64(-100.0%)       
+                                                                                           _Constant_1_output_0   | 
+------ ----------------------------------------- -------------- --------------- -------- ---------------------- --- ----------------- ------------------ ------------------ 
+8      _Mul_output_0 (Eltwise, Mul)              [b:1,c:64]                           64    _summ_Gemm_output_0   |                                      Eltwise/mul_[4]    
+                                                                                                  _Add_output_0   | 
+------ ----------------------------------------- -------------- --------------- -------- ---------------------- --- ----------------- ------------------ ------------------ 
+9      _Mul_1_output_0 (Eltwise, Mul)            [b:1,c:64]                           64          _Mul_output_0   |                   -64(-100.0%)       
+                                                                                           _Constant_2_output_0   | 
+------ ----------------------------------------- -------------- --------------- -------- ---------------------- --- ----------------- ------------------ ------------------ 
+10     y (Gemm, Gemm)                            [b:1,c:1]                            65        _Mul_1_output_0   |                   -65(-100.0%)       
+                                                                                                    head_weight   | 
+                                                                                                      head_bias   | 
+       stai_output_0 (Output, None)                                                                           y   |                                      
+------ ----------------------------------------- -------------- --------------- -------- ---------------------- --- ----------------- ------------------ ------------------ 
+model/c-model: macc=13,057/13,057  weights=49,680/50,184 +504(+1.0%) activations=--/1,024 io=--/0
+
+
+
+Generated C-graph summary
+------------------------------------------------------------------------------------------------------------------------
+model name            : ZNE014_H
+c-name                : network
+c-node #              : 6
+c-array #             : 14
+activations size      : 1024 (1 segment)
+weights size          : 50184 (1 segment)
+macc                  : 13057
+inputs                : ['summary_output']
+outputs               : ['y_output']
+
+C-Arrays (14)
+------ ----------------------------- ------------- ------------------------- ------------- --------- 
+c_id   name (*_array)                item/size     domain/mem-pool           c-type        comment   
+------ ----------------------------- ------------- ------------------------- ------------- --------- 
+0      _Add_output_0_bias            64/256        weights/weights           const float             
+1      _Add_output_0_output          64/256        activations/**default**   float                   
+2      _Add_output_0_scale           64/256        weights/weights           const float             
+3      _Constant_output_0_2D         1/4           weights/weights           const float             
+4      _Div_output_0_output          64/256        activations/**default**   float                   
+5      _Erf_output_0_output          64/256        activations/**default**   float                   
+6      _Mul_output_0_output          64/256        activations/**default**   float                   
+7      _summ_Gemm_output_0_bias      64/256        weights/weights           const float             
+8      _summ_Gemm_output_0_output    64/256        activations/**default**   float                   
+9      _summ_Gemm_output_0_weights   12288/49152   weights/weights           const float             
+10     summary_output                192/768       activations/**default**   float         /input    
+11     y_bias                        1/4           weights/weights           const float             
+12     y_output                      1/4           activations/**default**   float         /output   
+13     y_weights                     64/256        weights/weights           const float             
+------ ----------------------------- ------------- ------------------------- ------------- --------- 
+
+C-Layers (6)
+------ --------------------- ---- --------------- ------- ------- -------------------------------- ------------------- 
+c_id   name (*_layer)        id   layer_type      macc    rom     tensors                          shape (array id)    
+------ --------------------- ---- --------------- ------- ------- -------------------------------- ------------------- 
+0      _summ_Gemm_output_0   4    Dense           12352   49408   I: summary_output                f32<1x1x192> (10)   
+                                                                  W: _summ_Gemm_output_0_weights   f32<1x64x192> (9)   
+                                                                  W: _summ_Gemm_output_0_bias      f32<1x64> (7)       
+                                                                  O: _summ_Gemm_output_0_output    f32<1x1x64> (8)     
+------ --------------------- ---- --------------- ------- ------- -------------------------------- ------------------- 
+1      _Div_output_0         5    Eltwise/div     320     4       I: _summ_Gemm_output_0_output    f32<1x1x64> (8)     
+                                                                  W: _Constant_output_0_2D         f32<1x1> (3)        
+                                                                  O: _Div_output_0_output          f32<1x1x64> (4)     
+------ --------------------- ---- --------------- ------- ------- -------------------------------- ------------------- 
+2      _Erf_output_0         6    Nonlinearity    128     0       I: _Div_output_0_output          f32<1x1x64> (4)     
+                                                                  O: _Erf_output_0_output          f32<1x1x64> (5)     
+------ --------------------- ---- --------------- ------- ------- -------------------------------- ------------------- 
+3      _Add_output_0         7    ScaleBias       128     512     I: _Erf_output_0_output          f32<1x1x64> (5)     
+                                                                  W: _Add_output_0_scale           f32<1x64> (2)       
+                                                                  W: _Add_output_0_bias            f32<1x64> (0)       
+                                                                  O: _Add_output_0_output          f32<1x1x64> (1)     
+------ --------------------- ---- --------------- ------- ------- -------------------------------- ------------------- 
+4      _Mul_output_0         8    Eltwise/mul     64      0       I: _summ_Gemm_output_0_output    f32<1x1x64> (8)     
+                                                                  I: _Add_output_0_output          f32<1x1x64> (1)     
+                                                                  O: _Mul_output_0_output          f32<1x1x64> (6)     
+------ --------------------- ---- --------------- ------- ------- -------------------------------- ------------------- 
+5      y                     10   Dense           65      260     I: _Mul_output_0_output          f32<1x1x64> (6)     
+                                                                  W: y_weights                     f32<1x1x64> (13)    
+                                                                  W: y_bias                        f32<1x1> (11)       
+                                                                  O: y_output                      f32<1x1x1> (12)     
+------ --------------------- ---- --------------- ------- ------- -------------------------------- ------------------- 
+ 
+Setting validation data...
+ loading file: /Users/jasmine/DATN/v6_auto/phase3/board/ZN-E014_H_fp_in.npz
+  available entries: ['m_inputs_1'] selector="None"
+  selected entries: m_inputs_X/m_outputs_X
+   'm_inputs_1' (2000, 192)/float32, min/max=[-1.290190, 3.932796], mean/std=[0.431002, 0.675610]
+   samples are reshaped: (2000, 192) -> (2000, 1, 1, 192)
+   I[1]: (2000, 1, 1, 192)/float32, min/max=[-1.290190, 3.932796], mean/std=[0.431002, 0.675610]
+ no output/reference samples are provided
+ 
+Running the ST.AI c-model (AI RUNNER)...(name=network, mode=HOST)
+
+ DLL Driver v2.0 - Direct Python binding (/Users/jasmine/DATN/v6_auto/phase3/board/val_ZN-E014_H_fp_ws/inspector_network/workspace/lib/libai_network.dylib) ['network']
+  
+  Summary 'network' - ['network']
+  -------------------------------------------------------------------------
+  I[1 / 1] 'input_1'    :   f32[1,192], 768 Bytes, in activations buffer   
+  O[1 / 1] 'output_1'   :   f32[1,1], 4 Bytes, in activations buffer       
+  n_nodes               :   6                                              
+  activations           :   1024                                           
+  weights               :   50184                                          
+  macc                  :   13057                                          
+  hash                  :   0xb2963123b9a677e1c016b642eb2a9df8             
+  compile_datetime      :   Nov 13 2026 15:34:45                           
+  -------------------------------------------------------------------------
+  protocol              :   DLL Driver v2.0 - Direct Python binding        
+  tools                 :   ST.AI (st-ai api) v4.1.0                       
+  runtime lib           :   v12.1.0                                        
+  capabilities          :   IO_ONLY, PER_LAYER, PER_LAYER_WITH_DATA        
+  device.desc           :   arm64, arm, Darwin                             
+  -------------------------------------------------------------------------
+ 
+ NOTE: The duration and execution time per layer are just indications. They depend on the host machine's workload.
+
+  
+  ST.AI Profiling results v2.0 - "network"
+  ------------------------------------------------------------
+  nb sample(s)   :   2000                                     
+  duration       :   0.005 ms by sample (0.003/0.114/0.003)   
+  macc           :   13057                                    
+  ------------------------------------------------------------
+  
+  Statistic per tensor
+  ----------------------------------------------------------------------------------
+  tensor   #      type[shape]:size        min     max     mean      std  name       
+  ----------------------------------------------------------------------------------
+  I.0      2000   f32[1,192]:768       -1.290   3.933    0.431    0.676  input_1    
+  O.0      2000   f32[1,1]:4           -0.649   1.943   -0.246    0.538  output_1   
+  ----------------------------------------------------------------------------------
+ 
+Saving validation data...
+ output directory: /Users/jasmine/DATN/v6_auto/phase3/board/val_ZN-E014_H_fp
+ creating /Users/jasmine/DATN/v6_auto/phase3/board/val_ZN-E014_H_fp/network_val_io.npz
+ m_outputs_1: (2000, 1)/float64, min/max=[-0.649172, 1.942623], mean/std=[-0.246406, 0.537900], y
+ c_outputs_1: (2000, 1, 1, 1)/float32, min/max=[-0.649172, 1.942623], mean/std=[-0.246406, 0.537900], y
+
+ 
+Computing the metrics...
+
+ Cross accuracy report #1 (reference vs C-model)
+ ----------------------------------------------------------------------------------------------------
+ notes: - data type is different: r/float64 instead p/float32
+        - the output of the reference model is used as ground truth/reference value
+        - 2000 samples (1 items per sample)
+
+  acc=n.a. rmse=0.000000020 mae=0.000000005 l2r=0.000000034 mean=0.000000 std=0.000000 snr=149.388611 nse=1.000000 cos=1.000000 
+
+
+Number of operations per c-layer
+------- ------ ------------------------------- -------- -------------- 
+c_id    m_id   name (type)                          #op           type 
+------- ------ ------------------------------- -------- -------------- 
+0       4      _summ_Gemm_output_0 (Dense)       12,352   smul_f32_f32 
+1       5      _Div_output_0 (Eltwise/div)          320     op_f32_f32 
+2       6      _Erf_output_0 (Nonlinearity)         128     op_f32_f32 
+3       7      _Add_output_0 (ScaleBias)            128   smul_f32_f32 
+4       8      _Mul_output_0 (Eltwise/mul)           64     op_f32_f32 
+5       10     y (Dense)                             65   smul_f32_f32 
+------- ------ ------------------------------- -------- -------------- 
+total                                            13,057 
+
+Number of operation types
+---------------- -------- ----------- 
+operation type          #           % 
+---------------- -------- ----------- 
+smul_f32_f32       12,545       96.1% 
+op_f32_f32            512        3.9% 
+
+Complexity report (model)
+------ ---------------------- ------------------------- ------------------------- ------ -------- ------------------ 
+m_id   name                   c_macc                    c_rom                     c_id   c_dur    l2r (X-CROSS)      
+------ ---------------------- ------------------------- ------------------------- ------ -------- ------------------ 
+4      summ_weight            ||||||||||||||||  94.6%   ||||||||||||||||  98.5%   [0]     91.6%                      
+5      _Constant_output_0     |                  2.5%   |                  0.0%   [1]      2.1%                      
+7      _Constant_1_output_0   |                  1.0%   |                  1.0%   [3]      0.5%                      
+10     head_weight            |                  0.5%   |                  0.5%   [5]      1.3%   3.39288881e-08 *   
+6      _Erf_output_0          |                  1.0%   |                  0.0%   [2]      3.7%                      
+8      _Mul_output_0          |                  0.5%   |                  0.0%   [4]      0.8%                      
+------ ---------------------- ------------------------- ------------------------- ------ -------- ------------------ 
+macc=13,057 weights=50,184 act=1,024 ram_io=0
+
+Evaluation report (summary)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+Output       acc    rmse          mae           l2r           mean       std        snr          nse        cos        tensor                              
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+X-cross #1   n.a.   0.000000020   0.000000005   0.000000034   0.000000   0.000000   149.388611   1.000000   1.000000   'y', 2000 x f32<1x1x1>, m_id=[10]   
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+ acc  : Accuracy (class, axis=-1)
+ rmse : Root Mean Squared Error
+ mae  : Mean Absolute Error
+ l2r  : L2 relative error
+ mean : Mean error
+ std  : Standard deviation error
+ snr  : Signal-to-Noise Ratio (SNR), bigger is better
+ nse  : Nash-Sutcliffe efficiency criteria, bigger is better, best=1, range=(-inf, 1]
+ cos  : COsine Similarity, bigger is better, best=1, range=(0, 1]

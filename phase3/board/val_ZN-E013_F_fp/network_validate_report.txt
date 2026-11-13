@@ -1,0 +1,294 @@
+ST Edge AI Core v4.1.0-20732 33a7f37f5
+Created date          : 2026-11-13 15:36:46
+Parameters            : validate -m /Users/jasmine/DATN/v6_auto/phase3/export/ZN-E013_F.onnx --target stm32h7 --input-data-type float32 --output-data-type float32 -vi /Users/jasmine/DATN/v6_auto/phase3/board/ZN-E013_F_fp_in.npz --workspace /Users/jasmine/DATN/v6_auto/phase3/board/val_ZN-E013_F_fp_ws --output /Users/jasmine/DATN/v6_auto/phase3/board/val_ZN-E013_F_fp
+
+Exec/report summary (validate)
+----------------------------------------------------------------------------------------
+model file         :   /Users/jasmine/DATN/v6_auto/phase3/export/ZN-E013_F.onnx         
+type               :   onnx                                                             
+c_name             :   network                                                          
+compression        :   lossless                                                         
+options            :   allocate-inputs, allocate-outputs, use-lite-runtime, use-st-ai   
+optimization       :   balanced                                                         
+target/series      :   stm32h7/stm32h7                                                  
+workspace dir      :   /Users/jasmine/DATN/v6_auto/phase3/board/val_ZN-E013_F_fp_ws     
+output dir         :   /Users/jasmine/DATN/v6_auto/phase3/board/val_ZN-E013_F_fp        
+vinput files       :   /Users/jasmine/DATN/v6_auto/phase3/board/ZN-E013_F_fp_in.npz     
+model_fmt          :   float                                                            
+model_name         :   ZNE013_F                                                         
+model_hash         :   0xb58c14d134e32a921358ba90aae0c450                               
+params #           :   12,419 items (48.51 KiB)                                         
+----------------------------------------------------------------------------------------
+input 1/2          :   'h', f32<1x1x64>, 256 Bytes, activations                         
+input 2/2          :   'h1', f32<1x1x64>, 256 Bytes, activations                        
+inputs (total)     :   512 Bytes                                                        
+output 1/1         :   'g', f32<1x1x64>, 256 Bytes, activations                         
+macc               :   13,184                                                           
+weights (ro)       :   50,180 B (49.00 KiB) (1 segment) / +504(+1.0%) vs float model    
+activations (rw)   :   1,024 B (1024 B) (1 segment) *                                   
+ram (total)        :   1,024 B (1024 B) = 1,024 + 0 + 0                                 
+----------------------------------------------------------------------------------------
+(*) 'input'/'output' buffers are allocated in the activations buffer
+
+Model name - ZNE013_F
+------ --------------------------------------------------- -------------- -------------- ------- -------------------------------- --- ----------------- ----------------- -------------------- 
+m_id   layer (type,original)                               oshape         param/size        macc                     connected to   | c_size            c_macc            c_type               
+------ --------------------------------------------------- -------------- -------------- ------- -------------------------------- --- ----------------- ----------------- -------------------- 
+6      fade_0_weight (Placeholder, Gemm)                   [b:64,c:128]   8,192/32,768                                              | +256(+0.8%)       +8,256(+100.0%)   Dense_[2]            
+       fade_0_bias (Placeholder, Gemm)                     [b:64]         64/256                                                    | -256(-100.0%)                       
+------ --------------------------------------------------- -------------- -------------- ------- -------------------------------- --- ----------------- ----------------- -------------------- 
+7      _fade_fade_1_Constant_output_0 (Placeholder, Div)   []             1/4                                                       |                   +320(+100.0%)     Eltwise/div_[3]      
+------ --------------------------------------------------- -------------- -------------- ------- -------------------------------- --- ----------------- ----------------- -------------------- 
+9      _fade_fade_1_Const..1_output_0 (Placeholder, Add)   []             1/4                                                       | +508(+12700.0%)   +128(+100.0%)     ScaleBias_[5]        
+------ --------------------------------------------------- -------------- -------------- ------- -------------------------------- --- ----------------- ----------------- -------------------- 
+1      _fade_fade_1_Const..2_output_0 (Placeholder, Mul)   []             1/4                                                       | -4(-100.0%)                         
+------ --------------------------------------------------- -------------- -------------- ------- -------------------------------- --- ----------------- ----------------- -------------------- 
+12     fade_2_weight (Placeholder, Gemm)                   [b:64,c:64]    4,096/16,384                                              | +256(+1.6%)       +4,160(+100.0%)   Dense_[7]            
+       fade_2_bias (Placeholder, Gemm)                     [b:64]         64/256                                                    | -256(-100.0%)                       
+------ --------------------------------------------------- -------------- -------------- ------- -------------------------------- --- ----------------- ----------------- -------------------- 
+0      h (Input, )                                         [b:1,c:64]                                                               |                                     
+       h1 (Input, )                                        [b:1,c:64]                                                               |                                     
+------ --------------------------------------------------- -------------- -------------- ------- -------------------------------- --- ----------------- ----------------- -------------------- 
+4      _Sub_output_0 (Eltwise, Sub)                        [b:1,c:64]                         64                                h   |                                     Eltwise/sub_[0]      
+                                                                                                                               h1   | 
+------ --------------------------------------------------- -------------- -------------- ------- -------------------------------- --- ----------------- ----------------- -------------------- 
+5      _Concat_output_0 (Concat, Concat)                   [b:1,c:128]                                                          h   |                                     Concat_[1]           
+                                                                                                                    _Sub_output_0   | 
+------ --------------------------------------------------- -------------- -------------- ------- -------------------------------- --- ----------------- ----------------- -------------------- 
+6      _fade_fade_0_Gemm_output_0 (Gemm, Gemm)             [b:1,c:64]                      8,256                 _Concat_output_0   |                   -8,256(-100.0%)   
+                                                                                                                    fade_0_weight   | 
+                                                                                                                      fade_0_bias   | 
+------ --------------------------------------------------- -------------- -------------- ------- -------------------------------- --- ----------------- ----------------- -------------------- 
+7      _fade_fade_1_Div_output_0 (Eltwise, Div)            [b:1,c:64]                        320       _fade_fade_0_Gemm_output_0   |                   -320(-100.0%)     
+                                                                                                   _fade_fade_1_Constant_output_0   | 
+------ --------------------------------------------------- -------------- -------------- ------- -------------------------------- --- ----------------- ----------------- -------------------- 
+8      _fade_fade_1_Erf_output_0 (Nonlinearity, Erf)       [b:1,c:64]                        128        _fade_fade_1_Div_output_0   |                                     Nonlinearity_[4]     
+------ --------------------------------------------------- -------------- -------------- ------- -------------------------------- --- ----------------- ----------------- -------------------- 
+9      _fade_fade_1_Add_output_0 (Eltwise, Add)            [b:1,c:64]                         64        _fade_fade_1_Erf_output_0   |                   -64(-100.0%)      
+                                                                                                   _fade_fade_1_Const..1_output_0   | 
+------ --------------------------------------------------- -------------- -------------- ------- -------------------------------- --- ----------------- ----------------- -------------------- 
+10     _fade_fade_1_Mul_output_0 (Eltwise, Mul)            [b:1,c:64]                         64       _fade_fade_0_Gemm_output_0   |                                     Eltwise/mul_[6]      
+                                                                                                        _fade_fade_1_Add_output_0   | 
+------ --------------------------------------------------- -------------- -------------- ------- -------------------------------- --- ----------------- ----------------- -------------------- 
+11     _fade_fade_1_Mul_1_output_0 (Eltwise, Mul)          [b:1,c:64]                         64        _fade_fade_1_Mul_output_0   |                   -64(-100.0%)      
+                                                                                                   _fade_fade_1_Const..2_output_0   | 
+------ --------------------------------------------------- -------------- -------------- ------- -------------------------------- --- ----------------- ----------------- -------------------- 
+12     _fade_fade_2_Gemm_output_0 (Gemm, Gemm)             [b:1,c:64]                      4,160      _fade_fade_1_Mul_1_output_0   |                   -4,160(-100.0%)   
+                                                                                                                    fade_2_weight   | 
+                                                                                                                      fade_2_bias   | 
+------ --------------------------------------------------- -------------- -------------- ------- -------------------------------- --- ----------------- ----------------- -------------------- 
+13     g (Eltwise, Add)                                    [b:1,c:64]                         64       _fade_fade_2_Gemm_output_0   |                                     Eltwise/add_[o][8]   
+                                                                                                                                h   | 
+       stai_output_0 (Output, None)                                                                                             g   |                                     
+------ --------------------------------------------------- -------------- -------------- ------- -------------------------------- --- ----------------- ----------------- -------------------- 
+model/c-model: macc=13,184/13,184  weights=49,676/50,180 +504(+1.0%) activations=--/1,024 io=--/0
+
+
+
+Generated C-graph summary
+------------------------------------------------------------------------------------------------------------------------
+model name            : ZNE013_F
+c-name                : network
+c-node #              : 9
+c-array #             : 18
+activations size      : 1024 (1 segment)
+weights size          : 50180 (1 segment)
+macc                  : 13184
+inputs                : ['h_output', 'h1_output']
+outputs               : ['g_output']
+
+C-Arrays (18)
+------ ------------------------------------ ------------ ------------------------- ------------- --------- 
+c_id   name (*_array)                       item/size    domain/mem-pool           c-type        comment   
+------ ------------------------------------ ------------ ------------------------- ------------- --------- 
+0      _Concat_output_0_output              128/512      activations/**default**   float                   
+1      _Sub_output_0_output                 64/256       activations/**default**   float                   
+2      _fade_fade_0_Gemm_output_0_bias      64/256       weights/weights           const float             
+3      _fade_fade_0_Gemm_output_0_output    64/256       activations/**default**   float                   
+4      _fade_fade_0_Gemm_output_0_weights   8192/32768   weights/weights           const float             
+5      _fade_fade_1_Add_output_0_bias       64/256       weights/weights           const float             
+6      _fade_fade_1_Add_output_0_output     64/256       activations/**default**   float                   
+7      _fade_fade_1_Add_output_0_scale      64/256       weights/weights           const float             
+8      _fade_fade_1_Constant_output_0_2D    1/4          weights/weights           const float             
+9      _fade_fade_1_Div_output_0_output     64/256       activations/**default**   float                   
+10     _fade_fade_1_Erf_output_0_output     64/256       activations/**default**   float                   
+11     _fade_fade_1_Mul_output_0_output     64/256       activations/**default**   float                   
+12     _fade_fade_2_Gemm_output_0_bias      64/256       weights/weights           const float             
+13     _fade_fade_2_Gemm_output_0_output    64/256       activations/**default**   float                   
+14     _fade_fade_2_Gemm_output_0_weights   4096/16384   weights/weights           const float             
+15     g_output                             64/256       activations/**default**   float         /output   
+16     h1_output                            64/256       activations/**default**   float         /input    
+17     h_output                             64/256       activations/**default**   float         /input    
+------ ------------------------------------ ------------ ------------------------- ------------- --------- 
+
+C-Layers (9)
+------ ---------------------------- ---- --------------- ------ ------- --------------------------------------- ------------------- 
+c_id   name (*_layer)               id   layer_type      macc   rom     tensors                                 shape (array id)    
+------ ---------------------------- ---- --------------- ------ ------- --------------------------------------- ------------------- 
+0      _Sub_output_0                4    Eltwise/sub     64     0       I: h_output                             f32<1x1x64> (17)    
+                                                                        I: h1_output                            f32<1x1x64> (16)    
+                                                                        O: _Sub_output_0_output                 f32<1x1x64> (1)     
+------ ---------------------------- ---- --------------- ------ ------- --------------------------------------- ------------------- 
+1      _Concat_output_0             5    Concat          0      0       I: h_output                             f32<1x1x64> (17)    
+                                                                        I: _Sub_output_0_output                 f32<1x1x64> (1)     
+                                                                        O: _Concat_output_0_output              f32<1x1x128> (0)    
+------ ---------------------------- ---- --------------- ------ ------- --------------------------------------- ------------------- 
+2      _fade_fade_0_Gemm_output_0   6    Dense           8256   33024   I: _Concat_output_0_output              f32<1x1x128> (0)    
+                                                                        W: _fade_fade_0_Gemm_output_0_weights   f32<1x64x128> (4)   
+                                                                        W: _fade_fade_0_Gemm_output_0_bias      f32<1x64> (2)       
+                                                                        O: _fade_fade_0_Gemm_output_0_output    f32<1x1x64> (3)     
+------ ---------------------------- ---- --------------- ------ ------- --------------------------------------- ------------------- 
+3      _fade_fade_1_Div_output_0    7    Eltwise/div     320    4       I: _fade_fade_0_Gemm_output_0_output    f32<1x1x64> (3)     
+                                                                        W: _fade_fade_1_Constant_output_0_2D    f32<1x1> (8)        
+                                                                        O: _fade_fade_1_Div_output_0_output     f32<1x1x64> (9)     
+------ ---------------------------- ---- --------------- ------ ------- --------------------------------------- ------------------- 
+4      _fade_fade_1_Erf_output_0    8    Nonlinearity    128    0       I: _fade_fade_1_Div_output_0_output     f32<1x1x64> (9)     
+                                                                        O: _fade_fade_1_Erf_output_0_output     f32<1x1x64> (10)    
+------ ---------------------------- ---- --------------- ------ ------- --------------------------------------- ------------------- 
+5      _fade_fade_1_Add_output_0    9    ScaleBias       128    512     I: _fade_fade_1_Erf_output_0_output     f32<1x1x64> (10)    
+                                                                        W: _fade_fade_1_Add_output_0_scale      f32<1x64> (7)       
+                                                                        W: _fade_fade_1_Add_output_0_bias       f32<1x64> (5)       
+                                                                        O: _fade_fade_1_Add_output_0_output     f32<1x1x64> (6)     
+------ ---------------------------- ---- --------------- ------ ------- --------------------------------------- ------------------- 
+6      _fade_fade_1_Mul_output_0    10   Eltwise/mul     64     0       I: _fade_fade_0_Gemm_output_0_output    f32<1x1x64> (3)     
+                                                                        I: _fade_fade_1_Add_output_0_output     f32<1x1x64> (6)     
+                                                                        O: _fade_fade_1_Mul_output_0_output     f32<1x1x64> (11)    
+------ ---------------------------- ---- --------------- ------ ------- --------------------------------------- ------------------- 
+7      _fade_fade_2_Gemm_output_0   12   Dense           4160   16640   I: _fade_fade_1_Mul_output_0_output     f32<1x1x64> (11)    
+                                                                        W: _fade_fade_2_Gemm_output_0_weights   f32<1x64x64> (14)   
+                                                                        W: _fade_fade_2_Gemm_output_0_bias      f32<1x64> (12)      
+                                                                        O: _fade_fade_2_Gemm_output_0_output    f32<1x1x64> (13)    
+------ ---------------------------- ---- --------------- ------ ------- --------------------------------------- ------------------- 
+8      g                            13   Eltwise/add     64     0       I: _fade_fade_2_Gemm_output_0_output    f32<1x1x64> (13)    
+                                                                        I: h_output                             f32<1x1x64> (17)    
+                                                                        O: g_output                             f32<1x1x64> (15)    
+------ ---------------------------- ---- --------------- ------ ------- --------------------------------------- ------------------- 
+ 
+Setting validation data...
+ loading file: /Users/jasmine/DATN/v6_auto/phase3/board/ZN-E013_F_fp_in.npz
+  available entries: ['m_inputs_1', 'm_inputs_2'] selector="None"
+  selected entries: m_inputs_X/m_outputs_X
+   'm_inputs_1' (2000, 64)/float32, min/max=[0.000000, 2.888059], mean/std=[0.705585, 0.683335]
+   'm_inputs_2' (2000, 64)/float32, min/max=[0.000000, 2.882685], mean/std=[0.708106, 0.687661]
+   samples are reshaped: (2000, 64) -> (2000, 1, 1, 64)
+   samples are reshaped: (2000, 64) -> (2000, 1, 1, 64)
+   I[1]: (2000, 1, 1, 64)/float32, min/max=[0.000000, 2.888059], mean/std=[0.705585, 0.683335]
+   I[2]: (2000, 1, 1, 64)/float32, min/max=[0.000000, 2.882685], mean/std=[0.708106, 0.687661]
+ no output/reference samples are provided
+ 
+Running the ST.AI c-model (AI RUNNER)...(name=network, mode=HOST)
+
+ DLL Driver v2.0 - Direct Python binding (/Users/jasmine/DATN/v6_auto/phase3/board/val_ZN-E013_F_fp_ws/inspector_network/workspace/lib/libai_network.dylib) ['network']
+  
+  Summary 'network' - ['network']
+  ------------------------------------------------------------------------
+  I[1 / 2] 'input_1'    :   f32[1,64], 256 Bytes, in activations buffer   
+  I[2 / 2] 'input_2'    :   f32[1,64], 256 Bytes, in activations buffer   
+  O[1 / 1] 'output_1'   :   f32[1,64], 256 Bytes, in activations buffer   
+  n_nodes               :   9                                             
+  activations           :   1024                                          
+  weights               :   50180                                         
+  macc                  :   13184                                         
+  hash                  :   0xb58c14d134e32a921358ba90aae0c450            
+  compile_datetime      :   Nov 13 2026 15:36:45                          
+  ------------------------------------------------------------------------
+  protocol              :   DLL Driver v2.0 - Direct Python binding       
+  tools                 :   ST.AI (st-ai api) v4.1.0                      
+  runtime lib           :   v12.1.0                                       
+  capabilities          :   IO_ONLY, PER_LAYER, PER_LAYER_WITH_DATA       
+  device.desc           :   arm64, arm, Darwin                            
+  ------------------------------------------------------------------------
+ 
+ NOTE: The duration and execution time per layer are just indications. They depend on the host machine's workload.
+
+  
+  ST.AI Profiling results v2.0 - "network"
+  ------------------------------------------------------------
+  nb sample(s)   :   2000                                     
+  duration       :   0.004 ms by sample (0.001/0.100/0.002)   
+  macc           :   13184                                    
+  ------------------------------------------------------------
+  
+  Statistic per tensor
+  ----------------------------------------------------------------------------------
+  tensor   #      type[shape]:size        min     max     mean      std  name       
+  ----------------------------------------------------------------------------------
+  I.0      2000   f32[1,64]:256         0.000   2.888    0.706    0.683  input_1    
+  I.1      2000   f32[1,64]:256         0.000   2.883    0.708    0.688  input_2    
+  O.0      2000   f32[1,64]:256        -0.502   2.986    0.673    0.712  output_1   
+  ----------------------------------------------------------------------------------
+ 
+Saving validation data...
+ output directory: /Users/jasmine/DATN/v6_auto/phase3/board/val_ZN-E013_F_fp
+ creating /Users/jasmine/DATN/v6_auto/phase3/board/val_ZN-E013_F_fp/network_val_io.npz
+ m_outputs_1: (2000, 64)/float64, min/max=[-0.502206, 2.986040], mean/std=[0.672966, 0.711898], g
+ c_outputs_1: (2000, 1, 1, 64)/float32, min/max=[-0.502206, 2.986040], mean/std=[0.672966, 0.711898], g
+
+ 
+Computing the metrics...
+
+ Cross accuracy report #1 (reference vs C-model)
+ ----------------------------------------------------------------------------------------------------
+ notes: - data type is different: r/float64 instead p/float32
+        - ACC metric is not computed ("--classifier" option can be used to force it)
+        - the output of the reference model is used as ground truth/reference value
+        - 2000 samples (64 items per sample)
+
+  acc=n.a. rmse=0.000000013 mae=0.000000003 l2r=0.000000013 mean=0.000000 std=0.000000 snr=157.517456 nse=1.000000 cos=1.000000 
+
+
+Number of operations per c-layer
+------- ------ ------------------------------------------- -------- -------------- 
+c_id    m_id   name (type)                                      #op           type 
+------- ------ ------------------------------------------- -------- -------------- 
+0       4      _Sub_output_0 (Eltwise/sub)                       64     op_f32_f32 
+1       5      _Concat_output_0 (Concat)                          0   smul_f32_f32 
+2       6      _fade_fade_0_Gemm_output_0 (Dense)             8,256   smul_f32_f32 
+3       7      _fade_fade_1_Div_output_0 (Eltwise/div)          320     op_f32_f32 
+4       8      _fade_fade_1_Erf_output_0 (Nonlinearity)         128     op_f32_f32 
+5       9      _fade_fade_1_Add_output_0 (ScaleBias)            128   smul_f32_f32 
+6       10     _fade_fade_1_Mul_output_0 (Eltwise/mul)           64     op_f32_f32 
+7       12     _fade_fade_2_Gemm_output_0 (Dense)             4,160   smul_f32_f32 
+8       13     g (Eltwise/add)                                   64     op_f32_f32 
+------- ------ ------------------------------------------- -------- -------------- 
+total                                                        13,184 
+
+Number of operation types
+---------------- -------- ----------- 
+operation type          #           % 
+---------------- -------- ----------- 
+op_f32_f32            640        4.9% 
+smul_f32_f32       12,544       95.1% 
+
+Complexity report (model)
+------ ---------------------------------- ------------------------- ------------------------- ------ -------- ------------------ 
+m_id   name                               c_macc                    c_rom                     c_id   c_dur    l2r (X-CROSS)      
+------ ---------------------------------- ------------------------- ------------------------- ------ -------- ------------------ 
+6      fade_0_weight                      ||||||||||||||||  62.6%   ||||||||||||||||  65.8%   [2]     62.5%                      
+7      _fade_fade_1_Constant_output_0     |                  2.4%   |                  0.0%   [3]      2.6%                      
+9      _fade_fade_1_Constant_1_output_0   |                  1.0%   |                  1.0%   [5]      1.2%                      
+12     fade_2_weight                      ||||||||          31.6%   ||||||||          33.2%   [7]     22.0%                      
+4      _Sub_output_0                      |                  0.5%   |                  0.0%   [0]      2.4%                      
+5      _Concat_output_0                   |                  0.0%   |                  0.0%   [1]      2.1%                      
+8      _fade_fade_1_Erf_output_0          |                  1.0%   |                  0.0%   [4]      4.9%                      
+10     _fade_fade_1_Mul_output_0          |                  0.5%   |                  0.0%   [6]      1.2%                      
+13     g                                  |                  0.5%   |                  0.0%   [8]      1.2%   1.33084335e-08 *   
+------ ---------------------------------- ------------------------- ------------------------- ------ -------- ------------------ 
+macc=13,184 weights=50,180 act=1,024 ram_io=0
+
+Evaluation report (summary)
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+Output       acc    rmse          mae           l2r           mean       std        snr          nse        cos        tensor                               
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+X-cross #1   n.a.   0.000000013   0.000000003   0.000000013   0.000000   0.000000   157.517456   1.000000   1.000000   'g', 2000 x f32<1x1x64>, m_id=[13]   
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+ acc  : Accuracy (class, axis=-1)
+ rmse : Root Mean Squared Error
+ mae  : Mean Absolute Error
+ l2r  : L2 relative error
+ mean : Mean error
+ std  : Standard deviation error
+ snr  : Signal-to-Noise Ratio (SNR), bigger is better
+ nse  : Nash-Sutcliffe efficiency criteria, bigger is better, best=1, range=(-inf, 1]
+ cos  : COsine Similarity, bigger is better, best=1, range=(0, 1]

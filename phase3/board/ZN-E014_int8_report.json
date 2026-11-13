@@ -1,0 +1,30 @@
+{
+ "experiment": "ZN-E014",
+ "split": "2024",
+ "val_prefixes": 2000,
+ "calibration": "train cells only, 708 E / 708 H samples",
+ "val_mape_fp32_chain": 0.3162273159160968,
+ "val_mape_ort_int8_chain": 0.3218257595602759,
+ "val_mape_st_c_int8_chain": 0.31728152389176806,
+ "delta_st_int8_vs_fp32": 0.0010542079756712397,
+ "pass_delta_0.001": false,
+ "st_report": {
+  "E": [
+   "weights (ro)       :   77,160 B (75.35 KiB) (1 segment) / -216,228(-73.7%) vs float model",
+   "activations (rw)   :   38,400 B (37.50 KiB) (1 segment) *"
+  ],
+  "F": [
+   "weights (ro)       :   13,320 B (13.01 KiB) (1 segment) / -36,356(-73.2%) vs float model",
+   "activations (rw)   :   1,344 B (1.31 KiB) (1 segment) *"
+  ],
+  "H": [
+   "weights (ro)       :   13,132 B (12.82 KiB) (1 segment) / -36,548(-73.6%) vs float model",
+   "activations (rw)   :   1,280 B (1.25 KiB) (1 segment) *"
+  ]
+ },
+ "excluded": {
+  "E": "",
+  "F": "",
+  "H": ""
+ }
+}
