@@ -1,0 +1,6 @@
+# file created : 2026-11-13 14:29:58
+# dtype=float32
+# original model features - 128/2000
+# (2000, 3, 1, 300)/float32, min/max=[-10.826188, 10.826032], mean/std=[0.434365, 4.455153], curve
+# Note: only the first 128 samples are saved
+# Note: w/o data, number of item by sample is exceeded: 900 > 512

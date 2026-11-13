@@ -1,0 +1,36 @@
+{
+ "experiment": "ZN-E010",
+ "split": "2021",
+ "compression": "low",
+ "parts": {
+  "E": {
+   "rc": 0,
+   "macc": "3,502,242",
+   "weights_ro": "294,468 B (287.57 KiB) (1 segment) / +1,080(+0.4%) vs float model",
+   "activations_rw": "39,040 B (38.12 KiB) (1 segment) *",
+   "ram_total": "39,040 B (38.12 KiB) = 39,040 + 0 + 0",
+   "rom_total": null
+  },
+  "F": {
+   "rc": 0,
+   "macc": "13,184",
+   "weights_ro": "15,364 B (15.00 KiB) (1 segment) / -34,312(-69.1%) vs float model",
+   "activations_rw": "1,024 B (1024 B) (1 segment) *",
+   "ram_total": "1,024 B (1024 B) = 1,024 + 0 + 0",
+   "rom_total": null
+  },
+  "H": {
+   "rc": 0,
+   "macc": "13,057",
+   "weights_ro": "14,344 B (14.01 KiB) (1 segment) / -35,336(-71.1%) vs float model",
+   "activations_rw": "1,024 B (1024 B) (1 segment) *",
+   "ram_total": "1,024 B (1024 B) = 1,024 + 0 + 0",
+   "rom_total": null
+  }
+ },
+ "val_prefixes": 2000,
+ "val_mape_c_chain": 0.3329448107463744,
+ "val_mape_torch": 0.33253553659012824,
+ "max_rel_eol_diff_c_vs_torch": 0.016248278319835663,
+ "mean_rel_eol_diff": 0.002471465617418289
+}

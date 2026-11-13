@@ -1,3 +1,7 @@
 step	run	split	variant	val_mape_torch	val_mape_onnx	max_rel_eol_diff	params	onnx_kb_E	onnx_kb_F	onnx_kb_H	ops_E	note
 P0-host	ZN-E010	2021	fp32 streaming E/F/H + C glue	0.3325	0.33254	3.28e-06	98113	300.1	51.1	50.3	Add+Constant+Conv+Div+Erf+Flatten+GlobalAveragePool+InstanceNormalization+Mul+Relu+Reshape	PASS <=1e-4; no If/Shape/Range/dynamic gather; GroupNorm->InstanceNormalization (ST float32 supported)
 P0-host	ZN-E018	2021	fp32 streaming E/F/H + C glue	0.3254	0.32539	5.11e-06	98113	300.1	51.1	50.3	Add+Constant+Conv+Div+Erf+Flatten+GlobalAveragePool+InstanceNormalization+Mul+Relu+Reshape	PASS <=1e-4; no If/Shape/Range/dynamic gather; GroupNorm->InstanceNormalization (ST float32 supported)
+step	run	split	compression	val_mape_c_chain	delta_vs_fp32	max_rel_eol_diff	weights_E	weights_F	weights_H	weights_total_KB	ram_E	macc_E	note
+P1-host	ZN-E010	2021	none	0.332536	+0.00000	6.07e-06	287.6	49.0	49.0	385.6	39,040 B	3,502,242	PASS; ROM > 64 KB internal flash
+P1-host	ZN-E010	2021	low	0.332945	+0.00041	1.62e-02	287.6	15.0	14.0	316.6	39,040 B	3,502,242	PASS (delta <= 0.001); Gemm only, conv E not compressed
+P1-host	ZN-E010	2021	medium	0.345537	+0.01300	2.34e-01	287.6	7.1	7.1	301.8	39,040 B	3,502,242	FAIL (delta > 0.001)

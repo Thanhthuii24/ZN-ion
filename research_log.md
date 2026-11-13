@@ -238,3 +238,10 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - Parity on all 2,000 split-2021 val prefixes (onnxruntime vs PyTorch): ZN-E010 max rel EOL diff 3.3e-6 (ONNX MAPE 0.33254); ZN-E018 5.1e-6 (0.32539). PASS (≤ 1e-4).
 - Ops: Conv, InstanceNormalization (GroupNorm), Relu, Erf (GELU), GlobalAveragePool, Gemm, Concat, elementwise — no If/Shape/Range/dynamic gather. ONNX sizes E 300 KB, F 51 KB, H 50 KB.
 - Next: P1 stedgeai analyze/validate on host (waiting for the user's go).
+
+## Phase 3 P1 (host) — stedgeai analyze + chained C-model validation, ZN-E010 split 2021
+
+- fp32: E 287.6 KB / 38.1 KB RAM / 3.50 M MACC; F 49.0 KB / 1 KB / 13 K; H 49.0 KB / 1 KB / 13 K. Total ROM 385.6 KB, RAM ~39 KB.
+- C-model chain E -> F -> C glue -> H on 2,000 val prefixes: MAPE 0.332536 = PyTorch (max rel 6.1e-6). All ops supported.
+- `-c low`: ROM 316.6 KB, MAPE 0.33294 (+0.0004, PASS). `-c medium`: 301.8 KB, MAPE 0.34554 (+0.013, FAIL). Compression touches Gemm only; the conv encoder E is not compressed.
+- Conclusion: weights cannot fit the 64 KB internal flash (even static INT8 E ≈ 72 KB) -> XSPI2 external flash, or prune the encoder. RAM is not a constraint (39 KB of 620 KB).

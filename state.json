@@ -11,7 +11,7 @@
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
   "current_experiment": null,
   "next_experiment_id": "ZN-E022",
-  "next_action": "Phase 3 P1 (host): stedgeai analyze/validate on E/F/H ONNX \u2014 wait for the user go",
+  "next_action": "User go: P2 static INT8 PTQ on host, or P3 board validation with XSPI2 external flash (fp32 / -c low)",
   "active_architecture_parent": "ZN-E010",
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -348,11 +348,17 @@
       "weights exceed the 64 KB internal flash even at int8 -> XSPI2 external flash (external loader) or compression",
       "full-window activations exceed 620 KB SRAM -> per-cycle streaming export required"
     ],
-    "status": "P0 done (host export + parity); waiting for the user go on P1 (stedgeai analyze/validate on host)",
+    "status": "P1 done; waiting for the user decision on P2 (INT8 PTQ host) or P3 (board, external flash)",
     "P0": {
       "ZN-E010": "max rel EOL diff 3.3e-6, ONNX val MAPE 0.33254",
       "ZN-E018": "max rel EOL diff 5.1e-6, ONNX val MAPE 0.32539",
       "onnx": "phase3/export/<ID>_{E,F,H}.onnx"
+    },
+    "P1": {
+      "fp32": "ROM 385.6 KB (E 287.6, F 49.0, H 49.0), RAM ~39 KB, E 3.50 M MACC; C-chain val MAPE 0.332536 (max rel 6.1e-6)",
+      "low": "ROM 316.6 KB, MAPE 0.33294 (+0.0004) PASS",
+      "medium": "ROM 301.8 KB, MAPE 0.34554 (+0.013) FAIL",
+      "conclusion": "Conv encoder E (287.6 KB fp32) dominates and is not compressed by -c; weights cannot fit the 64 KB internal flash -> XSPI2 external flash or static INT8 (E ~72 KB, still > 64 KB)"
     }
   }
 }
