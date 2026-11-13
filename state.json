@@ -9,9 +9,9 @@
   "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
   "run_approved": true,
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
-  "current_experiment": "ZN-E019",
-  "next_experiment_id": "ZN-E019",
-  "next_action": "ZN-E019 (split 42) / ZN-E020 (split 2024): ZN-E018 config confirmation",
+  "current_experiment": "ZN-E020",
+  "next_experiment_id": "ZN-E020",
+  "next_action": "ZN-E020 split 2024; then P0c 3-split aggregate and Phase-2 closure",
   "active_architecture_parent": "ZN-E010",
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -138,12 +138,12 @@
     },
     "counter": "optimizer_training_compute_seconds",
     "usage": {
-      "experiments": 19,
-      "training_seconds": 2791.58
+      "experiments": 20,
+      "training_seconds": 2992.08
     },
     "remaining": {
-      "experiments": 131,
-      "training_seconds": 247208.42
+      "experiments": 130,
+      "training_seconds": 247007.92
     },
     "exhausted": false,
     "status": "active"

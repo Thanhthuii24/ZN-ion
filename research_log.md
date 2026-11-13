@@ -201,3 +201,9 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - No loss met §7 vs frozen ZN-E010. Statistical tail/rarity weights are too weak (1.19× / 1.37× long-life pull); P4b conflicts structurally; P2 is unsupported on ZN-coin.
 - Label-free P0 / P0c make the model physically consistent (held-out violations −70% / −63%) at about equal accuracy — a physics-consistency result, not an accuracy gain.
 - Reviewer recommendation: close Phase 2 with ZN-E010 kept (A3), report P0/P0c as physics-consistency ablations; optional 3-split confirmation of P0c or P0 needs user approval. Awaiting the user.
+
+## ZN-E019 — P0c (ZN-E018 config), split 42 (confirmation)
+
+- Run: `VALID`. Decision: `KEEP` (physics-consistency evidence). MAPE 0.3451, Acc@15 0.2210, RMSE 357.0 vs ZN-E013 0.3471 / 0.2470 / 350.3.
+- λ = 0.155; P0c violation 0.0 (reference already 0, so the hinge stayed inactive; balance BALANCE_FAIL_SMALL is the inactive case).
+- Next: ZN-E020 split 2024, then the aggregate.
