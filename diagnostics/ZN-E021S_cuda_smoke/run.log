@@ -1,0 +1,172 @@
+Preflight passed for ZN-E021S
+
+===== ZN-E021S START 2026-11-13 02:20:49 =====
+[physics] Calibrated lambda = 1.383744e-01 (rho=0.5, median_ratio=2.767488e-01, batch_ratios=[0.267422, 0.278253, 0.276749])
+epoch=1 epoch_steps=46/46 epoch_progress=1.000 steps=46 train_compute=22.35s val_mape=0.416625 val_acc15=0.211500
+epoch=2 epoch_steps=46/46 epoch_progress=2.000 steps=92 train_compute=46.32s val_mape=0.353542 val_acc15=0.260000
+{
+  "metrics": {
+    "mape": 0.35354164053304815,
+    "acc15": 0.26,
+    "mae": 248.57915922546385,
+    "rmse": 462.2610480618312,
+    "prediction_diagnostics": {
+      "prediction_mean": 181.2126922607422,
+      "prediction_std": 76.90523529052734,
+      "prediction_min": -67.18377685546875,
+      "prediction_max": 403.1572570800781,
+      "target_mean": 413.8999938964844,
+      "target_std": 407.4496154785156,
+      "prediction_to_target_std_ratio": 0.18874784112928553,
+      "mean_signed_relative_error": -0.24969415366649628,
+      "relative_error_std": 0.3790566325187683,
+      "prediction_target_correlation": 0.1976656282379413,
+      "extreme_prediction_count": 1
+    },
+    "by_prefix": {
+      "01-10": {
+        "mape": 0.40150838226040064,
+        "acc15": 0.29,
+        "mae": 276.24228462219236,
+        "rmse": 488.10574109846704,
+        "bias": -269.7391662597656,
+        "relative_bias": -0.34805580973625183,
+        "prediction_mean": 144.1608123779297,
+        "target_mean": 413.8999938964844,
+        "sample_count": 200,
+        "unique_cell_count": 20
+      },
+      "11-25": {
+        "mape": 0.3953813385262262,
+        "acc15": 0.18,
+        "mae": 267.67513173421224,
+        "rmse": 479.35483113894634,
+        "bias": -250.29808044433594,
+        "relative_bias": -0.2785179615020752,
+        "prediction_mean": 163.60195922851562,
+        "target_mean": 413.8999938964844,
+        "sample_count": 300,
+        "unique_cell_count": 20
+      },
+      "26-50": {
+        "mape": 0.3655511634660341,
+        "acc15": 0.226,
+        "mae": 250.89947869873046,
+        "rmse": 465.3624622062139,
+        "bias": -228.4051971435547,
+        "relative_bias": -0.21347427368164062,
+        "prediction_mean": 185.4947967529297,
+        "target_mean": 413.8999938964844,
+        "sample_count": 500,
+        "unique_cell_count": 20
+      },
+      "51-75": {
+        "mape": 0.3219132103195854,
+        "acc15": 0.324,
+        "mae": 236.03492010498047,
+        "rmse": 450.70027629042164,
+        "bias": -216.69850158691406,
+        "relative_bias": -0.20100097358226776,
+        "prediction_mean": 197.20150756835938,
+        "target_mean": 413.8999938964844,
+        "sample_count": 500,
+        "unique_cell_count": 20
+      },
+      "76-100": {
+        "mape": 0.32887003232667716,
+        "acc15": 0.266,
+        "mae": 236.28024520874024,
+        "rmse": 449.311281477481,
+        "bias": -227.5709991455078,
+        "relative_bias": -0.2779681980609894,
+        "prediction_mean": 186.32899475097656,
+        "target_mean": 413.8999938964844,
+        "sample_count": 500,
+        "unique_cell_count": 20
+      }
+    },
+    "by_domain": {
+      "ZN-coin": {
+        "mape": 0.35354164053304815,
+        "acc15": 0.26,
+        "mae": 248.57915922546385,
+        "rmse": 462.2610480618312,
+        "bias": -232.68728637695312,
+        "relative_bias": -0.24969415366649628,
+        "prediction_mean": 181.2126922607422,
+        "target_mean": 413.8999938964844,
+        "sample_count": 2000,
+        "unique_cell_count": 20
+      }
+    },
+    "by_eol": {
+      "high_>1000": {
+        "mape": 0.8735911035355118,
+        "acc15": 0.0,
+        "mae": 1086.3924217732747,
+        "rmse": 1103.3064801888345,
+        "bias": -1086.3924560546875,
+        "relative_bias": -0.8735911250114441,
+        "prediction_mean": 148.94091796875,
+        "target_mean": 1235.3333740234375,
+        "sample_count": 300,
+        "unique_cell_count": 3
+      },
+      "low_<500": {
+        "mape": 0.21356058367102013,
+        "acc15": 0.3466666666666667,
+        "mae": 43.83906362915039,
+        "rmse": 59.220590331609,
+        "bias": -22.649917602539062,
+        "relative_bias": -0.07509725540876389,
+        "prediction_mean": 169.28341674804688,
+        "target_mean": 191.93333435058594,
+        "sample_count": 1500,
+        "unique_cell_count": 15
+      },
+      "middle_500-1000": {
+        "mape": 0.6233253724945631,
+        "acc15": 0.0,
+        "mae": 527.4099823760986,
+        "rmse": 533.499666652222,
+        "bias": -527.4099731445312,
+        "relative_bias": -0.6233253479003906,
+        "prediction_mean": 319.09002685546875,
+        "target_mean": 846.5,
+        "sample_count": 200,
+        "unique_cell_count": 2
+      }
+    },
+    "physics_violation_rate": 0.0
+  },
+  "result": {
+    "benchmark_round": "BATTERYLIFE-ZN-COIN-R1",
+    "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
+    "type": "loss",
+    "seed": 2021,
+    "training_compute_seconds": 46.318,
+    "validation_seconds": 6.776,
+    "wall_seconds": 78.167,
+    "num_steps": 92,
+    "runner_version": "r4-relative-huber-v2",
+    "steps_per_sec": 1.986257,
+    "num_params": 98113,
+    "model_bytes_fp32": 392452,
+    "peak_device_memory_bytes": 5100770816,
+    "best_epoch": 2,
+    "minimum_validation_mape": 0.35354164053304815,
+    "checkpoint_mape_tolerance": 0.005,
+    "best_epoch_complete": true,
+    "best_epoch_steps": 46,
+    "steps_per_epoch": 46,
+    "completed_epochs": 2,
+    "last_epoch": 2,
+    "last_epoch_steps": 46,
+    "epoch_progress": 2.0,
+    "stop_reason": "max_epochs",
+    "status": "pending_analysis",
+    "description": "Loss only: L = RelativeHuber_0.15 + lambda * mean ReLU(sg[f(x)] - f(x~)), x~_{n,Q,dis} = x_{n,Q,dis} (1 + alpha r_n) on observed cycles, alpha ~ U(0, 0.150), r_n = clip((n-10)/90,0,1); lambda = 0.5 x median gradient ratio (unsigned calibration). Model and training identical to ZN-E010.",
+    "device": "cuda"
+  }
+}
+===== ZN-E021S COMPLETE =====

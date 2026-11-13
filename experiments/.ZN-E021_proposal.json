@@ -63,7 +63,7 @@
     "mask_path": "h_1 = cycle index 0 (always observed); g_t multiplied by mask; mean over mask==1, last at mask.sum()-1, delta last - first. tests/test_anchored_fade.py: padding invariance and cycle-1 dependence.",
     "expected_evidence": "MAPE, RMSE, Acc@15, DB-MAPE (= MAPE) vs ZN-E005; EOL bands; gradient gate incl. fade_encoder"
   },
-  "smoke_evidence": "pending CUDA smoke ZN-E021S",
+  "smoke_evidence": "CUDA smoke ZN-E021S on Kaggle Tesla T4: identical config, 92 optimizer steps, worker preflight passed, finite (val MAPE 0.4166 -> 0.3535), lambda = 0.1384 (rho 0.5, batch ratios 0.267/0.278/0.277), executed train.py md5 = reviewed (T008 code). P0u inactive at 92 steps (active 0, held-out violation 0), the same early pattern as the ZN-E016S/E018S smokes whose full runs became active; gradient WARNING without block flags. Artifacts: diagnostics/ZN-E021S_cuda_smoke/.",
   "loss_addendum": {
     "term": "whatif_improve_p0u (P0u)",
     "kind": "physics, label-free",
