@@ -11,7 +11,7 @@
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
   "current_experiment": null,
   "next_experiment_id": "ZN-E022",
-  "next_action": "Phase 3 step P0 (host): ST-compatible ONNX export + streaming split + stedgeai analyze \u2014 wait for the user go",
+  "next_action": "Phase 3 P1 (host): stedgeai analyze/validate on E/F/H ONNX \u2014 wait for the user go",
   "active_architecture_parent": "ZN-E010",
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -348,6 +348,11 @@
       "weights exceed the 64 KB internal flash even at int8 -> XSPI2 external flash (external loader) or compression",
       "full-window activations exceed 620 KB SRAM -> per-cycle streaming export required"
     ],
-    "status": "plan written; waiting for the user's go on step P0"
+    "status": "P0 done (host export + parity); waiting for the user go on P1 (stedgeai analyze/validate on host)",
+    "P0": {
+      "ZN-E010": "max rel EOL diff 3.3e-6, ONNX val MAPE 0.33254",
+      "ZN-E018": "max rel EOL diff 5.1e-6, ONNX val MAPE 0.32539",
+      "onnx": "phase3/export/<ID>_{E,F,H}.onnx"
+    }
   }
 }

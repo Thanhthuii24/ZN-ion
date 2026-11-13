@@ -230,3 +230,11 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - Statistical (tail, rarity) too weak; P4b structural conflict; P2 unsupported; SOH bounds too weak; P0u conflicts.
 - P0 / P0c give physics consistency (violations −70% / −63%) at about equal accuracy; P0c 3-split NOT CONFIRMED (2024 −44%).
 - Reviewer recommendation: close Phase 2 with ZN-E010 (TARGET_NOT_MET) and unlock Phase 3. Awaiting the user.
+
+## Phase 3 P0 (host) — ST-compatible streaming export (2026-11-13)
+
+- Board: NUCLEO-H7S3L8 (MB1737, UM3276). Models: ZN-E010 (accuracy) and ZN-E018 (P0c physics-informed), same architecture.
+- Split: E per-cycle encoder curve[1,3,300] -> h[1,64]; F fade cell (h, h1) -> g; H head summary[1,192] -> y; C glue keeps sum/first/last of g and de-standardizes (μ 404.49, s 390.11).
+- Parity on all 2,000 split-2021 val prefixes (onnxruntime vs PyTorch): ZN-E010 max rel EOL diff 3.3e-6 (ONNX MAPE 0.33254); ZN-E018 5.1e-6 (0.32539). PASS (≤ 1e-4).
+- Ops: Conv, InstanceNormalization (GroupNorm), Relu, Erf (GELU), GlobalAveragePool, Gemm, Concat, elementwise — no If/Shape/Range/dynamic gather. ONNX sizes E 300 KB, F 51 KB, H 50 KB.
+- Next: P1 stedgeai analyze/validate on host (waiting for the user's go).

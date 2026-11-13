@@ -1,0 +1,3 @@
+step	run	split	variant	val_mape_torch	val_mape_onnx	max_rel_eol_diff	params	onnx_kb_E	onnx_kb_F	onnx_kb_H	ops_E	note
+P0-host	ZN-E010	2021	fp32 streaming E/F/H + C glue	0.3325	0.33254	3.28e-06	98113	300.1	51.1	50.3	Add+Constant+Conv+Div+Erf+Flatten+GlobalAveragePool+InstanceNormalization+Mul+Relu+Reshape	PASS <=1e-4; no If/Shape/Range/dynamic gather; GroupNorm->InstanceNormalization (ST float32 supported)
+P0-host	ZN-E018	2021	fp32 streaming E/F/H + C glue	0.3254	0.32539	5.11e-06	98113	300.1	51.1	50.3	Add+Constant+Conv+Div+Erf+Flatten+GlobalAveragePool+InstanceNormalization+Mul+Relu+Reshape	PASS <=1e-4; no If/Shape/Range/dynamic gather; GroupNorm->InstanceNormalization (ST float32 supported)
