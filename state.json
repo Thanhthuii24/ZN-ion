@@ -4,14 +4,14 @@
   "research_mode": "loss_search_physics",
   "phase": "phase2_loss",
   "phase_status": "phase2_start",
-  "workflow_status": "running_remote",
+  "workflow_status": "proposal_needed",
   "protocol_status": "locked",
   "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
   "run_approved": true,
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
-  "current_experiment": "ZN-E020",
-  "next_experiment_id": "ZN-E020",
-  "next_action": "ZN-E020 split 2024; then P0c 3-split aggregate and Phase-2 closure",
+  "current_experiment": null,
+  "next_experiment_id": "ZN-E021",
+  "next_action": "ZN-E021 P0u capacity-improvement physics on frozen ZN-E010",
   "active_architecture_parent": "ZN-E010",
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -138,12 +138,12 @@
     },
     "counter": "optimizer_training_compute_seconds",
     "usage": {
-      "experiments": 20,
-      "training_seconds": 2992.08
+      "experiments": 21,
+      "training_seconds": 3350.17
     },
     "remaining": {
-      "experiments": 130,
-      "training_seconds": 247007.92
+      "experiments": 129,
+      "training_seconds": 246649.83
     },
     "exhausted": false,
     "status": "active"
@@ -208,6 +208,12 @@
       "date": "2026-11-13",
       "by": "user",
       "summary": "User chose to confirm the P0c physics-informed variant (ZN-E018 config) on splits 42 and 2024 as a 3-split physics-consistency result for the thesis, then close Phase 2; ZN-E010 stays the accuracy-frozen model unless the aggregate says otherwise."
+    },
+    {
+      "id": "A7-ZN",
+      "date": "2026-11-13",
+      "by": "user",
+      "summary": "User asked to try new physics losses in Phase 2 instead of closing it. Registered P0u capacity-improvement monotonicity (loss.md \u00a74.6)."
     }
   ],
   "decision_metrics": {
@@ -303,6 +309,18 @@
       "close Phase 2 with ZN-E010 kept, unlock Phase 3",
       "3-split physics-consistency confirmation of ZN-E018 (P0c) or ZN-E016 (P0)"
     ],
-    "user_decision": "confirm P0c (ZN-E018) on splits 42/2024 (ZN-E019, ZN-E020), then close Phase 2"
+    "user_decision": "confirm P0c (ZN-E018) on splits 42/2024 (ZN-E019, ZN-E020), then close Phase 2",
+    "p0c_three_split": {
+      "runs": [
+        "ZN-E018",
+        "ZN-E019",
+        "ZN-E020"
+      ],
+      "mape": "0.339\u00b10.012",
+      "acc15": "0.296\u00b10.067",
+      "rmse": "395\u00b145",
+      "violation": "2021 -63%, 42 0->0, 2024 -44%",
+      "status": "NOT_CONFIRMED (2024 violation cut < 50%)"
+    }
   }
 }

@@ -5255,6 +5255,7 @@ def physics_monotonicity_loss(aux_degradation, mask):
 WHATIF_PHYSICS_TYPES = {
     "whatif_fade_p0",
     "whatif_fade_p0_flip",
+    "whatif_improve_p0u",
     "whatif_fade_p0b",
     "prefix_drift",
     "whatif_trend_p4",
@@ -5405,6 +5406,9 @@ def apply_whatif_trend(curves, masks=None, kappa=None, prefix_lengths=None, fall
 def apply_whatif(curves, masks=None, param=None, physics_type="whatif_fade_p0", prefix_lengths=None):
     if physics_type in {"whatif_fade_p0", "whatif_fade_p0_flip", "whatif_fade_p0b"}:
         return apply_whatif_fade(curves, masks=masks, alpha=param)
+    elif physics_type == "whatif_improve_p0u":
+        alpha = -param if param is not None else None
+        return apply_whatif_fade(curves, masks=masks, alpha=alpha)
     elif physics_type == "whatif_knee_p0c":
         return apply_whatif_knee(curves, masks=masks, alpha=param)
     elif physics_type == "whatif_vsag_p2":
@@ -5506,7 +5510,7 @@ def compute_fade_slope_per_domain(train_cells, min_cells=5):
 
 
 def compute_bounds_per_domain(train_cells, physics_type="whatif_fade_p0"):
-    if physics_type in {"whatif_fade_p0", "whatif_fade_p0_flip", "whatif_knee_p0c", "whatif_fade_p0b"}:
+    if physics_type in {"whatif_fade_p0", "whatif_fade_p0_flip", "whatif_knee_p0c", "whatif_fade_p0b", "whatif_improve_p0u"}:
         return compute_alpha_max_per_domain(train_cells)
     elif physics_type == "whatif_vsag_p2":
         return compute_beta_max_per_domain(train_cells)
@@ -5803,7 +5807,7 @@ def rarity_weighted_relative_huber(predictions, raw_eol, scaler, target_transfor
 
 
 def sample_whatif_param(domains, bounds_by_domain, rng, physics_type="whatif_fade_p0"):
-    if physics_type in {"whatif_fade_p0", "whatif_fade_p0_flip", "whatif_knee_p0c", "whatif_fade_p0b"}:
+    if physics_type in {"whatif_fade_p0", "whatif_fade_p0_flip", "whatif_knee_p0c", "whatif_fade_p0b", "whatif_improve_p0u"}:
         return sample_whatif_alpha(domains, bounds_by_domain, rng)
     elif physics_type == "whatif_vsag_p2":
         return sample_whatif_beta(domains, bounds_by_domain, rng)
@@ -5856,7 +5860,7 @@ def whatif_loss(
     x_tilde = apply_whatif(curves, masks, param, physics_type=base_type, prefix_lengths=prefix_lengths)
     f_tilde = model(x_tilde, masks)
 
-    if physics_type == "whatif_fade_p0_flip":
+    if physics_type in {"whatif_fade_p0_flip", "whatif_improve_p0u"}:
         diff = f_x - f_tilde
     else:
         diff = f_tilde - f_x
@@ -6262,7 +6266,7 @@ def evaluate_whatif_violation_rate(
             x_tilde = apply_whatif(curves, masks, param_vals, physics_type=physics_type, prefix_lengths=prefix_lengths)
             f_tilde = model(x_tilde, masks)
 
-            if physics_type == "whatif_fade_p0_flip":
+            if physics_type in {"whatif_fade_p0_flip", "whatif_improve_p0u"}:
                 viol = ((f_x > f_tilde).cpu().numpy()) & valid_samples
             else:
                 viol = ((f_tilde > f_x).cpu().numpy()) & valid_samples

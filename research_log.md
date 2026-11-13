@@ -207,3 +207,14 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - Run: `VALID`. Decision: `KEEP` (physics-consistency evidence). MAPE 0.3451, Acc@15 0.2210, RMSE 357.0 vs ZN-E013 0.3471 / 0.2470 / 350.3.
 - λ = 0.155; P0c violation 0.0 (reference already 0, so the hinge stayed inactive; balance BALANCE_FAIL_SMALL is the inactive case).
 - Next: ZN-E020 split 2024, then the aggregate.
+
+## ZN-E020 — P0c (ZN-E018 config), split 2024 (confirmation) — P0c aggregate
+
+- Run: `VALID`. Decision: `KEEP` (evidence). MAPE 0.3464, Acc@15 0.3480, RMSE 382.7 vs ZN-E014 0.3162 / 0.3575 / 400.8. λ 0.164. P0c violation 0.0825 -> 0.046 (−44%).
+- P0c 3-split (E018/E019/E020): MAPE 0.339 ± 0.012, Acc@15 0.296 ± 0.067, RMSE 395 ± 45 (ZN-E010: 0.332 / 0.324 / 392). Violation: 2021 −63%, 42 0 -> 0, 2024 −44%. NOT CONFIRMED (criterion (a) fails on 2024). Physics-consistency gain is real but partial; accuracy ~unchanged.
+
+## New physics (user request A7-ZN, 2026-11-13)
+
+- EOL (BatteryLife) = first cycle with Q_dis/C_nom ≤ 0.8. SOH lower bounds (bounded drop; rate extrapolation k=5) hold ≥ 98.4% but are too weak (median ≤ 135 cycles on EOL > 500 cells) — rejected before running.
+- ZN-E010 is nearly insensitive to capacity level (+15% ramp -> +18 cycles mean) although Spearman(last SOH, log EOL) = 0.921.
+- Registered P0u (capacity improvement cannot shorten life; corrects upward) in loss.md §4.6; T008 code (executor partial + lead preflight/tests). Next: ZN-E021.

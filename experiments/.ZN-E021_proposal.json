@@ -1,0 +1,83 @@
+{
+  "id": "ZN-E021",
+  "phase": "phase2_loss",
+  "training_stage": "full_candidate",
+  "type": "loss",
+  "model": {
+    "display_name": "AnchoredFade-ResConv-GELU",
+    "variant": "anchored_fade_resconv_masked_summary",
+    "d_model": 64,
+    "residual_layers": 2,
+    "d_ff": 64,
+    "mlp_layers": 0,
+    "summary_mode": "mean_last_delta",
+    "dropout": 0.1,
+    "activation": "gelu",
+    "fade_hidden": 64
+  },
+  "reference_experiment": "ZN-E010",
+  "observation": "All earlier what-if physics (P0, P4b, P0c) lower predictions of degraded inputs; none lifts predictions, and long-life cells stay underpredicted (~ -1000 cycles). On split-2021 train cells Spearman(last-observed SOH, log EOL) = 0.921, yet frozen ZN-E010 changes its prediction by only +18 cycles on average for a +15% capacity ramp and violates the mirror rule P0u on 14.7% of val samples. SOH lower bounds were checked and rejected as too weak (loss.md \u00a74.6).",
+  "primary_hypothesis": "The label-free rule 'more remaining capacity cannot mean a shorter life' (P0u), enforced on improved what-ifs x(1 + alpha r_n), makes predictions respond upward to higher capacity, lowering the held-out P0u violation >= 50% vs ZN-E010 and lifting long-life predictions: >1000-cycle bias smaller than ZN-E010's -970 and KEEP under \u00a77 vs ZN-E010.",
+  "question_inherited": "Does an upward-correcting capacity physics rule reduce the long-life underprediction that downward rules could not?",
+  "unresolved_from_reference": "Whether ZN-E010's weak capacity sensitivity is the reason long-life (high-SOH) cells are underpredicted.",
+  "why_this_experiment": "User request A7-ZN (new physics). P0u is newly registered in loss.md \u00a74.6 with Zn-ion evidence; it is the only label-free capacity rule that corrects upward.",
+  "modification": "Loss only: L = RelativeHuber_0.15 + lambda * mean ReLU(sg[f(x)] - f(x~)), x~_{n,Q,dis} = x_{n,Q,dis} (1 + alpha r_n) on observed cycles, alpha ~ U(0, 0.150), r_n = clip((n-10)/90,0,1); lambda = 0.5 x median gradient ratio (unsigned calibration). Model and training identical to ZN-E010.",
+  "changed_components": "Objective: added label-free P0u capacity-improvement physics term (T008).",
+  "held_constant_components": "Frozen ZN-E010 architecture (98,113 params, GELU, anchored fade encoder), Relative Huber delta 0.15 main loss, Adam lr 5e-4, batch 128, seed 2021, split 2021, A2-ZN epochs, checkpoint rule, data.",
+  "controlled_variables": "Training seed 2021, split 2021, minimum 5 / maximum 100 epochs, patience 5 after epoch 5, diagnostics every 50 steps; lambda2 never tuned on validation.",
+  "expected_evidence": "MAPE/Acc@15/RMSE/DB-MAPE vs ZN-E010; held-out P0u violation vs 0.147; >1000 and 500-1000 bias vs ZN-E010; prediction change for a +15% capacity ramp; lambda, R, cosine, active fraction; gradient gate.",
+  "rejection_condition": "Primary rule (program.md \u00a77, vs frozen reference ZN-E010 MAPE 0.3325 / RMSE 425.0 / Acc@15 0.3665 / DB-MAPE 0.3325). KEEP iff [A: MAPE <= 0.3245 AND RMSE <= 435.0] OR [B: RMSE <= 404.0 AND MAPE <= 0.3355] OR [C: Acc@15 >= 0.3865 AND MAPE <= 0.3355 AND RMSE <= 435.0], AND Acc@15 >= 0.3365 (A/B) AND DB-MAPE <= 0.3425 AND gradient gate PASS AND loss balance PASS or SATISFIED (loss.md \u00a75.3) AND prediction SD >= 10% of target SD; otherwise DISCARD. Physics claim only if the held-out P0u violation falls vs ZN-E010 (0.147) and accuracy does not get worse.",
+  "minimum_evidence_requirements": "At least five complete epochs; finite MAPE, Acc@15, MAE, and RMSE from one checkpoint; sample and unique-cell counts for every domain; gradient, update, activation, prediction, mask, and compute diagnostics.",
+  "required_diagnostics": "Epoch learning curve; selected and minimum-MAPE epochs; cycle_stem, residual_blocks, fade_encoder, inter_summary and head gradients and updates; activation health; prediction spread and bias; prefix, domain and EOL errors; padding sensitivity; parameters, memory, time, throughput. Loss balance: lambda2, R_j median, cosine, active fraction (loss.md \u00a75.3).",
+  "estimated_budget": {
+    "experiments": 1,
+    "training_seconds": 600
+  },
+  "training": {
+    "seed": 2021,
+    "batch_size": 128,
+    "max_epochs": 100,
+    "minimum_epochs": 5,
+    "patience": 5,
+    "learning_rate": 0.0005,
+    "scheduler": "none",
+    "target_transform": "standard",
+    "main_loss": "relative_huber",
+    "relative_huber_delta": 0.15,
+    "checkpoint_mape_tolerance": 0.005,
+    "physics_loss_weight": 1.0,
+    "extra_loss_weight": 0.0,
+    "prefix_consistency_weight": 0.0,
+    "diagnostic_interval_steps": 50,
+    "required_device": "cuda",
+    "physics_type": "whatif_improve_p0u",
+    "physics_rho": 0.5,
+    "physics_anchor_gradient": "stop"
+  },
+  "split": "2021",
+  "architecture_addendum": {
+    "responsible_stage": "Degradation Encoder",
+    "mechanism": "None (frozen model; loss experiment)",
+    "evidence": "Phase-2 loss experiment on the frozen ZN-E010 architecture",
+    "shapes": "[B,100,3,300] -> ResConv [B,100,64] (h_t) -> u_t=[h_t, h_t-h_1] [B,100,128] -> Linear 128->64, GELU, Linear 64->64, +h_t -> g_t [B,100,64] * mask -> masked summary [B,192] -> Linear [B,64] -> GELU -> Linear [B,1]",
+    "mask_path": "h_1 = cycle index 0 (always observed); g_t multiplied by mask; mean over mask==1, last at mask.sum()-1, delta last - first. tests/test_anchored_fade.py: padding invariance and cycle-1 dependence.",
+    "expected_evidence": "MAPE, RMSE, Acc@15, DB-MAPE (= MAPE) vs ZN-E005; EOL bands; gradient gate incl. fade_encoder"
+  },
+  "smoke_evidence": "pending CUDA smoke ZN-E021S",
+  "loss_addendum": {
+    "term": "whatif_improve_p0u (P0u)",
+    "kind": "physics, label-free",
+    "formula": "mean ReLU(sg[f(x)] - f(x~)), x~_{n,Q,dis} = x_{n,Q,dis}(1 + alpha r_n)",
+    "params": {
+      "rho": 0.5,
+      "alpha_max": "P90 train fade per domain (ZN-coin 0.15)",
+      "margin": 0.0,
+      "ramp": "r_n = clip((n-10)/90,0,1)",
+      "anchor_gradient": "stop"
+    },
+    "lambda": "rho x median gradient-norm ratio on 3 fixed train batches, unsigned calibration loss, float64, logged",
+    "balance_checks": "loss.md \u00a75.3 band on R (0.05..2.0), cosine, active fraction; SATISFIED rule; held-out violation rate vs ZN-E010",
+    "physics_check": "EOL = first cycle with Q_dis/C_nom <= 0.8 (BatteryLife Extract_life_labels.py); raising the capacity trajectory can only delay the crossing. Spearman(last SOH, log EOL) = 0.921 on train cells; +15% ramp inside train SOH range (P90 rise 0.235).",
+    "units": "standardized output units (cycles / s), dimensionless"
+  }
+}
