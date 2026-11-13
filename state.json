@@ -11,7 +11,7 @@
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
   "current_experiment": null,
   "next_experiment_id": "ZN-E022",
-  "next_action": "User go: P2 static INT8 PTQ on host, or P3 board validation with XSPI2 external flash (fp32 / -c low)",
+  "next_action": "User installs STM32CubeProgrammer and the H7RS pack in AI Studio; then lead lists P3 board steps and waits for go (P2 INT8 host can run meanwhile on request)",
   "active_architecture_parent": "ZN-E010",
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -348,7 +348,7 @@
       "weights exceed the 64 KB internal flash even at int8 -> XSPI2 external flash (external loader) or compression",
       "full-window activations exceed 620 KB SRAM -> per-cycle streaming export required"
     ],
-    "status": "P1 done; waiting for the user decision on P2 (INT8 PTQ host) or P3 (board, external flash)",
+    "status": "P3 blocked at Step 0: board connected (ST-LINK V3J12, /dev/cu.usbmodem11302) but STM32CubeProgrammer (CLI + XSPI2 external loader) and the STM32H7RS pack in STM32Cube AI Studio are not installed; st-info cannot identify STM32H7S3 (chipid 0x000)",
     "P0": {
       "ZN-E010": "max rel EOL diff 3.3e-6, ONNX val MAPE 0.33254",
       "ZN-E018": "max rel EOL diff 5.1e-6, ONNX val MAPE 0.32539",
