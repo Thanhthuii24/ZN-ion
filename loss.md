@@ -212,6 +212,22 @@ def one_sided(f_cf, f_x, margin=0.0):                                    # stand
 
 **Order to test:** P0 → P4 → P0c → P2. P5 may be added to any of them.
 
+**P0u capacity-improvement monotonicity (registered 2026-11-13, v6_auto Zn-ion, user request for a new physics loss).**
+- Rule: with everything else fixed, a battery with **more** remaining capacity cannot have a **shorter** life.
+  BatteryLife defines EOL as the first cycle with $Q^{dis}_n/C_{nom}\le0.8$, so raising the observed capacity
+  trajectory can only delay that crossing. It is the mirror of P0 but corrects in the opposite direction: it lifts
+  predictions of the improved input instead of lowering predictions of the degraded one.
+- What-if: $\tilde x_{n,2,150:300}=x_{n,2,150:300}\,(1+\alpha r_n)$ on observed cycles, $\alpha\sim U(0,\alpha_{\max}(d))$
+  (same P90-fade bound as P0, so the scaled trajectories stay inside the train SOH range: ZN-coin P90 rise 10→100 = 0.235).
+- Loss: $L_{P0u}=\frac1B\sum_b\mathrm{ReLU}\big(\operatorname{sg}[f(x_b)]-f(\tilde x_b)+\mu_m\big)$, $\mu_m=0$.
+  Held-out violation = share of val samples with $f(\tilde x)<f(x)$, pooled over $\alpha\in\{0.25,0.5,1.0\}\alpha_{\max}$.
+- Evidence (ZN-coin, split 2021): Spearman(last-observed SOH, log EOL) = 0.921 on 59 train cells; frozen ZN-E010
+  violates P0u on 14.7% of val samples and changes its prediction by only +18 cycles on average for a +15% capacity ramp.
+- Same λ calibration (§5.2, unsigned, ρ = 0.5), balance band (§5.3) and claim rule as P0. Config: `whatif_improve_p0u`.
+- Rejected before running (2026-11-13): SOH lower bounds $EOL\ge i+(s_i-0.8)/d$ (bounded per-cycle drop, P99 0.0109)
+  and $EOL\ge i+(s_i-0.8)/(k\,\mathrm{rate}_i)$ (k = 5, holds 98.4–99.3%). Both are valid but too weak (median bound
+  ≤ 135 cycles on EOL > 500 cells, below current predictions), so they would stay inactive.
+
 ### 4.7 Objectives used in Phase 2 that were not pre-registered here (recorded 2026-11-03)
 
 These were run before being written here, which broke the rule above. They are recorded
