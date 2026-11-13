@@ -4,14 +4,14 @@
   "research_mode": "loss_search_physics",
   "phase": "phase2_loss",
   "phase_status": "phase2_start",
-  "workflow_status": "running_remote",
+  "workflow_status": "awaiting_user_decision",
   "protocol_status": "locked",
   "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
   "run_approved": true,
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
-  "current_experiment": "ZN-E021",
-  "next_experiment_id": "ZN-E021",
-  "next_action": "ZN-E021 P0u capacity-improvement physics on frozen ZN-E010",
+  "current_experiment": null,
+  "next_experiment_id": "ZN-E022",
+  "next_action": "User decision: close Phase 2 (ZN-E010 frozen, TARGET_NOT_MET) and unlock Phase 3, or continue Phase 2",
   "active_architecture_parent": "ZN-E010",
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -138,12 +138,12 @@
     },
     "counter": "optimizer_training_compute_seconds",
     "usage": {
-      "experiments": 21,
-      "training_seconds": 3350.17
+      "experiments": 22,
+      "training_seconds": 3603.9
     },
     "remaining": {
-      "experiments": 129,
-      "training_seconds": 246649.83
+      "experiments": 128,
+      "training_seconds": 246396.1
     },
     "exhausted": false,
     "status": "active"
@@ -321,6 +321,7 @@
       "rmse": "395\u00b145",
       "violation": "2021 -63%, 42 0->0, 2024 -44%",
       "status": "NOT_CONFIRMED (2024 violation cut < 50%)"
-    }
+    },
+    "after_E021": "7 loss runs, 0 KEEP. Label-free physics cuts violations (P0 -70%, P0c -63%) at about equal accuracy; upward P0u conflicts (cos < 0). Shared limit is observability: within cycles 1-100, short-life break-in cells (e.g. 441-1 EOL 219, SOH_100 1.22) look like long-life cells (437-2 EOL 1281, SOH_100 1.045); failure happens after cycle 100. Reviewer recommends closing Phase 2 with ZN-E010 and unlocking Phase 3."
   }
 }

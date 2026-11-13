@@ -218,3 +218,15 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - EOL (BatteryLife) = first cycle with Q_dis/C_nom ≤ 0.8. SOH lower bounds (bounded drop; rate extrapolation k=5) hold ≥ 98.4% but are too weak (median ≤ 135 cycles on EOL > 500 cells) — rejected before running.
 - ZN-E010 is nearly insensitive to capacity level (+15% ramp -> +18 cycles mean) although Spearman(last SOH, log EOL) = 0.921.
 - Registered P0u (capacity improvement cannot shorten life; corrects upward) in loss.md §4.6; T008 code (executor partial + lead preflight/tests). Next: ZN-E021.
+
+## ZN-E021 — Phase 2 new physics: frozen ZN-E010 + P0u capacity improvement, split 2021
+
+- Run: `VALID`. Decision: `DISCARD` (§7: MAPE 0.3454, Acc@15 0.288, RMSE 426.5). Balance PASS (median R 0.124) but cosine −0.22…−0.37. Reviewer: Gemini.
+- P0u violation 0.147 -> 0.125 (−15%); >1000 bias −1003 (ZN-E010 −970): the upward rule did not lift long-life cells.
+- Cause (Gemini): observability within cycles 1–100. Short-life break-in cells (441-1 EOL 219, SOH_100 1.22; 440-3 EOL 197, SOH_100 1.02) look like long-life cells (437-2 EOL 1281, SOH_100 1.045; 440-1 EOL 1023, 1.049); failure comes after cycle 100. Raising capacity sensitivity inflates short-life cells, hence the label conflict.
+
+## Phase 2 stock-take (after ZN-E015…E021, 7 loss runs, 0 KEEP)
+
+- Statistical (tail, rarity) too weak; P4b structural conflict; P2 unsupported; SOH bounds too weak; P0u conflicts.
+- P0 / P0c give physics consistency (violations −70% / −63%) at about equal accuracy; P0c 3-split NOT CONFIRMED (2024 −44%).
+- Reviewer recommendation: close Phase 2 with ZN-E010 (TARGET_NOT_MET) and unlock Phase 3. Awaiting the user.

@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "experiment_id": "ZN-E021",
+  "run_validity": "VALID",
+  "contract_answer": {
+    "question": "Does the label-free capacity-improvement monotonicity physics loss P0u ('more remaining capacity cannot mean a shorter life': whatif_improve_p0u, L_P0u = mean ReLU(sg[f(x)] - f(x~)) on x~_{n,2,150:300} = x_{n,2,150:300} * (1 + alpha * r_n), alpha ~ U(0, 0.150), rho = 0.5, calibrated lambda = 0.138374) make frozen ZN-E010 respond upward to higher capacity, cutting held-out P0u violations by >= 50% vs ZN-E010 (0.147), reducing >1000-cycle underprediction bias vs ZN-E010 (-970.08 cycles), and achieving KEEP under program.md §7 on split 2021?",
+    "outcome": "REFUTED",
+    "conclusion": "Reviewed by CODEX(gemini-4-argon). Apply the proposal's primary rule exactly. On split 2021 (seed 2021, Kaggle Tesla T4), ZN-E021 is a complete, finite 11-epoch full_candidate run (506 optimizer steps, 46 steps/epoch, 253.726s training compute, 98,113 parameters, early stopping at epoch 11 with both minimum validation MAPE and epsilon-Pareto selected checkpoint at epoch 6). Executed train.py md5 equals the reviewed train.py. Before step 1, float64 unsigned gradient calibration on 3 fixed training batches yields batch ratios [0.267422, 0.278253, 0.276749] (median 0.276749) and calibrated lambda = 0.138374 (0.1384) at rho = 0.5. From validation_predictions.npz and tools/rescore.py, ZN-E021 achieves MAPE 0.345416 (0.3454), Acc@15 0.2880, RMSE 426.519 cycles (426.5), MAE 230.820 cycles, and DB-MAPE 0.345416 versus frozen reference ZN-E010 (MAPE 0.332536 [0.3325], Acc@15 0.3665, RMSE 425.009 cycles [425.0], MAE 232.129 cycles, DB-MAPE 0.332536). Loss balance PASSES under loss.md §5.3 with 4-step median R = 0.123743 (0.124) inside [0.05, 2.0] (step 1: R = 0.0, active = 0.0; step 185: R = 0.074477, cos = -0.365912, active = 0.023438; step 250: R = 0.250467, cos = -0.314525, active = 0.093750; step 500: R = 0.173010, cos = -0.222007, active = 0.062500), and prediction spread PASSES (SD 127.25 cycles = 31.23% of target SD >= 10%, correlation 0.4006 vs 0.4785 in ZN-E010). All 6 architectural blocks are HEALTHY with zero block flags in layer_health and activation_health and status OK in tools/layer_report.py (padding invariance 0.0); diagnostics.json.summary.overall_gradient_health is logged as WARNING solely because physics_balance attaches the non-blocking flag PHYSICS_GRADIENT_CONFLICT (median cosine -0.314525 < -0.30), which validate_analysis.py line 160 maps to gates.gradient = FAIL. Crucially, both parts of the primary hypothesis are refuted: (1) Held-out P0u violation falls only 12.4% pooled to 0.128833 (773 / 6000 evaluations: 0.1325 / 0.1295 / 0.1245 at alpha = 0.25 / 0.5 / 1.0 x alpha_max) and 15.3% at alpha_max (0.1245 vs ZN-E010's 0.147, -15%), missing the >= 50% reduction target; and (2) while 500-1000 bias improves from -533.01 to -440.49 cycles (MAPE 0.6388 -> 0.5340), >1000-cycle bias worsens from -970.08 to -1003.12 cycles (MAPE 0.7920 -> 0.8098, RMSE 994.52 -> 1022.34, Acc@15 0.0) and <500-cycle MAPE worsens from 0.1998 to 0.2274 (Acc@15 0.4887 -> 0.3840, RMSE 65.57 -> 71.66, bias -25.94 -> -11.45). Consequently, against frozen ZN-E010 under program.md §7, ZN-E021 fails all three primary KEEP paths (Path A: MAPE 0.3454 > 0.3245; Path B: RMSE 426.52 > 404.0 and MAPE 0.3454 > 0.3355; Path C: Acc@15 0.2880 < 0.3865 and MAPE 0.3454 > 0.3355), fails the shared Path A/B Acc@15 floor (0.2880 < 0.3365), fails the DB-MAPE guardrail (0.3454 > 0.3425), fails the 20-cell ZN-coin domain Acc@15 guardrail (-0.0785 regression > 0.05), and does not support a physics claim (violation cut < 50% and accuracy worse). Decision is DISCARD.",
+    "evidence_paths": [
+      "record.json.proposal.rejection_condition",
+      "record.json.result",
+      "record.json.metrics",
+      "record.json.metrics.by_eol",
+      "record.json.metrics.physics_violation_rate",
+      "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+      "diagnostics.json.physics_calibration",
+      "diagnostics.json.physics_validation",
+      "diagnostics.json.checkpoint_selection",
+      "diagnostics.json.epoch_history",
+      "diagnostics.json.summary.overall_gradient_health",
+      "diagnostics.json.summary.layer_health",
+      "diagnostics.json.summary.activation_health",
+      "diagnostics.json.summary.physics_balance",
+      "diagnostics.json.summary.loss_balance",
+      "diagnostics.json.summary.padding_invariance",
+      "worker_meta.json",
+      "../ZN-E010/record.json.metrics",
+      "../ZN-E010/validation_predictions.npz[prediction,target,cell_id,prefix_length]"
+    ]
+  },
+  "main_symptom": "Adding upward capacity-improvement monotonicity P0u (whatif_improve_p0u, lambda = 0.1384, rho = 0.5) to frozen ZN-E010 passes loss_balance (median R = 0.1237 in [0.05, 2.0]) and reduces 500-1000 bias from -533.01 to -440.49 cycles, but exhibits persistent negative gradient cosine with L_main (-0.3659 at step 185, -0.3145 at step 250, -0.2220 at step 500), cuts held-out P0u violation by only 15.3% at alpha_max (0.147 -> 0.1245; 0.1288 pooled), fails to lift >1000-cycle validation predictions (bias -970.08 -> -1003.12 cycles), and inflates predictions on short-life break-in/high-SOH cells (<500 MAPE 0.1998 -> 0.2274, Acc@15 0.4887 -> 0.3840), regressing overall MAPE from 0.3325 to 0.3454, Acc@15 from 0.3665 to 0.2880, and RMSE from 425.01 to 426.52 cycles.",
+  "causes": [
+    {
+      "id": "C1_P0U_ACTIVATES_ONLY_ON_SHORT_LIFE_CELLS_AND_OPPOSES_MAIN_LOSS_WITHOUT_LIFTING_LONG_LIFE_VAL_CELLS",
+      "class": "physics_perturbation_and_generalization_mismatch",
+      "supporting_evidence": [
+        "record.json.proposal.primary_hypothesis",
+        "record.json.metrics",
+        "record.json.metrics.by_eol.high_>1000",
+        "record.json.metrics.by_eol.middle_500-1000",
+        "record.json.metrics.by_eol.low_<500",
+        "diagnostics.json.samples",
+        "diagnostics.json.epoch_history",
+        "diagnostics.json.checkpoint_selection",
+        "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+        "../ZN-E010/record.json.metrics",
+        "../ZN-E010/validation_predictions.npz[prediction,target,cell_id,prefix_length]"
+      ],
+      "contradicting_evidence": [
+        "On the 500-1000 validation band (2 cells, 200 samples), ZN-E021 reduces underprediction bias by +92.52 cycles vs ZN-E010 (-533.01 -> -440.49 cycles; MAPE 0.6388 -> 0.5340, RMSE 538.96 -> 461.42) as ZN-coin_432-3 (EOL 923) mean prediction rises from 426.3 to 569.7 cycles (max 654.5) and ZN-coin_433-3 (EOL 770) rises from 200.7 to 242.3 cycles.",
+        "On the 7 >1000-cycle training cells at prefix 100, ZN-E021 increases the mean prediction response to a +15% capacity ramp from +19.95 cycles (ZN-E010) to +44.92 cycles and raises mean training prediction from 1019.6 to 1095.8 cycles."
+      ],
+      "interpretation": "Direct evaluation of the saved ZN-E010 and ZN-E021 checkpoints on the 59 training cells and 20 validation cells reveals two coupled structural reasons why P0u has a negative cosine with L_main (-0.366 to -0.222) and fails to lift >1000-cycle validation cells: (1) Why cosine(grad L_main, grad L_P0u) < 0: On the training set, all 17 cells with EOL >= 500 (10 in 500-1000, 7 in >1000) exhibit strong break-in capacity rise (+20.5% and +23.8% mean Q_10 -> Q_100 gain), and the encoder already maps a +15% upward capacity ramp x~ = x*(1 + alpha*r_n) to a higher prediction on 17/17 (100%) of them (at prefix 100, f(x~) - f(x) = +64.65 cycles in 500-1000 and +19.95 cycles in >1000 in ZN-E010; 0/17 violate P0u). Consequently, the P0u hinge ReLU(sg[f(x)] - f(x~)) is identically ZERO on >500-cycle training cells and activates exclusively on short-life <500-cycle training cells (8/42 at prefix 100 in ZN-E010 with y_max = 359, y_mean = 177.1; 14/42 in ZN-E021 with y_max = 186, y_mean = 122.4, such as falling cells ZN-coin_204-3 [EOL 111], 405-2 [114], 407-1 [112], and 410-1 [106]). Because f(x) is stop-graded, grad L_P0u = -mean_{active} grad f(x~) pushes the shared encoder/readout UPWARD on those short-life active cells. However, on 12/14 of those active short-life cells, the model is already over-predicting (mean yhat = 132.7 vs mean y = 122.4 cycles), and Relative Huber's 1/y gradient weighting gives <500-cycle cells 6x-13x stronger pull per cycle, so grad L_main strongly pulls shared representations DOWNWARD to curb short-life over-prediction—directly opposing grad L_P0u (cosine -0.3659 at step 185, -0.3145 at step 250, -0.2220 at step 500). (2) Why >1000-cycle validation cells are not lifted: ZN-E010 already predicts 1019.6 cycles on average for the 7 >1000-cycle training cells at prefix 100 (and 1095.8 in ZN-E021), proving the frozen model does not lack upward output range on training cells. Instead, the >1000-cycle validation error (-970.08 cycles in ZN-E010, -1003.12 in ZN-E021) stems from cross-cell trajectory ambiguity in the first 100 cycles: val cell ZN-coin_440-1 (EOL 1023, Q_10=1.084 -> Q_100=1.049, -3.2%) has an almost identical 100-cycle curve to short-life val cell ZN-coin_440-3 (EOL 197, Q_10=1.086 -> Q_100=1.022, -5.8%) and train cell 440-2 (EOL 186, Q_10=1.067 -> Q_100=1.023), while val cell ZN-coin_437-2 (EOL 1281, Q_10=0.904 -> Q_100=1.045, +15.7%) has lower 100-cycle SOH than short-life break-in val cells ZN-coin_441-1 (EOL 219, Q_10=0.987 -> Q_100=1.220, +23.6%), 442-2 (EOL 322, Q_100=1.226), and 445-3 (EOL 183, Q_50=1.220). Forcing upward sensitivity to capacity ramps causes severe over-prediction on high-SOH short-life val cells (ZN-coin_440-3 mean 190.6 -> 281.5, max 290.8 -> 815.2, MAPE 0.067 -> 0.431, Acc@15 0.96 -> 0.13; 441-1 max 262.3 -> 761.0; 445-3 mean 211.5 -> 250.3, Acc@15 0.55 -> 0.11), which spikes validation MAPE in epochs 7-11 (0.3547-0.3715) and forces checkpoint selection at epoch 6 where ZN-coin_436-1 (EOL 1402) has only reached mean 321.2 cycles (vs 492.9 at epoch 10 in ZN-E010).",
+      "missing_evidence": []
+    },
+    {
+      "id": "C2_LOSS_BALANCE_PASSES_BAND_WITH_PERSISTENT_NEGATIVE_COSINE_AND_ONLY_15PCT_VIOLATION_DROP",
+      "class": "constraint_satisfaction_dynamics",
+      "supporting_evidence": [
+        "diagnostics.json.physics_calibration",
+        "diagnostics.json.physics_validation",
+        "diagnostics.json.summary.loss_balance",
+        "diagnostics.json.summary.physics_balance",
+        "diagnostics.json.samples",
+        "diagnostics.json.epoch_history",
+        "record.json.metrics.physics_violation_rate"
+      ],
+      "contradicting_evidence": [
+        "Unlike P0 (ZN-E016) and P0c (ZN-E018), where diagnostics.json logged mechanical BALANCE_FAIL_SMALL due to near-zero active fractions, ZN-E021 stays active on 2.34%-9.38% of training samples across steps 185-500 and directly achieves status = PASS in diagnostics.json.summary.loss_balance with 4-step median R = 0.123743 inside [0.05, 2.0]."
+      ],
+      "interpretation": "In ZN-E021, unsigned float64 gradient calibration before step 1 yields lambda = 0.138374 (nearly identical to P0's 0.138297 and P0c's 0.140431). Across the 4 diagnostic snapshots, R is 0.0 at step 1 (active_fraction = 0.0), 0.074477 at step 185 (epoch 5, active_fraction = 0.023438, cos = -0.365912), 0.250467 at step 250 (epoch 6, active_fraction = 0.093750, cos = -0.314525), and 0.173010 at step 500 (epoch 11, active_fraction = 0.062500, cos = -0.222007), giving a 4-step median R = 0.123743 (and active-step median R = 0.173010) squarely inside [0.05, 2.0]. However, unlike downward fade rules P0 and P0c—which aligned positively with L_main in early/mid training (P0 cos +0.28..+0.38; P0c cos +0.58 at step 250) and cut held-out violations by 70.2% and 63.0%—P0u's upward push on active short-life cells is continually counteracted by L_main's downward pull on those same over-predicted short-life cells. Because lifting f(x~) on a short-life cell also lifts the unperturbed anchor f(x) on the next step (via shared weights), the gap f(x) - f(x~) on falling short-life trajectories is repeatedly recreated: at prefix 100, training P0u violations actually increase from 8/59 (13.6% in ZN-E010) to 14/59 (23.7% in ZN-E021), and held-out validation P0u violations drop by only 15.3% at alpha_max (0.147 -> 0.1245; 0.128833 pooled across alpha = 0.25 / 0.5 / 1.0 x alpha_max: 0.1325 / 0.1295 / 0.1245), far short of the >= 50% requirement.",
+      "missing_evidence": []
+    },
+    {
+      "id": "C3_HEALTHY_ARCHITECTURAL_BLOCK_GRADIENTS_DESPITE_PHYSICS_CONFLICT_SUMMARY_WARNING",
+      "class": "optimization_health",
+      "supporting_evidence": [
+        "diagnostics.json.summary.overall_gradient_health",
+        "diagnostics.json.summary.layer_health.cycle_stem",
+        "diagnostics.json.summary.layer_health.residual_blocks.0",
+        "diagnostics.json.summary.layer_health.residual_blocks.1",
+        "diagnostics.json.summary.layer_health.fade_encoder",
+        "diagnostics.json.summary.layer_health.inter_summary",
+        "diagnostics.json.summary.layer_health.head",
+        "diagnostics.json.summary.activation_health",
+        "diagnostics.json.summary.branch_gradient_imbalance",
+        "diagnostics.json.summary.padding_invariance",
+        "diagnostics.json.summary.physics_balance"
+      ],
+      "contradicting_evidence": [
+        "diagnostics.json.summary.overall_gradient_health is logged as WARNING solely because diagnostics.json.summary.physics_balance attaches PHYSICS_GRADIENT_CONFLICT (median gradient_cosine = -0.314525 < -0.30 threshold), which validate_analysis.py line 160 mechanically maps to gates.gradient = FAIL."
+      ],
+      "interpretation": "Every architectural block in frozen ZN-E010 passes all block-level gradient, update, and activation checks in diagnostics.json.summary.layer_health and tools/layer_report.py ZN-E021 (all 6 blocks HEALTHY / OK with zero block flags): at step 500, grad-to-parameter ratios are 0.0267 in cycle_stem, 0.00681 in residual_blocks.0, 0.00371 in residual_blocks.1, 0.00210 in fade_encoder, 0.0152 in inter_summary, and 0.1406 in head (all well inside [1e-6, 100]); late near-zero gradient fractions are 0.0000 in cycle_stem, 0.00962 in residual_blocks.0, 0.0184 in residual_blocks.1, 0.0000 in fade_encoder, 0.0000 in inter_summary, and 0.0000 in head (all far below 0.50); branch gradient imbalance is 66.99x (< 1000x); active_feature_fraction_min is 1.0 across all blocks; nonfinite_detected is false; and padding_invariance is INVARIANT (0.0). Thus gates.gradient is recorded as FAIL in analysis.json only because validate_analysis.py strictly requires gates.gradient == ('PASS' if overall_gradient_health == 'HEALTHY' else 'FAIL').",
+      "missing_evidence": []
+    }
+  ],
+  "selected_cause_id": "C1_P0U_ACTIVATES_ONLY_ON_SHORT_LIFE_CELLS_AND_OPPOSES_MAIN_LOSS_WITHOUT_LIFTING_LONG_LIFE_VAL_CELLS",
+  "layers": [
+    {
+      "name": "cycle_stem",
+      "role": "Frozen 3-layer strided Conv1d+GELU per-cycle curve stem (3->32->64->64).",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.cycle_stem",
+        "diagnostics.json.summary.activation_health.cycle_stem"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Phase-2 frozen architecture block; status is HEALTHY (layer_report OK) with zero flags, late near-zero gradient fraction 0.0, late grad-to-parameter ratio 0.0267, and late update ratio 0.00139."
+    },
+    {
+      "name": "residual_blocks.0",
+      "role": "First frozen GroupNorm ResidualCurveBlock(64, groups=8).",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.residual_blocks.0",
+        "diagnostics.json.summary.activation_health.residual_blocks"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Phase-2 frozen architecture block; status is HEALTHY (layer_report OK) with zero flags, late near-zero gradient fraction 0.00962, late grad-to-parameter ratio 0.00681, and late update ratio 0.00103."
+    },
+    {
+      "name": "residual_blocks.1",
+      "role": "Second frozen GroupNorm ResidualCurveBlock(64, groups=8).",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.residual_blocks.1",
+        "diagnostics.json.summary.activation_health.residual_blocks"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Phase-2 frozen architecture block; status is HEALTHY (layer_report OK) with zero flags, late near-zero gradient fraction 0.0184, late grad-to-parameter ratio 0.00371, and late update ratio 0.00109."
+    },
+    {
+      "name": "fade_encoder",
+      "role": "Frozen Cycle-1 anchored per-cycle fade MLP (Linear 128->64, GELU, Linear 64->64) on u_t = [h_t, h_t - h_1] with residual +h_t.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.fade_encoder",
+        "diagnostics.json.summary.activation_health.fade_encoder",
+        "diagnostics.json.summary.branch_gradient_imbalance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Phase-2 frozen architecture block; status is HEALTHY (layer_report OK) with zero flags, late near-zero gradient fraction 0.0, late grad-to-parameter ratio 0.00210, late update ratio 0.00204, and healthy branch balance (66.99x)."
+    },
+    {
+      "name": "inter_summary",
+      "role": "Frozen Linear(192->64) projection on masked [mean, last, last - first] cycle summary.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.inter_summary",
+        "diagnostics.json.summary.activation_health.inter_summary",
+        "diagnostics.json.summary.padding_invariance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Phase-2 frozen architecture block; status is HEALTHY (layer_report OK) with zero flags, late near-zero gradient fraction 0.0, late grad-to-parameter ratio 0.0152, late update ratio 0.00201, and exact padding invariance (0.0)."
+    },
+    {
+      "name": "head",
+      "role": "Frozen Linear(64->1) readout after GELU.",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.head",
+        "diagnostics.json.summary.activation_health.head"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Phase-2 frozen architecture block; status is HEALTHY (layer_report OK) with zero flags, late near-zero gradient fraction 0.0, late grad-to-parameter ratio 0.1406, and late update ratio 0.00106."
+    }
+  ],
+  "gates": {
+    "gradient": "FAIL",
+    "screen_floor": {
+      "applicable": false,
+      "pass": null,
+      "reason": "ZN-E021 is a full_candidate run on split 2021 (11 completed epochs under A2-ZN), not a 5-epoch screening run."
+    }
+  },
+  "decision": "DISCARD",
+  "next_action": {
+    "type": "STOP",
+    "summary": "Phase-2 stock-take after 7 loss runs (ZN-E015..ZN-E021): (1) Across 5 distinct objective tests on split 2021—statistical tail reweighting ZN-E015 (stat_tail_balance: MAPE 0.3279, Acc@15 0.2995, RMSE 436.7 -> DISCARD), downward uniform-fade physics ZN-E016 (P0: MAPE 0.3433, Acc@15 0.3480, RMSE 418.6, violations -70.2% -> DISCARD), falling-trend acceleration ZN-E017 (P4b: MAPE 0.4215, R = 2.07, cos = -0.80..-0.88 -> DISCARD), downward quadratic late-knee physics ZN-E018 (P0c: MAPE 0.3254, Acc@15 0.3185, RMSE 445.2, violations -63.0% -> DISCARD) plus its 3-split confirmation ZN-E019/ZN-E020 (3-split MAPE 0.339 ± 0.012, Acc@15 0.296 ± 0.067, RMSE 395 ± 45; violations -63% / 0->0 / -44% -> NOT CONFIRMED on the 50% split-2024 cutoff), and upward capacity-improvement monotonicity ZN-E021 (P0u: MAPE 0.3454, Acc@15 0.2880, RMSE 426.5, violations -15.3%, cos = -0.37..-0.22 -> DISCARD)—no Phase-2 loss meets program.md §7 KEEP against frozen ZN-E010 (split-2021 MAPE 0.3325, Acc@15 0.3665, RMSE 425.0; 3-split MAPE 0.332 ± 0.016, Acc@15 0.324 ± 0.067, RMSE 392 ± 38). (2) Honest assessment of whether any further label-free physics is likely to help ZN-coin accuracy: NO. The remaining untested rules in loss.md are either empirically unsupported on ZN-coin (P2 voltage sag: Spearman(Delta V_{10->100}, log EOL) = +0.016, p = 0.905), already proven too weak to activate (P5 horizon validity and SOH lower bounds: median bound <= 135 cycles on >500-cycle cells, below current predictions), or share the same fundamental 100-cycle observability bottleneck revealed by ZN-E016..E021—namely that ZN-E010 already fits >1000-cycle training cells at ~1020 cycles, and the held-out >1000-cycle error comes from cross-cell trajectory ambiguity in cycles 1-100 (where short-life break-in cells like 441-1 [EOL 219, Q_100=1.220] and 440-3 [EOL 197, Q_100=1.022] have higher or identical 100-cycle SOH trajectories compared to >1000-cycle cells like 437-2 [EOL 1281, Q_100=1.045] and 440-1 [EOL 1023, Q_100=1.049], before sudden post-100 zinc dendrite/dry-out knee failure). Any label-free rule that pushes capacity sensitivity upward inflates short-life break-in cells, while downward fade rules (P0, P0c) successfully cut held-out physics violations by 63%-70% at roughly unchanged headline accuracy. (3) Recommendation & what needs the user: Recommend closing Phase 2 now under program.md §10 A3 with 3-split-confirmed ZN-E010 (MAPE 0.332 ± 0.016, Acc@15 0.324 ± 0.067, RMSE 392 ± 38—beating paper best CPTransformer 0.515 ± 0.067 and CPMLP 0.297 ± 0.084) retained as the accuracy-frozen teacher model, and reporting P0 (ZN-E016: -70% violations, RMSE 418.6) and 3-split P0c (ZN-E018/E019/E020: -63% / 0->0 / -44% violations, 3-split MAPE 0.339 ± 0.012, RMSE 395 ± 45) as the Phase-2 physics-consistency ablation results. User decision required: authorize closing Phase 2 with ZN-E010 frozen (recording TARGET_NOT_MET on the 0.20/0.68 yardstick) and unlocking Phase 3 (TinyML compression/quantization/distillation for STM32).",
+    "source_cause_id": "C1_P0U_ACTIVATES_ONLY_ON_SHORT_LIFE_CELLS_AND_OPPOSES_MAIN_LOSS_WITHOUT_LIFTING_LONG_LIFE_VAL_CELLS",
+    "responsible_block": "Phase-2 Objective Search (close Phase 2 with frozen ZN-E010 and P0/P0c physics-consistency results; user approval to unlock Phase 3)"
+  }
+}
