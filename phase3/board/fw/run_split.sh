@@ -15,7 +15,7 @@ if [[ $MODE == build ]]; then
   $ST generate -m $B/${E}_F_int8.onnx --name fade --target stm32h7 --input-data-type float32 --output-data-type float32 --workspace $FW/ws_fade --output $FW/net_fade >/dev/null
   $ST generate -m $X/${E}_H.onnx      --name head --target stm32h7 --workspace $FW/ws_head --output $FW/net_head >/dev/null
   (cd $R && BL_SPLIT=$SPLIT $PY $FW/gen_fw_data.py | tail -1)
-  (cd $FW/proj && "$CM" --preset Release >/dev/null && "$CM" --build --preset Release 2>&1 | grep -E "error|warning: .*overflow|FLASH|RAM|FAILED|Linking" || true)
+  (cd $FW/proj && "$CM" --preset Release -DZN_WEIGHTS_IN_SRAM=${ZN_SRAM:-OFF} >/dev/null && "$CM" --build --preset Release 2>&1 | grep -E "error|warning: .*overflow|FLASH|RAM|FAILED|Linking" || true)
   ls -la $FW/proj/Appli/build/*Appli.elf $FW/proj/Boot/build/*Boot.elf 2>/dev/null || ls -R $FW/proj/build | grep -i elf
 elif [[ $MODE == flash ]]; then
   ELF=$(ls $FW/proj/Appli/build/*Appli.elf 2>/dev/null || find $FW/proj/build -name "*Appli.elf" | head -1)

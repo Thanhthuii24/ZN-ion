@@ -1,0 +1,33 @@
+{
+ "header": "I,ZN-E013 split42 streaming E->F->C->H, weights=E+H in SRAM (copied from XSPI2), SystemCoreClock=600000000",
+ "prefixes": 2000,
+ "board_mape": 0.3457936014458488,
+ "host_ref_mape": 0.3457984804997914,
+ "max_abs_board_minus_ref_cycles": 2.142400000000009,
+ "acc15_board": 0.239,
+ "ms_E": {
+  "mean": 49.259,
+  "min": 48.546,
+  "max": 51.798,
+  "mean_excl_first_call": 49.258
+ },
+ "ms_F": {
+  "mean": 2.931,
+  "min": 2.896,
+  "max": 3.594,
+  "mean_excl_first_call": 2.93
+ },
+ "ms_C_plus_H": {
+  "mean": 0.233,
+  "min": 0.203,
+  "max": 0.473,
+  "mean_excl_first_call": 0.233
+ },
+ "ms_total": {
+  "mean": 52.423,
+  "min": 51.689,
+  "max": 55.864,
+  "mean_excl_first_call": 52.421
+ },
+ "summary_line": "S,2000,345794,345798,2142471,492588,29308,2332"
+}

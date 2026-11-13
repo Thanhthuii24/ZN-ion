@@ -259,3 +259,10 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - C glue host test vs float64 Python: max rel diff 6.7e-8 / 8.6e-8 / 8.1e-8 (2021/42/2024).
 - Build split 2021: Boot 19.9 KB of 64 KB internal flash; Appli 7.61 MB in XSPI2 (val curves 6.87 MB binary, weights 287.6 + 13.0 + 49.0 KB), RAM 54.5 KB. Host reference val MAPE 0.332331.
 - Next: B on the board (waiting for the user's go).
+
+## Phase 3 B (board) — NUCLEO-H7S3L8, 600 MHz, all 3 splits (2026-11-13)
+
+- Variant: E fp32 + F INT8 + H fp32. Appli in XSPI2 (7.61 MB: 6.87 MB val data, ~350 KB weights), Boot 19.9 KB internal, no option-byte change.
+- First run with weights read from XSPI2: E 1379 ms per cycle (fp32 conv weights 49 KB per residual conv > 32 KB D-cache, re-read per output position). Fix: copy E/H weights XSPI2 -> SRAM at boot (stai_*_set_weights, numerically identical); RAM 399 KB / 455 KB.
+- Board vs host reference (2000 val prefixes per split): 2021 0.332331 / 0.332331 (max |Δ| 0.0003 cycles); 42 0.345794 / 0.345798 (2.1 cycles); 2024 0.317142 / 0.317145 (4.0 cycles).
+- 3-split: board MAPE 0.3318 ± 0.0143 vs fp32 0.3320 ± 0.0154; Acc@15 0.3167 ± 0.0673. Latency per new cycle 52.47 ± 0.05 ms (E ≈ 49.3, F ≈ 2.94, C+H ≈ 0.25; min/max 51.6/55.9 ms). E is slower than v5 because it stays fp32 (INT8 E fails Δ ≤ 0.001).

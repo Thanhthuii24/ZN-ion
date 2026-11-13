@@ -22,3 +22,4 @@ target_include_directories(STM32_Drivers PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/../Drivers/STM32H7RSxx_HAL_Driver/Inc
     ${CMAKE_CURRENT_LIST_DIR}/../Drivers/BSP/Components/mx25uw25645g
     ${CMAKE_CURRENT_LIST_DIR}/../Drivers/BSP/STM32H7RSxx_Nucleo)
+target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE $<$<BOOL:${ZN_WEIGHTS_IN_SRAM}>:ZN_WEIGHTS_IN_SRAM>)

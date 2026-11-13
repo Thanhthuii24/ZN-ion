@@ -16,7 +16,15 @@
 #include "fade.h"
 #include "head.h"
 #include "zn_params.h"
+#ifndef ZN_WEIGHTS_IN_XSPI
+#define ZN_WEIGHTS_IN_SRAM   /* default: copy E/H weights to SRAM (define ZN_WEIGHTS_IN_XSPI to run them from XSPI2) */
+#endif
 #include "zn_cpart.c"
+#ifdef ZN_WEIGHTS_IN_SRAM
+#define ZN_WEIGHTS_WHERE "E+H in SRAM (copied from XSPI2)"
+#else
+#define ZN_WEIGHTS_WHERE "XSPI2"
+#endif
 
 STAI_NETWORK_CONTEXT_DECLARE(net_enc, STAI_ENC_CONTEXT_SIZE)
 STAI_NETWORK_CONTEXT_DECLARE(net_fade, STAI_FADE_CONTEXT_SIZE)
@@ -39,6 +47,17 @@ static int ai_init(void)
   a[0] = (stai_ptr)act_enc;  stai_enc_set_activations(net_enc, a, 1);
   a[0] = (stai_ptr)act_fade; stai_fade_set_activations(net_fade, a, 1);
   a[0] = (stai_ptr)act_head; stai_head_set_activations(net_head, a, 1);
+#ifdef ZN_WEIGHTS_IN_SRAM
+  /* The fp32 conv weights (E 288 KB, H 49 KB) exceed the 32 KB D-cache: run from XSPI2 every output position re-reads
+   * them from external flash (measured 1.38 s per E call). Copy them once into AXI SRAM (numerically identical). */
+  {
+    static uint8_t w_enc[STAI_ENC_WEIGHTS_SIZE_BYTES] __attribute__((aligned(32)));
+    static uint8_t w_head[STAI_HEAD_WEIGHTS_SIZE_BYTES] __attribute__((aligned(32)));
+    stai_ptr w[1]; stai_size nw;
+    stai_enc_get_weights(net_enc, w, &nw);   memcpy(w_enc, w[0], sizeof(w_enc));   w[0] = (stai_ptr)w_enc;   stai_enc_set_weights(net_enc, w, 1);
+    stai_head_get_weights(net_head, w, &nw); memcpy(w_head, w[0], sizeof(w_head)); w[0] = (stai_ptr)w_head; stai_head_set_weights(net_head, w, 1);
+  }
+#endif
   stai_enc_get_inputs(net_enc, in_enc, &n);    stai_enc_get_outputs(net_enc, out_enc, &n);
   stai_fade_get_inputs(net_fade, in_fade, &n); stai_fade_get_outputs(net_fade, out_fade, &n);
   stai_head_get_inputs(net_head, in_head, &n); stai_head_get_outputs(net_head, out_head, &n);
@@ -49,7 +68,7 @@ void zn_app_run(void)
 {
   CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk; DWT->CYCCNT = 0; DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
   if (ai_init()) { printf("E,ai_init failed\r\n"); return; }
-  printf("I,%s streaming E->F->C->H, SystemCoreClock=%lu\r\n", ZN_TAG, (unsigned long)SystemCoreClock);
+  printf("I,%s streaming E->F->C->H, weights=%s, SystemCoreClock=%lu\r\n", ZN_TAG, ZN_WEIGHTS_WHERE, (unsigned long)SystemCoreClock);
   double ape_b = 0, ape_r = 0, maxd = 0, cyc_e = 0, cyc_f = 0, cyc_h = 0; int np = 0;
   for (int c = 0; c < zn_ncells; c++) {
     const zn_cell_t *cell = &zn_cells[c];

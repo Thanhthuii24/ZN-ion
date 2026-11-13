@@ -11,7 +11,7 @@
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
   "current_experiment": null,
   "next_experiment_id": "ZN-E022",
-  "next_action": "Phase 3 B on board: flash Appli to XSPI2, reset, capture UART for splits 2021/42/2024 \u2014 wait for the user go",
+  "next_action": "Report Phase-3 board results to the user; optional next steps need the user go (push only on the user word)",
   "active_architecture_parent": "ZN-E010",
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -348,7 +348,7 @@
       "weights exceed the 64 KB internal flash even at int8 -> XSPI2 external flash (external loader) or compression",
       "full-window activations exceed 620 KB SRAM -> per-cycle streaming export required"
     ],
-    "status": "A done; waiting for the user go on B (board)",
+    "status": "B done on all 3 splits; next optional: P0c variant on board, energy (IDD), or pruning to fit internal flash",
     "P0": {
       "ZN-E010": "max rel EOL diff 3.3e-6, ONNX val MAPE 0.33254",
       "ZN-E018": "max rel EOL diff 5.1e-6, ONNX val MAPE 0.32539",
@@ -370,6 +370,23 @@
     "A": {
       "done": "export E013/E014; INT8 mixed precision (E fp32 + F INT8 + H fp32, all splits pass); stedgeai generate; firmware (template fw_base + v5 cmake pattern); C glue host test 6.7e-8..8.6e-8; build split 2021 OK (Boot 19.9 KB internal, Appli 7.61 MB XSPI2 incl. 6.87 MB val data, RAM 54.5 KB); Gemini APPROVE",
       "next": "B (board): run_split.sh flash <split> per split \u2014 needs the user go"
+    },
+    "B": {
+      "board": "NUCLEO-H7S3L8, 600 MHz",
+      "variant": "E fp32 + F INT8 + H fp32; E/H weights copied XSPI2 -> SRAM at boot",
+      "per_split_board_mape": {
+        "2021": 0.332331,
+        "42": 0.345794,
+        "2024": 0.317142
+      },
+      "three_split": "board MAPE 0.3318 \u00b1 0.0143 vs fp32 0.3320 \u00b1 0.0154; Acc@15 0.3167 \u00b1 0.0673",
+      "latency_ms_per_new_cycle": "52.47 \u00b1 0.05 (E 49.2-49.3, F 2.93-2.96, C+H 0.23-0.28); first XSPI-weights run: E 1379 ms",
+      "memory": "Boot 19.9 KB internal flash; Appli 7.61 MB XSPI2 (6.87 MB val data, weights ~350 KB); RAM 399 KB / 455 KB",
+      "max_abs_board_minus_host_ref_cycles": {
+        "2021": 0.0003,
+        "42": 2.14,
+        "2024": 3.99
+      }
     }
   }
 }
