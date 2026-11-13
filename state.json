@@ -11,7 +11,7 @@
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
   "current_experiment": null,
   "next_experiment_id": "ZN-E022",
-  "next_action": "User installs STM32CubeProgrammer and the H7RS pack in AI Studio; then lead lists P3 board steps and waits for go (P2 INT8 host can run meanwhile on request)",
+  "next_action": "Phase 3 B on board: flash Appli to XSPI2, reset, capture UART for splits 2021/42/2024 \u2014 wait for the user go",
   "active_architecture_parent": "ZN-E010",
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -348,7 +348,7 @@
       "weights exceed the 64 KB internal flash even at int8 -> XSPI2 external flash (external loader) or compression",
       "full-window activations exceed 620 KB SRAM -> per-cycle streaming export required"
     ],
-    "status": "A step 2 done (deploy variant chosen); A steps 3-6 (generate, firmware, C-part test, build, review) in progress",
+    "status": "A done; waiting for the user go on B (board)",
     "P0": {
       "ZN-E010": "max rel EOL diff 3.3e-6, ONNX val MAPE 0.33254",
       "ZN-E018": "max rel EOL diff 5.1e-6, ONNX val MAPE 0.32539",
@@ -366,6 +366,10 @@
       "FH_int8": "fails 2021/42",
       "H_int8_only": "fails 2024 (+0.0043)",
       "chosen": "E fp32 + F INT8 + H fp32: delta -0.0002 / -0.0013 / +0.0009 (all pass); weights 287.6 + 13.0 + 49.0 = 349.6 KB (external flash)"
+    },
+    "A": {
+      "done": "export E013/E014; INT8 mixed precision (E fp32 + F INT8 + H fp32, all splits pass); stedgeai generate; firmware (template fw_base + v5 cmake pattern); C glue host test 6.7e-8..8.6e-8; build split 2021 OK (Boot 19.9 KB internal, Appli 7.61 MB XSPI2 incl. 6.87 MB val data, RAM 54.5 KB); Gemini APPROVE",
+      "next": "B (board): run_split.sh flash <split> per split \u2014 needs the user go"
     }
   }
 }

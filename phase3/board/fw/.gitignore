@@ -1,0 +1,5 @@
+proj/build/
+proj/Appli/build/
+proj/Boot/build/
+ws_*/
+zn_data.c

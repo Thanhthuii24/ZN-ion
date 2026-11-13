@@ -251,3 +251,11 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - Static QDQ, per-channel symmetric INT8 weights, train-cell calibration (const_to_init as v5). ST C-model chains on host with float32 I/O.
 - All INT8 (E/F/H): Δ MAPE +0.0086 / +0.0148 / +0.0011 (2021/42/2024) — FAIL. INT8 E only: fails 2024 (+0.0047). INT8 F+H: fails 2021/42. INT8 H only: fails 2024 (+0.0043).
 - Chosen: **E fp32 + F INT8 + H fp32**: Δ −0.0002 / −0.0013 / +0.0009 — PASS on every split. Weights 287.6 + 13.0 + 49.0 ≈ 350 KB -> XSPI2 external flash. The conv encoder E is the precision-sensitive part.
+
+## Phase 3 A (host) — firmware build for NUCLEO-H7S3L8 (done, Gemini APPROVE)
+
+- Deploy variant: E fp32 + F INT8 + H fp32 (passes Δ ≤ 0.001 on all splits). stedgeai generate enc/fade/head.
+- Firmware from the clean AI Studio template (~/Desktop/naion_board/fw_base) + v5 cmake pattern; zn_app.c (E -> F -> C glue -> H, DWT, integer prints), zn_cpart.c, gen_fw_data.py (val cells only).
+- C glue host test vs float64 Python: max rel diff 6.7e-8 / 8.6e-8 / 8.1e-8 (2021/42/2024).
+- Build split 2021: Boot 19.9 KB of 64 KB internal flash; Appli 7.61 MB in XSPI2 (val curves 6.87 MB binary, weights 287.6 + 13.0 + 49.0 KB), RAM 54.5 KB. Host reference val MAPE 0.332331.
+- Next: B on the board (waiting for the user's go).
