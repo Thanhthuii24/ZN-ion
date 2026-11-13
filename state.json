@@ -2,16 +2,16 @@
   "benchmark_round": "BATTERYLIFE-ZN-COIN-R1",
   "workflow_version": "three-phase-relative-huber-v1",
   "research_mode": "loss_search_physics",
-  "phase": "phase2_loss",
-  "phase_status": "phase2_start",
-  "workflow_status": "awaiting_user_decision",
+  "phase": "phase3_tinyml",
+  "phase_status": "phase3_start",
+  "workflow_status": "awaiting_user_go",
   "protocol_status": "locked",
   "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
   "run_approved": true,
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
   "current_experiment": null,
   "next_experiment_id": "ZN-E022",
-  "next_action": "User decision: close Phase 2 (ZN-E010 frozen, TARGET_NOT_MET) and unlock Phase 3, or continue Phase 2",
+  "next_action": "Phase 3 step P0 (host): ST-compatible ONNX export + streaming split + stedgeai analyze \u2014 wait for the user go",
   "active_architecture_parent": "ZN-E010",
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -121,12 +121,15 @@
       "result": "TARGET_NOT_MET"
     },
     "phase2_loss": {
-      "status": "ACTIVE",
-      "unlocked": "2026-11-09"
+      "status": "CLOSED",
+      "closed": "2026-11-13",
+      "result": "TARGET_NOT_MET; no loss beat ZN-E010; P0/P0c physics-consistency results"
     },
     "phase3_tinyml": {
-      "status": "LOCKED",
-      "requires": "Phase 2 closed (A3)"
+      "status": "ACTIVE",
+      "unlocked": "2026-11-13",
+      "board": "NUCLEO-H7S3L8 (MB1737, UM3276): STM32H7S3L8, Cortex-M7 600 MHz, 64 KB internal flash, 620 KB SRAM, 32 MB XSPI2 NOR flash at 0x70000000",
+      "rule": "list steps and wait for the user's go before every board step; never use the test split on the board"
     }
   },
   "budget": {
@@ -214,6 +217,12 @@
       "date": "2026-11-13",
       "by": "user",
       "summary": "User asked to try new physics losses in Phase 2 instead of closing it. Registered P0u capacity-improvement monotonicity (loss.md \u00a74.6)."
+    },
+    {
+      "id": "A8-ZN",
+      "date": "2026-11-13",
+      "by": "user",
+      "summary": "User closes Phase 2 and unlocks Phase 3. Accuracy model: ZN-E010 (frozen). Physics-informed companion: ZN-E018 config (ZN-E010 + P0c). Board: NUCLEO-H7S3L8 (MB1737, UM3276)."
     }
   ],
   "decision_metrics": {
@@ -323,5 +332,22 @@
       "status": "NOT_CONFIRMED (2024 violation cut < 50%)"
     },
     "after_E021": "7 loss runs, 0 KEEP. Label-free physics cuts violations (P0 -70%, P0c -63%) at about equal accuracy; upward P0u conflicts (cos < 0). Shared limit is observability: within cycles 1-100, short-life break-in cells (e.g. 441-1 EOL 219, SOH_100 1.22) look like long-life cells (437-2 EOL 1281, SOH_100 1.045); failure happens after cycle 100. Reviewer recommends closing Phase 2 with ZN-E010 and unlocking Phase 3."
+  },
+  "phase3": {
+    "models": {
+      "accuracy": "ZN-E010",
+      "physics_informed": "ZN-E018 (ZN-E010 + P0c)"
+    },
+    "footprint": {
+      "params": 98113,
+      "weights_fp32_kb": 383.3,
+      "weights_int8_kb": 95.8,
+      "largest_activation_full_window": "480,000 values (~1.9 MB fp32) in cycle_stem; per-cycle streaming ~4,800 values (~19 KB)"
+    },
+    "implications": [
+      "weights exceed the 64 KB internal flash even at int8 -> XSPI2 external flash (external loader) or compression",
+      "full-window activations exceed 620 KB SRAM -> per-cycle streaming export required"
+    ],
+    "status": "plan written; waiting for the user's go on step P0"
   }
 }
