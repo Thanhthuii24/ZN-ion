@@ -266,3 +266,10 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - First run with weights read from XSPI2: E 1379 ms per cycle (fp32 conv weights 49 KB per residual conv > 32 KB D-cache, re-read per output position). Fix: copy E/H weights XSPI2 -> SRAM at boot (stai_*_set_weights, numerically identical); RAM 399 KB / 455 KB.
 - Board vs host reference (2000 val prefixes per split): 2021 0.332331 / 0.332331 (max |Δ| 0.0003 cycles); 42 0.345794 / 0.345798 (2.1 cycles); 2024 0.317142 / 0.317145 (4.0 cycles).
 - 3-split: board MAPE 0.3318 ± 0.0143 vs fp32 0.3320 ± 0.0154; Acc@15 0.3167 ± 0.0673. Latency per new cycle 52.47 ± 0.05 ms (E ≈ 49.3, F ≈ 2.94, C+H ≈ 0.25; min/max 51.6/55.9 ms). E is slower than v5 because it stays fp32 (INT8 E fails Δ ≤ 0.001).
+
+## Phase 3 B (board) — P0c physics-informed variant (ZN-E018/E019/E020), all fp32
+
+- F INT8 fails split 2021 (+0.0013) for P0c, so all parts fp32 (Δ = 0 by construction).
+- Board vs host (2000 val prefixes per split): 2021 0.325387 / 0.325387; 42 0.345103 / 0.345103; 2024 0.346401 / 0.346401; max |Δ EOL| 0.0007–0.0012 cycles.
+- 3-split: board MAPE 0.3390 ± 0.0118 (= fp32), Acc@15 0.2958 ± 0.0665. Latency 56.98 ± 0.01 ms per new cycle (E 48.5, F fp32 8.2 — its 49 KB weights stay in XSPI2 and exceed the D-cache — C+H 0.24). RAM 397 KB.
+- Comparison: ZN-E010 config on board 0.3318 ± 0.0143 / Acc@15 0.3167 / 52.5 ms.

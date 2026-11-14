@@ -11,7 +11,7 @@
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
   "current_experiment": null,
   "next_experiment_id": "ZN-E022",
-  "next_action": "User go: flash P0c (fp32) on board for 3 splits; then pruning of encoder E (Kaggle)",
+  "next_action": "Present pruning plan of encoder E (target <= 64 KB internal flash); optional datasheet energy estimate",
   "active_architecture_parent": "ZN-E010",
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -348,7 +348,7 @@
       "weights exceed the 64 KB internal flash even at int8 -> XSPI2 external flash (external loader) or compression",
       "full-window activations exceed 620 KB SRAM -> per-cycle streaming export required"
     ],
-    "status": "B done on all 3 splits; next optional: P0c variant on board, energy (IDD), or pruning to fit internal flash",
+    "status": "B done for ZN-E010 config and P0c config; next: pruning plan for encoder E (needs user go)",
     "P0": {
       "ZN-E010": "max rel EOL diff 3.3e-6, ONNX val MAPE 0.33254",
       "ZN-E018": "max rel EOL diff 5.1e-6, ONNX val MAPE 0.32539",
@@ -389,6 +389,11 @@
       }
     },
     "energy": "not measured: user has no ammeter / STLINK-V3PWR (2026-11-14); optional datasheet-based estimate only, clearly labelled",
-    "P0c_board": "host prep done (E018/E019/E020 exported; F INT8 fails 2021 +0.0013 -> all fp32 for P0c); build 2021 OK (Appli 7.64 MB, RAM 397 KB); waiting for the user go to flash"
+    "P0c_board": {
+      "variant": "all fp32 (ZN-E018/E019/E020)",
+      "three_split": "board MAPE 0.3390 \u00b1 0.0118 = fp32 0.3390 \u00b1 0.0118; Acc@15 0.2958 \u00b1 0.0665",
+      "latency_ms": "56.98 \u00b1 0.01 (E 48.5, F fp32 8.2 from XSPI2, C+H 0.24)",
+      "max_abs_board_minus_ref_cycles": "0.0007-0.0012"
+    }
   }
 }
