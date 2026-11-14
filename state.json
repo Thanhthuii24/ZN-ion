@@ -11,7 +11,7 @@
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
   "current_experiment": null,
   "next_experiment_id": "ZN-E022",
-  "next_action": "Report Phase-3 board results to the user; optional next steps need the user go (push only on the user word)",
+  "next_action": "User go: flash P0c (fp32) on board for 3 splits; then pruning of encoder E (Kaggle)",
   "active_architecture_parent": "ZN-E010",
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -387,6 +387,8 @@
         "42": 2.14,
         "2024": 3.99
       }
-    }
+    },
+    "energy": "not measured: user has no ammeter / STLINK-V3PWR (2026-11-14); optional datasheet-based estimate only, clearly labelled",
+    "P0c_board": "host prep done (E018/E019/E020 exported; F INT8 fails 2021 +0.0013 -> all fp32 for P0c); build 2021 OK (Appli 7.64 MB, RAM 397 KB); waiting for the user go to flash"
   }
 }
