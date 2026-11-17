@@ -1,0 +1,68 @@
+{
+  "id": "ZN-E024",
+  "phase": "phase3_tinyml",
+  "training_stage": "confirmation",
+  "type": "compression",
+  "model": {
+    "display_name": "AnchoredFade-ResConv-GELU-S2 (compressed)",
+    "variant": "anchored_fade_resconv_masked_summary",
+    "d_model": 40,
+    "residual_layers": 1,
+    "d_ff": 64,
+    "mlp_layers": 0,
+    "summary_mode": "mean_last_delta",
+    "dropout": 0.1,
+    "activation": "gelu",
+    "fade_hidden": 40,
+    "stem_widths": [
+      20,
+      40
+    ]
+  },
+  "reference_experiment": "ZN-E023",
+  "observation": "ZN-E023 (S2, 28,921 params) KEEP on split 2021: MAPE 0.3383, Acc@15 0.3750, RMSE 433.3, gradient HEALTHY.",
+  "primary_hypothesis": "The S2 compressed model keeps its accuracy on paper split 42 with a passing gradient gate.",
+  "question_inherited": "Does the S2 compression result hold on all paper splits?",
+  "unresolved_from_reference": "Split dependence of S2 on split 42.",
+  "why_this_experiment": "state.json split_protocol: confirm KEEP candidates on splits 42 and 2024 before deployment.",
+  "modification": "None vs ZN-E023: identical model and training; only BL_SPLIT=42.",
+  "changed_components": "Data split only (BL_SPLIT=42).",
+  "held_constant_components": "Architecture family (ResConv curve encoder + anchored fade encoder + masked summary + linear GELU head), GELU, objective, optimizer, data, split, seed, epoch rule.",
+  "controlled_variables": "Training seed 2021, A2-ZN epochs. Sole changed variable: split 42.",
+  "expected_evidence": "MAPE/Acc@15/RMSE vs ZN-E010 and ZN-E022; params (28,921 \u2248 28.2 KB INT8); gradient gate; 3-split confirmation and INT8/board check if kept.",
+  "rejection_condition": "Per-run disposition: VALID with gradient gate PASS -> KEEP (confirmation evidence); gate FAIL -> DISCARD; protocol/finite/completeness failure -> INVALID. Aggregate (after ZN-E025, over ZN-E023/E024/E025 = splits 2021/42/2024): S2 is CONFIRMED as the compressed Phase-3 model iff 3-split mean MAPE <= 0.352 (ZN-E010 3-split 0.332 + 0.020) AND mean Acc@15 >= 0.294 AND all three KEEP; then INT8 PTQ and the internal-flash board check follow.",
+  "minimum_evidence_requirements": "At least five complete epochs; finite MAPE, Acc@15, MAE, and RMSE from one checkpoint; sample and unique-cell counts for every domain; gradient, update, activation, prediction, mask, and compute diagnostics.",
+  "required_diagnostics": "Epoch learning curve; selected and minimum-MAPE epochs; cycle_stem, residual_blocks, fade_encoder, inter_summary and head gradients and updates; activation health; prediction spread and bias; prefix, domain and EOL errors; padding sensitivity; parameters, memory, time, throughput.",
+  "estimated_budget": {
+    "experiments": 1,
+    "training_seconds": 600
+  },
+  "training": {
+    "seed": 2021,
+    "batch_size": 128,
+    "max_epochs": 100,
+    "minimum_epochs": 5,
+    "patience": 5,
+    "learning_rate": 0.0005,
+    "scheduler": "none",
+    "target_transform": "standard",
+    "main_loss": "relative_huber",
+    "relative_huber_delta": 0.15,
+    "checkpoint_mape_tolerance": 0.005,
+    "physics_loss_weight": 0.0,
+    "extra_loss_weight": 0.0,
+    "prefix_consistency_weight": 0.0,
+    "diagnostic_interval_steps": 50,
+    "required_device": "cuda"
+  },
+  "split": "42",
+  "architecture_addendum": {
+    "responsible_stage": "Whole model (structured narrowing)",
+    "mechanism": "Structured compression (channel/depth reduction)",
+    "evidence": "64 KB internal-flash budget; INT8 of the full E fails accuracy",
+    "shapes": "[B,100,3,300] -> ResConv [B,100,64] (h_t) -> u_t=[h_t, h_t-h_1] [B,100,128] -> Linear 128->64, GELU, Linear 64->64, +h_t -> g_t [B,100,64] * mask -> masked summary [B,192] -> Linear [B,64] -> GELU -> Linear [B,1]",
+    "mask_path": "h_1 = cycle index 0 (always observed); g_t multiplied by mask; mean over mask==1, last at mask.sum()-1, delta last - first. tests/test_anchored_fade.py: padding invariance and cycle-1 dependence.",
+    "expected_evidence": "MAPE, RMSE, Acc@15, DB-MAPE (= MAPE) vs ZN-E005; EOL bands; gradient gate incl. fade_encoder"
+  },
+  "smoke_evidence": "Identical code and config to ZN-E023 and ZN-E022S; only the split changes."
+}

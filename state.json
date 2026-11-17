@@ -4,14 +4,14 @@
   "research_mode": "tinyml_compression",
   "phase": "phase3_tinyml",
   "phase_status": "phase3_start",
-  "workflow_status": "running_remote",
+  "workflow_status": "proposal_needed",
   "protocol_status": "locked",
   "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
   "run_approved": true,
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
-  "current_experiment": "ZN-E023",
-  "next_experiment_id": "ZN-E023",
-  "next_action": "ZN-E023 S2 compression (28,921 params)",
+  "current_experiment": null,
+  "next_experiment_id": "ZN-E024",
+  "next_action": "ZN-E024/E025 confirm S2 on splits 42/2024",
   "active_architecture_parent": "ZN-E010",
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -141,12 +141,12 @@
     },
     "counter": "optimizer_training_compute_seconds",
     "usage": {
-      "experiments": 23,
-      "training_seconds": 3643.62
+      "experiments": 24,
+      "training_seconds": 3705.8
     },
     "remaining": {
-      "experiments": 127,
-      "training_seconds": 246356.38
+      "experiments": 126,
+      "training_seconds": 246294.2
     },
     "exhausted": false,
     "status": "active"
@@ -396,7 +396,8 @@
       "max_abs_board_minus_ref_cycles": "0.0007-0.0012"
     },
     "compression": {
-      "ZN-E022 S1": "18,657 params ~18 KB INT8: MAPE 0.3526, Acc@15 0.2275 \u2014 DISCARD (trade-off point)"
+      "ZN-E022 S1": "18,657 params ~18 KB INT8: MAPE 0.3526, Acc@15 0.2275 \u2014 DISCARD (trade-off point)",
+      "ZN-E023 S2": "28,921 params ~28.2 KB INT8: MAPE 0.3383, Acc@15 0.3750, RMSE 433.3 \u2014 KEEP (split 2021)"
     }
   }
 }

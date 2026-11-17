@@ -280,3 +280,9 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - 18,657 params (≈ 18 KB INT8, 73 KB fp32) vs ZN-E010 98,113. RMSE 444.9; corr 0.27; <500 Acc@15 0.303 (ZN-E010 0.489).
 - Size-accuracy trade-off point: −81% params costs +0.020 MAPE and −0.139 Acc@15.
 - Next: ZN-E023 S2 at the ~28 KB INT8 ceiling (28,921 params). KD from ZN-E010 is an option that needs the user's approval (phase3_targets.md M5).
+
+## ZN-E023 — Phase 3 compression S2 (stem 20/40, d 40, 1 residual, fade 40), split 2021 — KEEP
+
+- Run: `VALID`. Decision: `KEEP`. 28,921 params (≈ 28.2 KB INT8, 113 KB fp32; 29% of ZN-E010).
+- MAPE 0.3383 (+0.006 vs ZN-E010), Acc@15 0.3750 (+0.009), RMSE 433.3; gradient HEALTHY; <500 Acc@15 0.500. Much better than S1 (0.3526 / 0.2275).
+- Next: confirm on splits 42 (ZN-E024) and 2024 (ZN-E025), then INT8 and the internal-flash board check.
