@@ -3,15 +3,15 @@
   "workflow_version": "three-phase-relative-huber-v1",
   "research_mode": "tinyml_compression",
   "phase": "phase3_tinyml",
-  "phase_status": "phase3_start",
-  "workflow_status": "phase3_host",
+  "phase_status": "all_phases_closed",
+  "workflow_status": "done",
   "protocol_status": "locked",
   "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
   "run_approved": true,
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
   "current_experiment": null,
   "next_experiment_id": "ZN-E026",
-  "next_action": "User decision: QAT for S2 INT8, or close Phase 3 (push + v6 summary)",
+  "next_action": "Project v6 closed; summary in v6_summary.md",
   "active_architecture_parent": "ZN-E010",
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -126,10 +126,10 @@
       "result": "TARGET_NOT_MET; no loss beat ZN-E010; P0/P0c physics-consistency results"
     },
     "phase3_tinyml": {
-      "status": "ACTIVE",
-      "unlocked": "2026-11-13",
-      "board": "NUCLEO-H7S3L8 (MB1737, UM3276): STM32H7S3L8, Cortex-M7 600 MHz, 64 KB internal flash, 620 KB SRAM, 32 MB XSPI2 NOR flash at 0x70000000",
-      "rule": "list steps and wait for the user's go before every board step; never use the test split on the board"
+      "status": "CLOSED",
+      "closed": "2026-11-17",
+      "board": "NUCLEO-H7S3L8 (MB1737)",
+      "result": "S2 compressed model on board: MAPE 0.3323 \u00b1 0.0054, 20.7 ms per new cycle, RAM 132 KB; internal-flash-only deployment infeasible with the ST runtime"
     }
   },
   "budget": {
@@ -223,6 +223,12 @@
       "date": "2026-11-13",
       "by": "user",
       "summary": "User closes Phase 2 and unlocks Phase 3. Accuracy model: ZN-E010 (frozen). Physics-informed companion: ZN-E018 config (ZN-E010 + P0c). Board: NUCLEO-H7S3L8 (MB1737, UM3276)."
+    },
+    {
+      "id": "A9-ZN",
+      "date": "2026-11-17",
+      "by": "user",
+      "summary": "User closes Phase 3. Deployed on NUCLEO-H7S3L8: ZN-E010 (accuracy), P0c (physics-informed) and S2 (compressed, recommended for the board). QAT not run."
     }
   ],
   "decision_metrics": {
