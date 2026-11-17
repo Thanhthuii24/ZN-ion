@@ -93,7 +93,7 @@
     }
   },
   "active_candidates": [],
-  "test_status": "unused",
+  "test_status": "used",
   "prior_run_results_allowed": false,
   "phase1_stopping": {
     "minimum_valid_architecture_experiments": 20,
@@ -229,6 +229,12 @@
       "date": "2026-11-17",
       "by": "user",
       "summary": "User closes Phase 3. Deployed on NUCLEO-H7S3L8: ZN-E010 (accuracy), P0c (physics-informed) and S2 (compressed, recommended for the board). QAT not run."
+    },
+    {
+      "id": "A10-ZN",
+      "date": "2026-11-17",
+      "by": "user",
+      "summary": "User authorizes ONE final-test evaluation of the three frozen model sets (ZN-E010 config, P0c, S2) on the test split of all three paper splits; saved checkpoints, no retraining or selection on test."
     }
   ],
   "decision_metrics": {
@@ -250,7 +256,7 @@
     "reporter": "gemini-4-argon-high",
     "guide": "multiagent.md"
   },
-  "test_scope": "unused",
+  "test_scope": "one evaluation of ZN-E010/E013/E014, ZN-E018/E019/E020, ZN-E023/E024/E025",
   "split_protocol": {
     "env": "BL_SPLIT",
     "splits": [
@@ -425,6 +431,47 @@
       "latency_ms": "20.74 \u00b1 0.06 (E \u2248 17.3, F \u2248 3.3, C+H \u2248 0.13; min/max 20.1/23.2)",
       "RAM_KB": 131.7,
       "max_abs_board_minus_ref_cycles": "0.0012-0.0017"
+    }
+  },
+  "final_test": {
+    "date": "2026-11-17",
+    "authorization": "A10-ZN",
+    "results": {
+      "ZN-E010 AnchoredFade-ResConv-GELU": {
+        "mape": "0.3723 \u00b1 0.0423",
+        "acc15": "0.3328 \u00b1 0.0757",
+        "rmse": "359.6 \u00b1 12.3",
+        "per_split_mape": [
+          0.4194,
+          0.3598,
+          0.3377
+        ]
+      },
+      "P0c physics-informed": {
+        "mape": "0.3717 \u00b1 0.0391",
+        "acc15": "0.2681 \u00b1 0.0910",
+        "rmse": "383.6 \u00b1 38.0",
+        "per_split_mape": [
+          0.4125,
+          0.3344,
+          0.3681
+        ]
+      },
+      "S2 compressed": {
+        "mape": "0.4226 \u00b1 0.0692",
+        "acc15": "0.3480 \u00b1 0.0393",
+        "rmse": "358.1 \u00b1 27.4",
+        "per_split_mape": [
+          0.4205,
+          0.4928,
+          0.3545
+        ]
+      }
+    },
+    "file": "final_test/final_test_results.json",
+    "paper": {
+      "CPTransformer": "0.515 \u00b1 0.067",
+      "CPMLP": "0.558 \u00b1 0.034 / Acc@15 0.297 \u00b1 0.084"
     }
   }
 }

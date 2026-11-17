@@ -303,3 +303,9 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - Board vs host (2000 val prefixes per split): identical MAPE 0.338255 / 0.327626 / 0.330995; max |Δ EOL| 0.0012–0.0017 cycles.
 - 3-split: board MAPE 0.3323 ± 0.0054 (= fp32), Acc@15 0.3105 ± 0.0882. Latency 20.74 ± 0.06 ms per new cycle (E ≈ 17.3, F ≈ 3.3, C+H ≈ 0.13; min 20.1, max 23.2). RAM 131.7 KB.
 - vs ZN-E010 on board: 52.5 ms -> 20.7 ms (2.5× faster), RAM 399 -> 132 KB, same 3-split MAPE (0.332).
+
+## Final test (one evaluation, user authorization A10-ZN, 2026-11-17)
+
+- Saved checkpoints, no retraining or selection on test; test split of each paper split (19–20 cells, 1,900–2,000 prefixes).
+- ZN-E010 config (E010/E013/E014): test MAPE 0.4194 / 0.3598 / 0.3377. P0c (E018/E019/E020): 0.4125 / 0.3344 / 0.3681. S2 (E023/E024/E025): 0.4205 / 0.4928 / 0.3545.
+- 3-split means and Acc@15 / RMSE in final_test/final_test_summary.json. Test is clearly worse than val (ZN-E010 val 0.332): the 20-cell val split over-estimated performance. test_status = used.
