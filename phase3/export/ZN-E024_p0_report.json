@@ -1,0 +1,61 @@
+{
+ "experiment": "ZN-E024",
+ "split": "42",
+ "onnx": {
+  "E": "phase3/export/ZN-E024_E.onnx",
+  "F": "phase3/export/ZN-E024_F.onnx",
+  "H": "phase3/export/ZN-E024_H.onnx"
+ },
+ "onnx_bytes": {
+  "E": 86500,
+  "F": 22175,
+  "H": 21411
+ },
+ "ops": {
+  "E": [
+   "Add",
+   "Constant",
+   "Conv",
+   "Div",
+   "Erf",
+   "Flatten",
+   "GlobalAveragePool",
+   "InstanceNormalization",
+   "Mul",
+   "Relu",
+   "Reshape"
+  ],
+  "F": [
+   "Add",
+   "Concat",
+   "Constant",
+   "Div",
+   "Erf",
+   "Gemm",
+   "Mul",
+   "Sub"
+  ],
+  "H": [
+   "Add",
+   "Constant",
+   "Div",
+   "Erf",
+   "Gemm",
+   "Mul"
+  ]
+ },
+ "banned_ops_found": {
+  "E": [],
+  "F": [],
+  "H": []
+ },
+ "val_prefixes": 2000,
+ "max_rel_eol_diff": 5.410296125774039e-06,
+ "mean_rel_eol_diff": 5.335660944183473e-07,
+ "pass_1e-4": true,
+ "onnx_pipeline_val_mape": 0.327625971434543,
+ "params": 28921,
+ "label_mu": 410.8333333333333,
+ "label_s": 407.78667489537014,
+ "seconds": 23.3
+}

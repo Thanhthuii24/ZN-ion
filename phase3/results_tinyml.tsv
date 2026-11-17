@@ -31,3 +31,11 @@ B-board	ZN-E014	2024	E fp32 + F INT8 + H fp32	E+H weights copied to SRAM at boot
 B-board-P0c	ZN-E018	2021	E fp32 + F fp32 + H fp32 (P0c; F INT8 fails 2021 +0.0013)	E+H weights in SRAM, F in XSPI2	0.325387	0.325387	0.325387	+0.000000	7.00e-04	0.3185	48.507/47.691/50.249	8.23	0.239	56.975/56.122/59.203	397.5	7.64	600 MHz
 B-board-P0c	ZN-E019	42	E fp32 + F fp32 + H fp32 (P0c; F INT8 fails 2021 +0.0013)	E+H weights in SRAM, F in XSPI2	0.345103	0.345103	0.345103	+0.000000	7.00e-04	0.221	48.536/47.761/50.78	8.221	0.232	56.99/56.207/59.757	397.5	7.64	600 MHz
 B-board-P0c	ZN-E020	2024	E fp32 + F fp32 + H fp32 (P0c; F INT8 fails 2021 +0.0013)	E+H weights in SRAM, F in XSPI2	0.346401	0.346401	0.346401	-0.000000	1.20e-03	0.348	48.494/47.884/50.529	8.226	0.251	56.97/56.309/59.489	397.5	7.64	600 MHz
+step	run	split	variant	val_mape_fp32_chain	val_mape_st_c_chain	delta	pass_0.001	weights_KB(E/F/H)	note
+P2-host-S2	ZN-E023	2021	S2 all INT8	0.338255	0.342108	+0.003854	False	20.4/5.3/5.2	
+P2-host-S2	ZN-E023	2021	S2 INT8 F,H / fp32 E	0.338255	0.337786	-0.000469	True	75.7/5.3/5.2	
+P2-host-S2	ZN-E024	42	S2 all INT8	0.327626	0.33494	+0.007314	False	20.4/5.3/5.2	
+P2-host-S2	ZN-E024	42	S2 INT8 F,H / fp32 E	0.327626	0.329104	+0.001478	False	75.7/5.3/5.2	
+P2-host-S2	ZN-E025	2024	S2 all INT8	0.330995	0.32813	-0.002866	True	20.4/5.3/5.2	
+P2-host-S2	ZN-E025	2024	S2 INT8 F,H / fp32 E	0.330995	0.321921	-0.009074	True	75.7/5.3/5.2	
+A-build-host-S2	ZN-E023	2021	S2 all INT8	-	-	-	-	20.4/5.3/5.2	code .text 46 KB + consts: 85.3 KB excl. val data > 64 KB internal flash (Boot 19.9 KB) -> internal-flash-only deployment infeasible with the ST runtime

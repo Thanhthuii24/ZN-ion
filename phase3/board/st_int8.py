@@ -106,10 +106,10 @@ def main():
     m_ort = mape(chain(q["E"], q["F"], q["H"], val_cells))
     # ---- ST C-model INT8 chain on host: E C-outputs -> F -> C glue -> H ----
     curves = np.concatenate([T[:k] for T, _, k in val_cells])
-    hC, wE = st_validate(mdl["E"], [curves], f"{eid}_E_{'fp' if 'E' in FP else 'int8'}"); hC = hC.reshape(-1, 64)
+    hC, wE = st_validate(mdl["E"], [curves], f"{eid}_E_{'fp' if 'E' in FP else 'int8'}"); hC = hC.reshape(len(curves), -1)
     off = np.cumsum([0] + [k for *_, k in val_cells])
     h1 = np.concatenate([np.repeat(hC[off[i]:off[i] + 1], k, 0) for i, (*_, k) in enumerate(val_cells)])
-    gC, wF = st_validate(mdl["F"], [hC, h1], f"{eid}_F_{'fp' if 'F' in FP else 'int8'}"); gC = gC.reshape(-1, 64)
+    gC, wF = st_validate(mdl["F"], [hC, h1], f"{eid}_F_{'fp' if 'F' in FP else 'int8'}"); gC = gC.reshape(len(curves), -1)
     S = np.concatenate([summaries(gC[off[i]:off[i] + k]) for i, (*_, k) in enumerate(val_cells)])
     yC, wH = st_validate(mdl["H"], [S], f"{eid}_H_{'fp' if 'H' in FP else 'int8'}")
     m_st = float(np.mean(np.abs(mu + s * yC.reshape(-1) - tgt) / tgt))

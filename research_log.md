@@ -291,3 +291,9 @@ Raw experiment artifacts remain unchanged for reproducibility.
 
 ## ZN-E025 — S2 confirmation, split 2024: VALID, KEEP. MAPE 0.3310, Acc@15 0.3465, RMSE 376.7.
 - **S2 3-split CONFIRMED** (E023/E024/E025): MAPE 0.3323 ± 0.0055, Acc@15 0.3105 ± 0.0882, RMSE 354 ± 93 with 28,921 params (29% of ZN-E010: 0.332 ± 0.016 / 0.324 ± 0.067 / 392 ± 38).
+
+## Phase 3 compression — S2 INT8 and internal-flash check (host)
+
+- S2 ONNX export parity 1.9e-6..5.4e-6 on all splits.
+- S2 all INT8 (weights 20.4 + 5.3 + 5.2 = 31 KB): Δ MAPE vs S2 fp32 +0.0039 / +0.0073 / −0.0029 (2021/42/2024) — fails 2021/42 at 0.001; 3-split ≈ 0.335. E fp32 + F/H INT8: −0.0005 / +0.0015 / −0.0091 — fails 42.
+- Internal-flash-only build (S2 all INT8): .text 46 KB (ST runtime + INT8 kernels) + consts → 85.3 KB without val data, above the 64 KB internal flash (Boot already 19.9 KB). With the ST runtime the model cannot run from internal flash alone; XSPI2 (with weights copied to SRAM) stays the deployment path.
