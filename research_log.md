@@ -273,3 +273,10 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - Board vs host (2000 val prefixes per split): 2021 0.325387 / 0.325387; 42 0.345103 / 0.345103; 2024 0.346401 / 0.346401; max |Δ EOL| 0.0007–0.0012 cycles.
 - 3-split: board MAPE 0.3390 ± 0.0118 (= fp32), Acc@15 0.2958 ± 0.0665. Latency 56.98 ± 0.01 ms per new cycle (E 48.5, F fp32 8.2 — its 49 KB weights stay in XSPI2 and exceed the D-cache — C+H 0.24). RAM 397 KB.
 - Comparison: ZN-E010 config on board 0.3318 ± 0.0143 / Acc@15 0.3167 / 52.5 ms.
+
+## ZN-E022 — Phase 3 compression S1 (stem 16/32, d 32, 1 residual, fade 32), split 2021
+
+- Run: `VALID`. Decision: `DISCARD` (MAPE 0.3526 misses 0.3525 by 0.00007; Acc@15 0.2275 < 0.3365). Gradient HEALTHY. Reviewer: Gemini.
+- 18,657 params (≈ 18 KB INT8, 73 KB fp32) vs ZN-E010 98,113. RMSE 444.9; corr 0.27; <500 Acc@15 0.303 (ZN-E010 0.489).
+- Size-accuracy trade-off point: −81% params costs +0.020 MAPE and −0.139 Acc@15.
+- Next: ZN-E023 S2 at the ~28 KB INT8 ceiling (28,921 params). KD from ZN-E010 is an option that needs the user's approval (phase3_targets.md M5).

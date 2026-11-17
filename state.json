@@ -4,14 +4,14 @@
   "research_mode": "tinyml_compression",
   "phase": "phase3_tinyml",
   "phase_status": "phase3_start",
-  "workflow_status": "running_remote",
+  "workflow_status": "proposal_needed",
   "protocol_status": "locked",
   "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
   "run_approved": true,
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
-  "current_experiment": "ZN-E022",
-  "next_experiment_id": "ZN-E022",
-  "next_action": "ZN-E022 S1 compressed model (split 2021)",
+  "current_experiment": null,
+  "next_experiment_id": "ZN-E023",
+  "next_action": "ZN-E023 S2 compression (28,921 params)",
   "active_architecture_parent": "ZN-E010",
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -141,12 +141,12 @@
     },
     "counter": "optimizer_training_compute_seconds",
     "usage": {
-      "experiments": 22,
-      "training_seconds": 3603.9
+      "experiments": 23,
+      "training_seconds": 3643.62
     },
     "remaining": {
-      "experiments": 128,
-      "training_seconds": 246396.1
+      "experiments": 127,
+      "training_seconds": 246356.38
     },
     "exhausted": false,
     "status": "active"
@@ -394,6 +394,9 @@
       "three_split": "board MAPE 0.3390 \u00b1 0.0118 = fp32 0.3390 \u00b1 0.0118; Acc@15 0.2958 \u00b1 0.0665",
       "latency_ms": "56.98 \u00b1 0.01 (E 48.5, F fp32 8.2 from XSPI2, C+H 0.24)",
       "max_abs_board_minus_ref_cycles": "0.0007-0.0012"
+    },
+    "compression": {
+      "ZN-E022 S1": "18,657 params ~18 KB INT8: MAPE 0.3526, Acc@15 0.2275 \u2014 DISCARD (trade-off point)"
     }
   }
 }
