@@ -1131,6 +1131,7 @@ class AnchoredFadeResConvMaskedSummary(ResidualConvMaskedSummary):
         activation="gelu",
         fade_hidden=64,
         fade_input="anchor",
+        stem_widths=(32, 64),
     ):
         if activation not in {"relu", "gelu"}:
             raise ValueError(
@@ -1143,6 +1144,11 @@ class AnchoredFadeResConvMaskedSummary(ResidualConvMaskedSummary):
         self.activation = activation
         self.fade_hidden = fade_hidden
         self.fade_input = fade_input
+        self.stem_widths = tuple(stem_widths)
+        if len(self.stem_widths) != 2:
+            raise ValueError(
+                f"stem_widths must be a tuple/list of 2 ints, got {stem_widths!r}"
+            )
         super().__init__(
             d_model=d_model,
             residual_layers=residual_layers,
@@ -1151,14 +1157,16 @@ class AnchoredFadeResConvMaskedSummary(ResidualConvMaskedSummary):
             summary_mode=summary_mode,
             dropout=dropout,
         )
-        if activation == "gelu":
+        if self.stem_widths != (32, 64) or activation == "gelu":
+            act_cls = nn.GELU if activation == "gelu" else nn.ReLU
+            w1, w2 = self.stem_widths
             self.cycle_stem = nn.Sequential(
-                nn.Conv1d(3, 32, kernel_size=7, stride=2, padding=3),
-                nn.GELU(),
-                nn.Conv1d(32, 64, kernel_size=5, stride=2, padding=2),
-                nn.GELU(),
-                nn.Conv1d(64, d_model, kernel_size=3, stride=2, padding=1),
-                nn.GELU(),
+                nn.Conv1d(3, w1, kernel_size=7, stride=2, padding=3),
+                act_cls(),
+                nn.Conv1d(w1, w2, kernel_size=5, stride=2, padding=2),
+                act_cls(),
+                nn.Conv1d(w2, d_model, kernel_size=3, stride=2, padding=1),
+                act_cls(),
             )
         act_module = nn.GELU() if activation == "gelu" else nn.ReLU()
         fade_in_dim = 3 * d_model if fade_input == "anchor_rate" else 2 * d_model
@@ -4357,6 +4365,7 @@ def build_model(config):
             activation=config.get("activation", "gelu"),
             fade_hidden=config.get("fade_hidden", 64),
             fade_input=config.get("fade_input", "anchor"),
+            stem_widths=tuple(config.get("stem_widths", (32, 64))),
         )
     if variant == "residual_conv_masked_summary":
 

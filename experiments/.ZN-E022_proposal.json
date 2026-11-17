@@ -1,0 +1,68 @@
+{
+  "id": "ZN-E022",
+  "phase": "phase3_tinyml",
+  "training_stage": "full_candidate",
+  "type": "compression",
+  "model": {
+    "display_name": "AnchoredFade-ResConv-GELU-S1 (compressed)",
+    "variant": "anchored_fade_resconv_masked_summary",
+    "d_model": 32,
+    "residual_layers": 1,
+    "d_ff": 64,
+    "mlp_layers": 0,
+    "summary_mode": "mean_last_delta",
+    "dropout": 0.1,
+    "activation": "gelu",
+    "fade_hidden": 32,
+    "stem_widths": [
+      16,
+      32
+    ]
+  },
+  "reference_experiment": "ZN-E010",
+  "observation": "Frozen ZN-E010 (98,113 params) runs on NUCLEO-H7S3L8 only from the XSPI2 external flash: weights 350 KB (E fp32 288 KB; INT8 E fails \u0394 <= 0.001), latency 52.5 ms per new cycle with weights copied to SRAM (1.38 s when read from XSPI2). Application code + ST runtime \u2248 33 KB, so a model fully inside the 64 KB internal flash needs <= ~28 KB of weights.",
+  "primary_hypothesis": "A structurally narrowed AnchoredFade-ResConv-GELU (stem 16/32 channels, d_model 32, 1 residual block, fade_hidden 32; 18,657 params \u2248 18 KB INT8) trained with the unchanged Phase-1 objective keeps most of ZN-E010's accuracy: split-2021 MAPE <= 0.3525 (ZN-E010 + 0.02) and Acc@15 >= 0.3365, making an internal-flash deployment possible.",
+  "question_inherited": "How much accuracy does the Zn-ion model lose when shrunk to fit the 64 KB internal flash?",
+  "unresolved_from_reference": "The accuracy-size trade-off of the frozen architecture family below 30 K parameters.",
+  "why_this_experiment": "Phase 3 compression (phase3_targets.md M1 structured narrowing; user go 2026-11-17). Same architecture family and objective as the frozen model, so the only change is width/depth.",
+  "modification": "Model width/depth only: cycle_stem 32/64 -> 16/32 channels, d_model 64 -> 32, residual blocks 2 -> 1, fade_hidden 64 -> 32 (T009 stem_widths). Training identical to ZN-E010 (Relative Huber 0.15, Adam 5e-4, batch 128, seed 2021, A2-ZN epochs).",
+  "changed_components": "Encoder/fade/head widths and residual depth (structured compression).",
+  "held_constant_components": "Architecture family (ResConv curve encoder + anchored fade encoder + masked summary + linear GELU head), GELU, objective, optimizer, data, split, seed, epoch rule.",
+  "controlled_variables": "Training seed 2021, split 2021, minimum 5 / maximum 100 epochs, patience 5 after epoch 5, diagnostics every 50 steps.",
+  "expected_evidence": "MAPE/Acc@15/RMSE vs ZN-E010; params; INT8/fp32 sizes; gradient gate; then 3-split confirmation and board check if kept.",
+  "rejection_condition": "Phase-3 compression rule: KEEP (deployable compressed candidate) iff split-2021 MAPE <= 0.3525 AND Acc@15 >= 0.3365 AND gradient gate PASS AND prediction SD >= 10% of target SD; then confirm on splits 42/2024 (3-split mean MAPE <= 0.352). Otherwise DISCARD and report as a size-accuracy trade-off point.",
+  "minimum_evidence_requirements": "At least five complete epochs; finite MAPE, Acc@15, MAE, and RMSE from one checkpoint; sample and unique-cell counts for every domain; gradient, update, activation, prediction, mask, and compute diagnostics.",
+  "required_diagnostics": "Epoch learning curve; selected and minimum-MAPE epochs; cycle_stem, residual_blocks, fade_encoder, inter_summary and head gradients and updates; activation health; prediction spread and bias; prefix, domain and EOL errors; padding sensitivity; parameters, memory, time, throughput.",
+  "estimated_budget": {
+    "experiments": 1,
+    "training_seconds": 600
+  },
+  "training": {
+    "seed": 2021,
+    "batch_size": 128,
+    "max_epochs": 100,
+    "minimum_epochs": 5,
+    "patience": 5,
+    "learning_rate": 0.0005,
+    "scheduler": "none",
+    "target_transform": "standard",
+    "main_loss": "relative_huber",
+    "relative_huber_delta": 0.15,
+    "checkpoint_mape_tolerance": 0.005,
+    "physics_loss_weight": 0.0,
+    "extra_loss_weight": 0.0,
+    "prefix_consistency_weight": 0.0,
+    "diagnostic_interval_steps": 50,
+    "required_device": "cuda"
+  },
+  "split": "2021",
+  "architecture_addendum": {
+    "responsible_stage": "Whole model (structured narrowing)",
+    "mechanism": "Structured compression (channel/depth reduction)",
+    "evidence": "64 KB internal-flash budget; INT8 of the full E fails accuracy",
+    "shapes": "[B,100,3,300] -> ResConv [B,100,64] (h_t) -> u_t=[h_t, h_t-h_1] [B,100,128] -> Linear 128->64, GELU, Linear 64->64, +h_t -> g_t [B,100,64] * mask -> masked summary [B,192] -> Linear [B,64] -> GELU -> Linear [B,1]",
+    "mask_path": "h_1 = cycle index 0 (always observed); g_t multiplied by mask; mean over mask==1, last at mask.sum()-1, delta last - first. tests/test_anchored_fade.py: padding invariance and cycle-1 dependence.",
+    "expected_evidence": "MAPE, RMSE, Acc@15, DB-MAPE (= MAPE) vs ZN-E005; EOL bands; gradient gate incl. fade_encoder"
+  },
+  "smoke_evidence": "pending CUDA smoke ZN-E022S"
+}
