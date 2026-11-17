@@ -286,3 +286,5 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - Run: `VALID`. Decision: `KEEP`. 28,921 params (≈ 28.2 KB INT8, 113 KB fp32; 29% of ZN-E010).
 - MAPE 0.3383 (+0.006 vs ZN-E010), Acc@15 0.3750 (+0.009), RMSE 433.3; gradient HEALTHY; <500 Acc@15 0.500. Much better than S1 (0.3526 / 0.2275).
 - Next: confirm on splits 42 (ZN-E024) and 2024 (ZN-E025), then INT8 and the internal-flash board check.
+
+## ZN-E024 — S2 confirmation, split 42: VALID, KEEP. MAPE 0.3276, Acc@15 0.2100, RMSE 251.2 (full ZN-E013: 0.3471 / 0.2470 / 350.3). Gradient HEALTHY.
