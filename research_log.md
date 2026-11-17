@@ -288,3 +288,6 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - Next: confirm on splits 42 (ZN-E024) and 2024 (ZN-E025), then INT8 and the internal-flash board check.
 
 ## ZN-E024 — S2 confirmation, split 42: VALID, KEEP. MAPE 0.3276, Acc@15 0.2100, RMSE 251.2 (full ZN-E013: 0.3471 / 0.2470 / 350.3). Gradient HEALTHY.
+
+## ZN-E025 — S2 confirmation, split 2024: VALID, KEEP. MAPE 0.3310, Acc@15 0.3465, RMSE 376.7.
+- **S2 3-split CONFIRMED** (E023/E024/E025): MAPE 0.3323 ± 0.0055, Acc@15 0.3105 ± 0.0882, RMSE 354 ± 93 with 28,921 params (29% of ZN-E010: 0.332 ± 0.016 / 0.324 ± 0.067 / 392 ± 38).

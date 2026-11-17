@@ -4,14 +4,14 @@
   "research_mode": "tinyml_compression",
   "phase": "phase3_tinyml",
   "phase_status": "phase3_start",
-  "workflow_status": "running_remote",
+  "workflow_status": "phase3_host",
   "protocol_status": "locked",
   "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
   "run_approved": true,
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
-  "current_experiment": "ZN-E025",
-  "next_experiment_id": "ZN-E025",
-  "next_action": "ZN-E024/E025 confirm S2 on splits 42/2024",
+  "current_experiment": null,
+  "next_experiment_id": "ZN-E026",
+  "next_action": "S2: ONNX export + INT8 PTQ on host; internal-flash firmware; then board (user go)",
   "active_architecture_parent": "ZN-E010",
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -141,12 +141,12 @@
     },
     "counter": "optimizer_training_compute_seconds",
     "usage": {
-      "experiments": 25,
-      "training_seconds": 3874.88
+      "experiments": 26,
+      "training_seconds": 3952.54
     },
     "remaining": {
-      "experiments": 125,
-      "training_seconds": 246125.12
+      "experiments": 124,
+      "training_seconds": 246047.46
     },
     "exhausted": false,
     "status": "active"
@@ -397,7 +397,19 @@
     },
     "compression": {
       "ZN-E022 S1": "18,657 params ~18 KB INT8: MAPE 0.3526, Acc@15 0.2275 \u2014 DISCARD (trade-off point)",
-      "ZN-E023 S2": "28,921 params ~28.2 KB INT8: MAPE 0.3383, Acc@15 0.3750, RMSE 433.3 \u2014 KEEP (split 2021)"
+      "ZN-E023 S2": "28,921 params ~28.2 KB INT8: MAPE 0.3383, Acc@15 0.3750, RMSE 433.3 \u2014 KEEP (split 2021)",
+      "S2_three_split": {
+        "runs": [
+          "ZN-E023",
+          "ZN-E024",
+          "ZN-E025"
+        ],
+        "params": 28921,
+        "mape": "0.3323\u00b10.0055",
+        "acc15": "0.3105\u00b10.0882",
+        "rmse": "354\u00b193",
+        "status": "CONFIRMED"
+      }
     }
   }
 }

@@ -19,7 +19,7 @@ import prepare  # noqa: E402
 
 ST = "/Applications/ST/STEdgeAI/4.1/Utilities/macarm/stedgeai"
 X = ROOT / "phase3" / "export"; B = ROOT / "phase3" / "board"
-RUNS = ({"2021": "ZN-E018", "42": "ZN-E019", "2024": "ZN-E020"} if os.environ.get("ZN_MODEL") == "p0c"
+RUNS = ({"2021": "ZN-E023", "42": "ZN-E024", "2024": "ZN-E025"} if os.environ.get("ZN_MODEL") == "s2" else {"2021": "ZN-E018", "42": "ZN-E019", "2024": "ZN-E020"} if os.environ.get("ZN_MODEL") == "p0c"
         else {"2021": "ZN-E010", "42": "ZN-E013", "2024": "ZN-E014"})
 
 
