@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "experiment_id": "ZN-E024",
+  "run_validity": "VALID",
+  "contract_answer": {
+    "question": "Does the S2 compressed model (AnchoredFade-ResConv-GELU-S2: stem 20/40, d_model 40, 1 residual block, fade_hidden 40; 28,921 parameters ≈ 28.24 KB INT8) keep its accuracy on paper split 42 with a passing gradient gate so its metrics enter the 3-split confirmation aggregate?",
+    "outcome": "SUPPORTED",
+    "conclusion": "Reviewed by CODEX(gemini-4-argon). Apply the proposal's per-run disposition exactly (VALID with gradient gate PASS -> KEEP as confirmation evidence). On paper split 42 (BL_SPLIT=42, seed 2021, Kaggle Tesla T4), ZN-E024 is a complete, finite 33-epoch Phase-3 compression confirmation run (1,518 optimizer steps, 46 steps/epoch, 169.082s training compute, 28,921 parameters = 112.97 KB fp32 / 28.24 KB INT8, early stopping at epoch 33 after selecting the epoch-28 checkpoint where minimum validation MAPE occurs and no other epoch lies within the 0.005 MAPE tolerance). Lead verified that executed train.py md5 equals reviewed train.py. Verified directly from validation_predictions.npz and tools/rescore.py, ZN-E024 achieves split-42 MAPE 0.327626 (-0.019482 better than the 98,113-param reference ZN-E013's 0.347109 on the same split 42, and -0.010629 lower than ZN-E023's 0.338255 on split 2021), Acc@15 0.2100 (-0.0370 vs ZN-E013's 0.2470), RMSE 251.161 cycles (-99.129 cycles better than ZN-E013's 350.290), MAE 134.435 cycles (-49.294 cycles better than ZN-E013's 183.728), DB-MAPE 0.327626, seen-condition MAPE 0.329476 (seen Acc@15 0.225385 vs ZN-E013's 0.337404 / 0.276923), unseen-condition MAPE 0.324190 (unseen Acc@15 0.181429, improving unseen MAPE by -0.040942 over ZN-E013's 0.365132), prediction-target correlation 0.7246 (vs 0.4928 in ZN-E013), and prediction SD 220.91 cycles (65.66% of target SD 336.44 cycles vs 19.95% in ZN-E013, with 0 extreme/negative predictions: min +102.36, max +1203.95 cycles). Crucially, ZN-E024 passes the gradient gate cleanly: diagnostics.json reports overall_gradient_health HEALTHY with zero flags across all 5 blocks and late near-zero gradient fractions of 0.0000 in cycle_stem, 0.0126 in residual_blocks.0, 0.0164 in fade_encoder, 0.0000 in inter_summary, and 0.0000 in head, exact padding invariance (0.0), and HEALTHY activations and masks. Across the first two splits (ZN-E023 on split 2021 and ZN-E024 on split 42), the running 2-split average is MAPE 0.3329 (well inside the <= 0.352 confirmation threshold, beating the full model's 2-split 0.3398), Acc@15 0.2925, and RMSE 342.25 cycles (beating the full model's 2-split 387.65). Therefore Decision: KEEP as split-42 confirmation evidence, and proceed to ZN-E025 on paper split 2024.",
+    "evidence_paths": [
+      "record.json.proposal.rejection_condition",
+      "record.json.result",
+      "record.json.metrics",
+      "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+      "diagnostics.json.checkpoint_selection",
+      "diagnostics.json.epoch_history",
+      "diagnostics.json.summary.overall_gradient_health",
+      "diagnostics.json.summary.layer_health.cycle_stem",
+      "diagnostics.json.summary.layer_health.residual_blocks.0",
+      "diagnostics.json.summary.layer_health.fade_encoder",
+      "diagnostics.json.summary.layer_health.inter_summary",
+      "diagnostics.json.summary.layer_health.head",
+      "diagnostics.json.summary.activation_health",
+      "diagnostics.json.summary.mask_health",
+      "diagnostics.json.summary.padding_invariance",
+      "worker_meta.json",
+      "../ZN-E023/record.json.metrics",
+      "../ZN-E023/record.json.result",
+      "../ZN-E013/record.json.metrics",
+      "../ZN-E013/record.json.result"
+    ]
+  },
+  "main_symptom": "On paper split 42, the 3.39x compressed S2 student ZN-E024 (28,921 params ≈ 28.24 KB INT8) outperforms the 98,113-param reference ZN-E013 on headline MAPE (0.3276 vs 0.3471, -0.0195), RMSE (251.16 vs 350.29 cycles, -99.13 cycles), MAE (134.43 vs 183.73 cycles, -49.29 cycles), seen MAPE (0.3295 vs 0.3374), unseen MAPE (0.3242 vs 0.3651, narrowing the unseen-seen gap to -0.0053), prediction-target correlation (0.7246 vs 0.4928), and prediction spread (220.91 vs 67.12 cycles, 0 extreme predictions vs 4 negative outliers in ZN-E013), while passing the gradient gate cleanly across all 5 blocks (HEALTHY, 0.0000-0.0164 late near-zero gradients). Training for 28 epochs to minimum MAPE allows S2 to unlock medium- and long-life trajectory separation on split 42: on the 500-1000-cycle cell (ZN-coin_434-1, EOL 837), MAPE drops from 0.7202 to 0.2421 and Acc@15 jumps from 0.00 to 0.68 (mean pred 634.4 vs 234.2 cycles), and on the two >1000-cycle cells (ZN-coin_434-2 [EOL 1010] and ZN-coin_436-1 [EOL 1402]), MAPE drops from 0.7753 to 0.5309 and RMSE from 982.79 to 711.58 cycles (mean pred 584.4 vs 256.9 cycles), trading a modest relaxation on the 17 <500-cycle cells (MAPE 0.3087 vs 0.2748, Acc@15 0.2053 vs 0.2906, though bias tightens from -47.13 to -25.27 cycles and RMSE improves from 96.23 to 95.18 cycles) that explains the -0.0370 overall Acc@15 difference (0.2100 vs 0.2470).",
+  "causes": [
+    {
+      "id": "C1_S2_REGULARIZED_CAPACITY_UNLOCKS_SPLIT42_LONG_HORIZON_CONVERGENCE_AND_SEEN_UNSEEN_BALANCE",
+      "class": "compression_generalization_gain",
+      "supporting_evidence": [
+        "record.json.metrics",
+        "record.json.metrics.prediction_diagnostics",
+        "record.json.metrics.by_eol.middle_500-1000",
+        "record.json.metrics.by_eol.high_>1000",
+        "record.json.metrics.by_prefix.26-50",
+        "record.json.metrics.by_prefix.51-75",
+        "record.json.metrics.by_prefix.76-100",
+        "diagnostics.json.epoch_history",
+        "diagnostics.json.summary.overall_gradient_health",
+        "diagnostics.json.summary.layer_health.cycle_stem",
+        "diagnostics.json.summary.layer_health.residual_blocks.0",
+        "diagnostics.json.summary.layer_health.fade_encoder",
+        "diagnostics.json.summary.layer_health.inter_summary",
+        "diagnostics.json.summary.layer_health.head",
+        "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+        "../ZN-E013/record.json.metrics",
+        "../ZN-E013/diagnostics.json.epoch_history",
+        "../ZN-E013/validation_predictions.npz[prediction,target,cell_id,prefix_length]"
+      ],
+      "contradicting_evidence": [
+        "At early prefixes 01-10, ZN-E024 has slightly higher MAPE than ZN-E013 (0.4334 vs 0.4193, Acc@15 0.085 vs 0.100, RMSE 390.03 vs 395.97), before overtaking ZN-E013 across all prefixes >= 11 (11-25 MAPE 0.4071 vs 0.4165, 26-50 0.3466 vs 0.3876, 51-75 0.2899 vs 0.3129, 76-100 0.2564 vs 0.2703).",
+        "Even at epoch 28 (max prediction 1203.95 cycles), the two >1000-cycle cells (ZN-coin_434-2 [EOL 1010, mean pred 377.6] and ZN-coin_436-1 [EOL 1402, mean pred 791.3]) remain underpredicted under Relative Huber loss (bias -621.56 cycles, contributing 80.35% of total squared error vs 78.72% in ZN-E013)."
+      ],
+      "interpretation": "In ZN-E013 (98,113 params), validation MAPE on split 42 bottomed out early at epoch 4 (0.3471) while predictions were still compressed below 374.5 cycles (prediction SD 67.12 cycles), and subsequent epochs 5-9 degraded validation MAPE (0.3666-0.4045) as the larger 2-block 64-channel model overfit short-life training cells when expanding its prediction range. In contrast, the narrower S2 architecture (stem 20/40, d_model 40, 1 residual block, fade 40; 28,921 params) acts as a structural regularizer on split 42: validation MAPE improves steadily from 0.4198 at epoch 1 and 0.3808 at epoch 5 to 0.3642 at epoch 13, 0.3519 at epoch 21, and 0.3276 at epoch 28 (train loss ratio 0.4062). By epoch 28, S2 expands prediction SD to 220.91 cycles (65.66% of target SD) and correlation to 0.7246, cutting 500-1000-cycle MAPE from 0.7202 to 0.2421 (Acc@15 0.00 -> 0.68 on ZN-coin_434-1), cutting >1000-cycle RMSE from 982.79 to 711.58 cycles, cutting mid/late-prefix RMSE in half (51-75 RMSE 325.74 -> 155.24; 76-100 RMSE 320.51 -> 158.79), and improving unseen-condition MAPE from 0.3651 to 0.3242 while maintaining HEALTHY gradients across all 5 blocks.",
+      "missing_evidence": [
+        "Confirmation of S2 on paper split 2024 (ZN-E025) to complete the 3-split aggregate check (3-split mean MAPE <= 0.352 and mean Acc@15 >= 0.294)."
+      ]
+    },
+    {
+      "id": "C2_SHORT_VERSUS_LONG_LIFE_CALIBRATION_SHIFT_AT_WIDE_SPREAD_CHECKPOINT",
+      "class": "calibration_spread_tradeoff",
+      "supporting_evidence": [
+        "record.json.metrics.by_eol.low_<500",
+        "record.json.metrics.by_eol.middle_500-1000",
+        "record.json.metrics.by_eol.high_>1000",
+        "diagnostics.json.epoch_history",
+        "diagnostics.json.checkpoint_selection",
+        "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+        "../ZN-E013/record.json.metrics.by_eol.low_<500"
+      ],
+      "contradicting_evidence": [
+        "On the 17 <500-cycle cells, ZN-E024 actually improves signed bias (-25.27 vs -47.13 cycles in ZN-E013, relative bias -0.0205 vs -0.0923) and slightly lowers <500-cycle RMSE (95.18 vs 96.23 cycles), and improves Acc@15 on 6 individual cells including ZN-coin_434-1 (0.00 -> 0.68), ZN-coin_406-1 (0.31 -> 0.63), ZN-coin_445-2 (0.00 -> 0.26), ZN-coin_442-1 (0.00 -> 0.22), ZN-coin_410-3 (0.26 -> 0.48), and ZN-coin_408-3 (0.18 -> 0.26).",
+        "At epoch 30, ZN-E024 reaches Acc@15 0.2540 (exceeding ZN-E013's 0.2470) with MAPE 0.3468 and RMSE 273.63 cycles, showing S2 can also match ZN-E013's Acc@15 on split 42."
+      ],
+      "interpretation": "In ZN-E013, the epoch-4 checkpoint predicted within a narrow [121.9, 299.7] cell-mean band (overall mean 186.3 cycles), which clustered tightly around the 100-240 cycle short-life cells (giving high Acc@15 on ZN-coin_405-1 [0.63], ZN-coin_408-2 [1.00], ZN-coin_442-2 [0.60], and ZN-coin_442-3 [0.81]) at the cost of severe underprediction on >=350-cycle cells. In ZN-E024 at epoch 28, widening prediction spread to [116.1, 791.3] cell-mean cycles (overall mean 257.6 cycles) substantially improves medium/long-life accuracy (ZN-coin_434-1 Acc@15 0.00 -> 0.68, ZN-coin_442-1 0.00 -> 0.22, ZN-coin_445-2 0.00 -> 0.26) and reduces overall MAPE to 0.3276, but shifts predictions slightly above the +/-15% band on several 100-320 cycle cells (ZN-coin_405-1 [EOL 136, mean 166.0, Acc@15 0.20], ZN-coin_442-2 [EOL 322, mean 392.4, Acc@15 0.14], ZN-coin_442-3 [EOL 237, mean 268.5, Acc@15 0.34]), resulting in split-42 Acc@15 of 0.2100. Across splits 2021 + 42 combined, S2's running 2-split mean Acc@15 is 0.2925 (0.3750 on 2021 and 0.2100 on 42), so split 2024 (ZN-E025) only needs Acc@15 >= 0.297 (where ZN-E014 achieved 0.3575) for the 3-split mean Acc@15 to clear the >= 0.294 aggregate bar.",
+      "missing_evidence": [
+        "Split-2024 confirmation run ZN-E025 to determine the final 3-split mean +/- std for MAPE, Acc@15, and RMSE."
+      ]
+    }
+  ],
+  "selected_cause_id": "C1_S2_REGULARIZED_CAPACITY_UNLOCKS_SPLIT42_LONG_HORIZON_CONVERGENCE_AND_SEEN_UNSEEN_BALANCE",
+  "layers": [
+    {
+      "name": "cycle_stem",
+      "role": "3-layer strided Conv1d+GELU per-cycle curve stem (3->20->40->40, 9,400 params vs 13,568 in ZN-E013).",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.cycle_stem",
+        "diagnostics.json.summary.activation_health.cycle_stem",
+        "record.json.metrics"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Status is HEALTHY on split 42 with zero flags, 0.0000 near-zero gradients throughout training, last grad-to-parameter ratio 0.00438, last update ratio 0.00176, activation zero_fraction_max 0.0, and active_feature_fraction_min 1.0. Retain unchanged for ZN-E025."
+    },
+    {
+      "name": "residual_blocks.0",
+      "role": "Single GroupNorm-normalized ResidualCurveBlock(40, groups=8) extracting intra-cycle curve features (9,760 params vs 59,712 across 2 blocks in ZN-E013).",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.residual_blocks.0",
+        "diagnostics.json.summary.activation_health.residual_blocks",
+        "record.json.metrics"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Status is HEALTHY on split 42 with zero flags, late near-zero gradient fraction 0.0126 (vs 0.0365/0.0583 in ZN-E013), last grad-to-parameter ratio 0.00252, last update ratio 0.000910, and active_feature_fraction_min 1.0. Retain unchanged for ZN-E025."
+    },
+    {
+      "name": "fade_encoder",
+      "role": "Per-cycle anchored fade MLP (Linear 80->40, GELU, Linear 40->40; 4,880 params vs 12,416 in ZN-E013) applied to u_t = [h_t, h_t - h_1].",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.fade_encoder",
+        "diagnostics.json.summary.activation_health.fade_encoder",
+        "diagnostics.json.summary.branch_gradient_imbalance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Status is HEALTHY on split 42 with zero flags, late near-zero gradient fraction 0.0164 (vs 0.0206 in ZN-E013), last grad-to-parameter ratio 0.000810, last update ratio 0.00474, active_feature_fraction_min 1.0, and branch gradient ratio 48.99 (< 1000 warning threshold), driving split-42 correlation to 0.7246. Retain unchanged for ZN-E025."
+    },
+    {
+      "name": "inter_summary",
+      "role": "Linear projection mapping the 120-dimensional masked cycle summary [mean, last, last - first] to 40 dimensions with GELU (4,840 params vs 12,352 in ZN-E013).",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.inter_summary",
+        "diagnostics.json.summary.activation_health.inter_summary",
+        "diagnostics.json.summary.padding_invariance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Status is HEALTHY on split 42 with 0.0000 near-zero gradients, last grad-to-parameter ratio 0.00548, last update ratio 0.00570, active_feature_fraction_min 1.0, and exact padding invariance (0.0). Retain unchanged for ZN-E025."
+    },
+    {
+      "name": "head",
+      "role": "Linear readout mapping the 40-dimensional GELU summary state to scalar standardized EOL (41 params vs 65 in ZN-E013).",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.head",
+        "diagnostics.json.summary.activation_health.head",
+        "diagnostics.json.summary.branch_gradient_imbalance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Status is HEALTHY on split 42 with 0.0000 near-zero gradients, last grad-to-parameter ratio 0.0397, last update ratio 0.000267, and active_feature_fraction_min 1.0. Retain unchanged for ZN-E025."
+    }
+  ],
+  "gates": {
+    "gradient": "PASS",
+    "screen_floor": {
+      "applicable": false,
+      "pass": null,
+      "reason": "ZN-E024 is a Phase-3 confirmation run on split 42 (33 completed epochs), not a five-epoch screening run."
+    }
+  },
+  "decision": "KEEP",
+  "next_action": {
+    "type": "CONFIRM",
+    "summary": "Per the proposal's per-run disposition (VALID with gradient gate PASS -> KEEP as confirmation evidence), ZN-E024 is KEEP: on split 42, the S2 compressed model (28,921 params ≈ 28.24 KB INT8) achieves MAPE 0.3276 (beating the 98,113-param reference ZN-E013's 0.3471 by -0.0195), Acc@15 0.2100 (vs 0.2470), RMSE 251.2 cycles (beating ZN-E013's 350.3 by -99.1 cycles), MAE 134.4 cycles (vs 183.7), seen MAPE 0.3295 / unseen MAPE 0.3242 (vs 0.3374 / 0.3651), and correlation 0.7246 while passing the gradient gate cleanly across all 5 blocks (overall_gradient_health HEALTHY, 0.0000 near-zero in cycle_stem/inter_summary/head). Across splits 2021 (ZN-E023) and 42 (ZN-E024), the running 2-split average is MAPE 0.3329 (<= 0.352 threshold), Acc@15 0.2925, and RMSE 342.2 cycles. Next action: run ZN-E025 on paper split 2024 (BL_SPLIT=2024, identical S2 config and seed 2021), then evaluate the 3-split aggregate confirmation rule (3-split mean MAPE <= 0.352, mean Acc@15 >= 0.294, and all three KEEP) before INT8 PTQ and the NUCLEO-H7S3L8 internal-flash board check.",
+    "source_cause_id": "C1_S2_REGULARIZED_CAPACITY_UNLOCKS_SPLIT42_LONG_HORIZON_CONVERGENCE_AND_SEEN_UNSEEN_BALANCE",
+    "responsible_block": "Whole model (AnchoredFade-ResConv-GELU-S2 [ZN-E023]: proceed to ZN-E025 on split 2024, then the 3-split aggregate decision)"
+  }
+}

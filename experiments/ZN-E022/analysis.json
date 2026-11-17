@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "experiment_id": "ZN-E022",
+  "run_validity": "VALID",
+  "contract_answer": {
+    "question": "How much accuracy does the Zn-ion model lose when shrunk to fit the 64 KB internal flash, and does a structurally narrowed AnchoredFade-ResConv-GELU-S1 (stem 16/32 channels, d_model 32, 1 residual block, fade_hidden 32; 18,657 params ≈ 18.2 KB INT8) trained with the unchanged Phase-1 objective achieve split-2021 MAPE <= 0.3525 (ZN-E010 + 0.02) and Acc@15 >= 0.3365 with a passing gradient gate?",
+    "outcome": "REFUTED",
+    "conclusion": "Reviewed by CODEX(gemini-4-argon). Apply the proposal's Phase-3 compression rule exactly. On split 2021 (seed 2021, Kaggle Tesla T4), ZN-E022 is a complete, finite 13-epoch compression run (598 optimizer steps, 39.715s training compute, 18,657 parameters = 72.88 KB fp32 / 18.22 KB INT8, early stopping at epoch 13 after minimum-MAPE and selected epoch 8, with epoch 10 reaching MAPE 0.359762 / Acc@15 0.2325 / RMSE 442.375) achieving MAPE 0.352568, Acc@15 0.2275, RMSE 444.907 cycles, MAE 238.407 cycles, and DB-MAPE 0.352568 versus frozen Phase-1/Phase-2 reference ZN-E010 (MAPE 0.332536, Acc@15 0.3665, RMSE 425.009 cycles, MAE 232.129 cycles, 98,113 parameters = 383.25 KB fp32 / 95.81 KB INT8). Under the Phase-3 compression rule (KEEP iff split-2021 MAPE <= 0.3525 AND Acc@15 >= 0.3365 AND gradient gate PASS AND prediction SD >= 10% of target SD), the gradient gate PASSES cleanly (overall_gradient_health HEALTHY; all 5 blocks HEALTHY with late near-zero gradient fractions 0.0000 in cycle_stem, 0.0515 in residual_blocks.0, 0.0000 in fade_encoder, 0.0000 in inter_summary, and 0.0000 in head; exact padding invariance 0.0) and prediction spread PASSES (prediction SD 130.39 cycles = 32.00% of target SD 407.45 >= 10%), but split-2021 MAPE (0.352568 > 0.3525, missing by +0.000068, +0.020033 vs ZN-E010) and Acc@15 (0.2275 < 0.3365, -0.1390 vs ZN-E010) both fail. Therefore Decision: DISCARD, and record ZN-E022 (S1, 18,657 params, ~18.2 KB INT8) as a valid Phase-3 size-accuracy trade-off point. Single most evidence-led next compression step to fit <= ~28 KB INT8 weights: before requesting user approval for M5 knowledge distillation, test a targeted ~28.2 KB INT8 intermediate structured-narrowing point S2 (`stem_widths=[20, 40]`, `d_model=40`, `residual_layers=1`, `fade_hidden=40`: 28,921 params = 28.24 KB INT8 / 112.97 KB fp32; or `stem_widths=[24, 40]`, `d_model=40`, `residual_layers=1`, `fade_hidden=32`: 28,841 params = 28.17 KB INT8; whereas `stem 24/48, d_model 48, res 1, fade 48` is 41,425 params = 40.45 KB INT8, exceeding the ~28 KB internal-flash weight budget, and `stem 24/32, d_model 32, res 2, fade 32` is 26,449 params = 25.83 KB INT8 if restoring the second residual block at d_model=32); or, if user approval is granted under phase3_targets.md M5 (triggered when pruning/narrowing costs > 0.01 val MAPE; here +0.0200), apply response-based knowledge distillation from the frozen ZN-E010 teacher onto the <= 28.2 KB student (18,657 params = 18.22 KB INT8 for S1, or 26,449-28,921 params = 25.83-28.24 KB INT8 for S2).",
+    "evidence_paths": [
+      "record.json.proposal.rejection_condition",
+      "record.json.result",
+      "record.json.metrics",
+      "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+      "diagnostics.json.checkpoint_selection",
+      "diagnostics.json.epoch_history",
+      "diagnostics.json.summary.overall_gradient_health",
+      "diagnostics.json.summary.layer_health.cycle_stem",
+      "diagnostics.json.summary.layer_health.residual_blocks.0",
+      "diagnostics.json.summary.layer_health.fade_encoder",
+      "diagnostics.json.summary.layer_health.inter_summary",
+      "diagnostics.json.summary.layer_health.head",
+      "diagnostics.json.summary.activation_health",
+      "diagnostics.json.summary.mask_health",
+      "diagnostics.json.summary.padding_invariance",
+      "worker_meta.json",
+      "../ZN-E010/record.json.metrics",
+      "../ZN-E010/record.json.result"
+    ]
+  },
+  "main_symptom": "Aggressively compressing AnchoredFade-ResConv-GELU by 5.26x in one jump (98,113 -> 18,657 parameters, ~95.8 KB -> ~18.2 KB INT8, cutting stem_widths from 32/64 to 16/32, d_model from 64 to 32, residual_layers from 2 to 1, and fade_hidden from 64 to 32) preserves healthy optimization (overall_gradient_health HEALTHY, 0.00% late near-zero gradients in 4 of 5 blocks, 3.7x faster training at 15.06 steps/s) and comes within 0.000068 of the +0.02 MAPE tolerance (0.352568 vs <= 0.3525 threshold, +0.020033 vs ZN-E010's 0.332536), while improving medium-life 500-1000 cycle bias from -533.01 to -438.83 cycles (MAPE 0.6388 -> 0.5302) and early-prefix 01-10 / 11-25 MAPE from 0.4149 / 0.4023 to 0.3619 / 0.3705. However, it suffers a severe -0.1390 drop in Acc@15 (0.3665 -> 0.2275, failing >= 0.3365), a drop in prediction-target correlation from 0.4785 to 0.2706, +19.90 cycles worse RMSE (425.01 -> 444.91), and 14 extreme negative predictions (min -507.16 cycles vs 0 in ZN-E010, min +104.28) because halving the per-cycle ResConv capacity (73,280 -> 12,384 params, -83.1%) and summary bottleneck (192->64 to 96->32) blurs fine-grained intra-cycle (V, I, Q) shape calibration on <500-cycle cells (<500 MAPE 0.1998 -> 0.2269, <500 Acc@15 0.4887 -> 0.3033) and weakens long-life (>1000) separation (bias -970.08 -> -1062.54 cycles, max prediction 856.74 -> 604.76).",
+  "causes": [
+    {
+      "id": "C1_SIMULTANEOUS_CURVE_ENCODER_AND_BOTTLENECK_NARROWING_ERODES_FINE_CALIBRATION_AND_RANKING",
+      "class": "compression_capacity_bottleneck",
+      "supporting_evidence": [
+        "record.json.metrics",
+        "record.json.metrics.prediction_diagnostics",
+        "record.json.metrics.by_eol.low_<500",
+        "record.json.metrics.by_eol.middle_500-1000",
+        "record.json.metrics.by_eol.high_>1000",
+        "record.json.metrics.by_prefix.26-50",
+        "record.json.metrics.by_prefix.51-75",
+        "record.json.metrics.by_prefix.76-100",
+        "record.json.result.num_params",
+        "diagnostics.json.epoch_history",
+        "validation_predictions.npz[prediction,target,cell_id,prefix_length]",
+        "../ZN-E010/record.json.metrics",
+        "../ZN-E010/validation_predictions.npz[prediction,target,cell_id,prefix_length]"
+      ],
+      "contradicting_evidence": [
+        "Overall split-2021 MAPE degrades by only +0.020033 (0.332536 -> 0.352568, within 0.000068 of the 0.3525 target) despite a 5.26x (81.0%) parameter reduction from 98,113 to 18,657 parameters.",
+        "Early-prefix 01-10 and 11-25 MAPE improve vs ZN-E010 (0.4149 -> 0.3619 and 0.4023 -> 0.3705), <500-cycle mean signed bias shrinks from -25.94 to -7.62 cycles (RMSE 65.57 -> 62.00 cycles), and middle 500-1000 cycle band MAPE improves from 0.6388 to 0.5302 (bias -533.01 -> -438.83 cycles, RMSE 538.96 -> 449.60)."
+      ],
+      "interpretation": "In ZN-E022, all four structural dimensions were halved simultaneously: cycle_stem (32/64/64 -> 16/32/32, 13,568 -> 6,000 params), residual_blocks (2 blocks at d=64 [59,712 params] -> 1 block at d=32 [6,384 params]), fade_encoder (12,416 -> 3,136 params), and inter_summary+head (12,417 -> 3,137 params). The per-cycle curve encoder E absorbed an 83.1% parameter cut (73,280 -> 12,384 params), leaving only 18.2 KB INT8 (saving ~9.8 KB below the ~28 KB internal-flash ceiling). While this 18.7K model captures the coarse dataset mean (<500-cycle bias -7.62 cycles) and misses the 0.3525 MAPE threshold by only 0.000068, it lacks the representational resolution to keep predictions within the narrow +/-15% Acc@15 band on <500-cycle cells (which make up 15 of 20 validation cells and 100% of ZN-E010's Acc@15 hits): <500-cycle MAPE shifts from 0.1998 to 0.2269, pushing 6 short-life cells out of the +/-15% band (e.g., ZN-coin_415-3 [EOL 201] Acc@15 0.53 -> 0.00, ZN-coin_418-2 [EOL 215] 0.42 -> 0.00, ZN-coin_445-3 [EOL 183] 0.55 -> 0.00, ZN-coin_414-3 [EOL 108] 0.88 -> 0.29, ZN-coin_440-3 [EOL 197] 0.96 -> 0.51, ZN-coin_209-2 [EOL 172] 0.36 -> 0.05) and dropping <500 Acc@15 from 0.4887 to 0.3033 (overall Acc@15 0.3665 -> 0.2275, peaking at only 0.2465 at epoch 12). Simultaneously, losing the second ResidualCurveBlock and half the embedding channels reduces prediction-target correlation from 0.4785 to 0.2706 (0.3214 at epoch 12), re-introduces 14 extreme negative predictions on early prefixes of ZN-coin_436-1, ZN-coin_437-2, and ZN-coin_441-1 (min -507.16 cycles vs +104.28 in ZN-E010), and worsens >1000-cycle bias from -970.08 to -1062.54 cycles.",
+      "missing_evidence": [
+        "Testing an intermediate S2 structured compression point that uses the full ~28 KB INT8 internal-flash weight budget (~26.4K-28.9K parameters, vs 18.7K in S1)—specifically widening the encoder/state to stem 20/40, d_model 40, 1 residual block, fade_hidden 40 (28,921 params ≈ 28.2 KB INT8) or restoring the 2nd residual block with stem 24/32, d_model 32, 2 residual blocks, fade_hidden 32 (26,449 params ≈ 25.8 KB INT8)—or training the <= 28 KB student with M5 knowledge distillation from frozen ZN-E010 (if approved by the user under phase3_targets.md M5)."
+      ]
+    },
+    {
+      "id": "C2_GELU_AND_GROUPNORM_MAINTAIN_CLEAN_GRADIENT_FLOW_UNDER_5X_COMPRESSION",
+      "class": "optimization_health_verified",
+      "supporting_evidence": [
+        "diagnostics.json.summary.overall_gradient_health",
+        "diagnostics.json.summary.layer_health.cycle_stem",
+        "diagnostics.json.summary.layer_health.residual_blocks.0",
+        "diagnostics.json.summary.layer_health.fade_encoder",
+        "diagnostics.json.summary.layer_health.inter_summary",
+        "diagnostics.json.summary.layer_health.head",
+        "diagnostics.json.summary.activation_health",
+        "diagnostics.json.summary.branch_gradient_imbalance",
+        "diagnostics.json.summary.learning_dynamics",
+        "diagnostics.json.summary.padding_invariance"
+      ],
+      "contradicting_evidence": [
+        "Despite 0.00% near-zero gradients in 4 of 5 blocks, healthy update ratios (0.00067-0.00517), and a 0.5319 train-loss reduction ratio over 13 epochs, the 18,657-parameter S1 model still plateaus at validation Acc@15 0.2275-0.2465 and correlation 0.2706-0.3214."
+      ],
+      "interpretation": "Diagnostics rule out optimization failure, dead units, or mask leakage as the cause of ZN-E022's Acc@15 drop. Every block is HEALTHY: late near-zero gradient fractions are 0.0000 in cycle_stem, 0.0000 in fade_encoder, 0.0000 in inter_summary, 0.0000 in head, and 0.0515 in residual_blocks.0; branch_gradient_imbalance actually improves vs ZN-E010 (head-to-fade_encoder ratio 23.83 vs 59.49 in ZN-E010); active_feature_fraction_min is 1.0 across all 5 blocks; and padding_invariance is exact (0.0). Because optimization is completely healthy while train loss drops from 0.0563 to 0.0299, the accuracy gap vs ZN-E010 is purely a representational capacity / hard-target supervision limit at 18.7K parameters.",
+      "missing_evidence": [
+        "Verifying whether increasing capacity from 18.2 KB to the ~28 KB INT8 ceiling (S2) or supplying soft teacher targets from frozen ZN-E010 (M5 KD) recovers Acc@15 >= 0.3365 and eliminates the 14 negative outlier predictions while keeping all 5 blocks gradient-healthy."
+      ]
+    }
+  ],
+  "selected_cause_id": "C1_SIMULTANEOUS_CURVE_ENCODER_AND_BOTTLENECK_NARROWING_ERODES_FINE_CALIBRATION_AND_RANKING",
+  "layers": [
+    {
+      "name": "cycle_stem",
+      "role": "Narrowed 3-layer strided Conv1d+GELU per-cycle curve stem (3->16->32->32, 6,000 params vs 13,568 in ZN-E010).",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.cycle_stem",
+        "diagnostics.json.summary.activation_health.cycle_stem",
+        "record.json.metrics"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "REPAIR",
+      "reason": "Gradient and activation health are HEALTHY (0.0000 near-zero gradients, last grad-to-param ratio 0.0235, update ratio 0.00173, active_feature_fraction 1.0), but halving stem channels to 16/32/32 contributed to the 83.1% curve-encoder compression that degraded <500-cycle Acc@15 (0.4887 -> 0.3033) and correlation (0.4785 -> 0.2706). Widen toward the ~28 KB INT8 budget in S2 (e.g., stem_widths [20, 40] -> d_model 40, or [24, 32] -> d_model 32 with 2 residual blocks)."
+    },
+    {
+      "name": "residual_blocks.0",
+      "role": "Single GroupNorm-normalized ResidualCurveBlock(32, groups=8) extracting intra-cycle curve features (6,384 params vs 2 blocks / 59,712 params in ZN-E010).",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.residual_blocks.0",
+        "diagnostics.json.summary.activation_health.residual_blocks",
+        "record.json.metrics"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "REPAIR",
+      "reason": "Status is HEALTHY (late near-zero gradient fraction 0.0515, last grad-to-param ratio 0.0131, update ratio 0.00114), but dropping from 2 residual blocks at d=64 to 1 block at d=32 cut residual curve capacity by 89.3% (59,712 -> 6,384 params), causing 14 extreme negative predictions on early prefixes and losing long-life (>1000) rank separation. Increase residual capacity within the ~28 KB INT8 limit (either 1 block at d_model=40 [9,760 params] in a 28.9K S2 model, or 2 blocks at d_model=32 [12,768 params] in a 26.4K S2 model)."
+    },
+    {
+      "name": "fade_encoder",
+      "role": "Narrowed per-cycle anchored fade MLP (Linear 64->32, GELU, Linear 32->32; 3,136 params vs 12,416 in ZN-E010) applied to u_t = [h_t, h_t - h_1].",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.fade_encoder",
+        "diagnostics.json.summary.activation_health.fade_encoder",
+        "diagnostics.json.summary.branch_gradient_imbalance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "REPAIR",
+      "reason": "Status is HEALTHY with 0.0000 near-zero gradients, update ratio 0.00440, and improved branch balance (23.83x below head vs 59.49x in ZN-E010). Scale commensurately with d_model in S2 (e.g., d_model=40, fade_hidden=32..40 -> 3,912..4,880 params) or train with teacher distillation from ZN-E010."
+    },
+    {
+      "name": "inter_summary",
+      "role": "Linear projection mapping the 96-dimensional masked cycle summary [mean, last, last - first] to 32 dimensions (3,104 params vs 12,352 in ZN-E010).",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.inter_summary",
+        "diagnostics.json.summary.activation_health.inter_summary",
+        "diagnostics.json.summary.padding_invariance"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "REPAIR",
+      "reason": "Status is HEALTHY (0.0000 near-zero gradients, last grad-to-param ratio 0.00939, update ratio 0.00517, exact padding invariance 0.0). Scale commensurately with d_model=40 (120->40, 4,840 params) in S2 to relieve the summary bottleneck."
+    },
+    {
+      "name": "head",
+      "role": "Linear readout mapping the 32-dimensional GELU summary state to scalar standardized EOL (33 params vs 65 in ZN-E010).",
+      "evidence_paths": [
+        "diagnostics.json.summary.layer_health.head",
+        "diagnostics.json.summary.activation_health.head"
+      ],
+      "persistent_dead_gradient": false,
+      "action": "RETAIN",
+      "reason": "Status is HEALTHY (0.0000 near-zero gradients, last grad-to-param ratio 0.0385, update ratio 0.000665). Retain the linear GELU readout structure (scaling input width with d_model)."
+    }
+  ],
+  "gates": {
+    "gradient": "PASS",
+    "screen_floor": {
+      "applicable": false,
+      "pass": null,
+      "reason": "ZN-E022 is a Phase-3 full_candidate compression run on split 2021 (13 completed epochs), not a five-epoch screening run."
+    }
+  },
+  "decision": "DISCARD",
+  "next_action": {
+    "type": "REPAIR",
+    "summary": "ZN-E022 (S1, 18,657 params ≈ 18.2 KB INT8 / 72.9 KB fp32) is VALID + DISCARD under the Phase-3 compression rule: gradient gate PASSES (all 5 blocks HEALTHY) and prediction SD PASSES (130.39 cycles = 32.0% of target SD), while split-2021 MAPE (0.352568 vs <= 0.3525, +0.02003 vs ZN-E010) misses by 0.000068 and Acc@15 drops to 0.2275 (failing >= 0.3365) with correlation 0.2706 and 14 extreme negative predictions. Note on candidate sizes vs the <= ~28 KB INT8 internal-flash budget (~28,672 INT8 weight bytes so code ~33 KB + weights fits in 64 KB internal flash): a full `stem_widths=[24, 48]`, `d_model=48`, `residual_layers=1`, `fade_hidden=48` model has 41,425 parameters (≈ 40.45 KB INT8 / 161.8 KB fp32; E=27,408, F=7,008, H=7,009), which exceeds the ~28 KB INT8 internal-flash budget by ~12.5 KB. Recommend as the single most evidence-led next step (without requiring M5 approval): test S2 at the exact ~28 KB INT8 ceiling by widening S1 to `stem_widths=[20, 40]`, `d_model=40`, `residual_layers=1`, `fade_hidden=40` (28,921 params ≈ 28.24 KB INT8 / 113.0 KB fp32; E=19,160, F=4,880, H=4,881; or `stem_widths=[24, 40]`, `d_model=40`, `residual_layers=1`, `fade_hidden=32` at 28,841 params ≈ 28.17 KB INT8), which restores +55% parameter capacity over S1 across the curve encoder, fade encoder, and summary bottleneck while still fitting <= ~28 KB INT8 (alternatively, if restoring the 2nd ResidualCurveBlock is prioritized at `d_model=32`, `stem_widths=[24, 32]`, `d_model=32`, `residual_layers=2`, `fade_hidden=32` uses 26,449 params ≈ 25.83 KB INT8). If the user approves Phase-3 Knowledge Distillation under `phase3_targets.md` M5 (which specifies KD when pruning/narrowing costs > 0.01 val MAPE; here +0.0200), pairing this ~28.2 KB S2 student (or the 18.2 KB S1 student) with response-based KD from the frozen ZN-E010 teacher directly targets the <500-cycle +/-15% calibration loss and eliminates early-prefix negative outliers without adding a single byte to deployed flash.",
+    "source_cause_id": "C1_SIMULTANEOUS_CURVE_ENCODER_AND_BOTTLENECK_NARROWING_ERODES_FINE_CALIBRATION_AND_RANKING",
+    "responsible_block": "Whole model (structured narrowing S2: stem_widths [20,40] / [24,40], d_model 40, residual_layers 1, fade_hidden 40/32 at ~28.2 KB INT8; or M5 KD from frozen ZN-E010 if user-approved)"
+  }
+}

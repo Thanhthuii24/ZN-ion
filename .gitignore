@@ -65,3 +65,15 @@ run_next.sh
 run_step.sh
 validate_analysis.py
 workflow_preflight.py
+
+# ST Edge AI / firmware generated outputs (phase3; regenerate with the scripts)
+phase3/board/val_*/
+phase3/board/*_ws/
+phase3/board/fw/proj/
+phase3/board/fw/net_*/
+phase3/board/fw/ws_*/
+phase3/board/fw/zn_data.c
+phase3/board/*.onnx
+phase3/board/*.npz
+phase3/export/*.onnx
+phase3/export/*.npz

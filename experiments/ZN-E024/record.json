@@ -1,0 +1,231 @@
+{
+  "proposal": {
+    "id": "ZN-E024",
+    "phase": "phase3_tinyml",
+    "training_stage": "confirmation",
+    "type": "compression",
+    "model": {
+      "display_name": "AnchoredFade-ResConv-GELU-S2 (compressed)",
+      "variant": "anchored_fade_resconv_masked_summary",
+      "d_model": 40,
+      "residual_layers": 1,
+      "d_ff": 64,
+      "mlp_layers": 0,
+      "summary_mode": "mean_last_delta",
+      "dropout": 0.1,
+      "activation": "gelu",
+      "fade_hidden": 40,
+      "stem_widths": [
+        20,
+        40
+      ]
+    },
+    "reference_experiment": "ZN-E023",
+    "observation": "ZN-E023 (S2, 28,921 params) KEEP on split 2021: MAPE 0.3383, Acc@15 0.3750, RMSE 433.3, gradient HEALTHY.",
+    "primary_hypothesis": "The S2 compressed model keeps its accuracy on paper split 42 with a passing gradient gate.",
+    "question_inherited": "Does the S2 compression result hold on all paper splits?",
+    "unresolved_from_reference": "Split dependence of S2 on split 42.",
+    "why_this_experiment": "state.json split_protocol: confirm KEEP candidates on splits 42 and 2024 before deployment.",
+    "modification": "None vs ZN-E023: identical model and training; only BL_SPLIT=42.",
+    "changed_components": "Data split only (BL_SPLIT=42).",
+    "held_constant_components": "Architecture family (ResConv curve encoder + anchored fade encoder + masked summary + linear GELU head), GELU, objective, optimizer, data, split, seed, epoch rule.",
+    "controlled_variables": "Training seed 2021, A2-ZN epochs. Sole changed variable: split 42.",
+    "expected_evidence": "MAPE/Acc@15/RMSE vs ZN-E010 and ZN-E022; params (28,921 \u2248 28.2 KB INT8); gradient gate; 3-split confirmation and INT8/board check if kept.",
+    "rejection_condition": "Per-run disposition: VALID with gradient gate PASS -> KEEP (confirmation evidence); gate FAIL -> DISCARD; protocol/finite/completeness failure -> INVALID. Aggregate (after ZN-E025, over ZN-E023/E024/E025 = splits 2021/42/2024): S2 is CONFIRMED as the compressed Phase-3 model iff 3-split mean MAPE <= 0.352 (ZN-E010 3-split 0.332 + 0.020) AND mean Acc@15 >= 0.294 AND all three KEEP; then INT8 PTQ and the internal-flash board check follow.",
+    "minimum_evidence_requirements": "At least five complete epochs; finite MAPE, Acc@15, MAE, and RMSE from one checkpoint; sample and unique-cell counts for every domain; gradient, update, activation, prediction, mask, and compute diagnostics.",
+    "required_diagnostics": "Epoch learning curve; selected and minimum-MAPE epochs; cycle_stem, residual_blocks, fade_encoder, inter_summary and head gradients and updates; activation health; prediction spread and bias; prefix, domain and EOL errors; padding sensitivity; parameters, memory, time, throughput.",
+    "estimated_budget": {
+      "experiments": 1,
+      "training_seconds": 600
+    },
+    "training": {
+      "seed": 2021,
+      "batch_size": 128,
+      "max_epochs": 100,
+      "minimum_epochs": 5,
+      "patience": 5,
+      "learning_rate": 0.0005,
+      "scheduler": "none",
+      "target_transform": "standard",
+      "main_loss": "relative_huber",
+      "relative_huber_delta": 0.15,
+      "checkpoint_mape_tolerance": 0.005,
+      "physics_loss_weight": 0.0,
+      "extra_loss_weight": 0.0,
+      "prefix_consistency_weight": 0.0,
+      "diagnostic_interval_steps": 50,
+      "required_device": "cuda"
+    },
+    "architecture_addendum": {
+      "responsible_stage": "Whole model (structured narrowing)",
+      "mechanism": "Structured compression (channel/depth reduction)",
+      "evidence": "64 KB internal-flash budget; INT8 of the full E fails accuracy",
+      "shapes": "[B,100,3,300] -> ResConv [B,100,64] (h_t) -> u_t=[h_t, h_t-h_1] [B,100,128] -> Linear 128->64, GELU, Linear 64->64, +h_t -> g_t [B,100,64] * mask -> masked summary [B,192] -> Linear [B,64] -> GELU -> Linear [B,1]",
+      "mask_path": "h_1 = cycle index 0 (always observed); g_t multiplied by mask; mean over mask==1, last at mask.sum()-1, delta last - first. tests/test_anchored_fade.py: padding invariance and cycle-1 dependence.",
+      "expected_evidence": "MAPE, RMSE, Acc@15, DB-MAPE (= MAPE) vs ZN-E005; EOL bands; gradient gate incl. fade_encoder"
+    },
+    "smoke_evidence": "Identical code and config to ZN-E023 and ZN-E022S; only the split changes."
+  },
+  "metrics": {
+    "mape": 0.3276261521051949,
+    "acc15": 0.21,
+    "mae": 134.43452840423583,
+    "rmse": 251.16115448257918,
+    "prediction_diagnostics": {
+      "prediction_mean": 257.6369934082031,
+      "prediction_std": 220.90989685058594,
+      "prediction_min": 102.36325073242188,
+      "prediction_max": 1203.94677734375,
+      "target_mean": 351.3999938964844,
+      "target_std": 336.43756103515625,
+      "prediction_to_target_std_ratio": 0.6566148445818207,
+      "mean_signed_relative_error": -0.0825958177447319,
+      "relative_error_std": 0.37338319420814514,
+      "prediction_target_correlation": 0.7245528691179193,
+      "extreme_prediction_count": 0
+    },
+    "by_prefix": {
+      "01-10": {
+        "mape": 0.43344379224844154,
+        "acc15": 0.085,
+        "mae": 220.6249787902832,
+        "rmse": 390.0334682202568,
+        "bias": -202.67205810546875,
+        "relative_bias": -0.2799680531024933,
+        "prediction_mean": 148.7279510498047,
+        "target_mean": 351.3999938964844,
+        "sample_count": 200,
+        "unique_cell_count": 20
+      },
+      "11-25": {
+        "mape": 0.4070784892083183,
+        "acc15": 0.11333333333333333,
+        "mae": 199.07761199951173,
+        "rmse": 367.2470577492958,
+        "bias": -173.39678955078125,
+        "relative_bias": -0.1912177950143814,
+        "prediction_mean": 178.00323486328125,
+        "target_mean": 351.3999938964844,
+        "sample_count": 300,
+        "unique_cell_count": 20
+      },
+      "26-50": {
+        "mape": 0.3466241889001382,
+        "acc15": 0.146,
+        "mae": 131.1291038208008,
+        "rmse": 247.46620653106467,
+        "bias": -85.06586456298828,
+        "relative_bias": -0.023448245599865913,
+        "prediction_mean": 266.3341369628906,
+        "target_mean": 351.3999938964844,
+        "sample_count": 500,
+        "unique_cell_count": 20
+      },
+      "51-75": {
+        "mape": 0.28990551250628854,
+        "acc15": 0.25,
+        "mae": 99.75116943359374,
+        "rmse": 155.24345888241925,
+        "bias": -45.742393493652344,
+        "relative_bias": -0.00013730621139984578,
+        "prediction_mean": 305.6576232910156,
+        "target_mean": 351.3999938964844,
+        "sample_count": 500,
+        "unique_cell_count": 20
+      },
+      "76-100": {
+        "mape": 0.2563502965899854,
+        "acc15": 0.342,
+        "mae": 99.16128164672851,
+        "rmse": 158.79220319448135,
+        "bias": -59.136932373046875,
+        "relative_bias": -0.0800798088312149,
+        "prediction_mean": 292.2630615234375,
+        "target_mean": 351.3999938964844,
+        "sample_count": 500,
+        "unique_cell_count": 20
+      }
+    },
+    "by_domain": {
+      "ZN-coin": {
+        "mape": 0.3276261521051949,
+        "acc15": 0.21,
+        "mae": 134.43452840423583,
+        "rmse": 251.16115448257918,
+        "bias": -93.76302337646484,
+        "relative_bias": -0.0825958177447319,
+        "prediction_mean": 257.6369934082031,
+        "target_mean": 351.3999938964844,
+        "sample_count": 2000,
+        "unique_cell_count": 20
+      }
+    },
+    "by_eol": {
+      "high_>1000": {
+        "mape": 0.5308684831122686,
+        "acc15": 0.015,
+        "mae": 621.5593831634521,
+        "rmse": 711.5827150677475,
+        "bias": -621.5594482421875,
+        "relative_bias": -0.5308684706687927,
+        "prediction_mean": 584.4406127929688,
+        "target_mean": 1206.0,
+        "sample_count": 200,
+        "unique_cell_count": 2
+      },
+      "low_<500": {
+        "mape": 0.3087486305448723,
+        "acc15": 0.20529411764705882,
+        "mae": 73.11577178057502,
+        "rmse": 95.1788645254709,
+        "bias": -25.266939163208008,
+        "relative_bias": -0.020477646961808205,
+        "prediction_mean": 197.0271759033203,
+        "target_mean": 222.2941131591797,
+        "sample_count": 1700,
+        "unique_cell_count": 17
+      },
+      "middle_500-1000": {
+        "mape": 0.24205935661653177,
+        "acc15": 0.68,
+        "mae": 202.6036814880371,
+        "rmse": 308.11574669915973,
+        "bias": -202.60366821289062,
+        "relative_bias": -0.2420593500137329,
+        "prediction_mean": 634.396240234375,
+        "target_mean": 837.0,
+        "sample_count": 100,
+        "unique_cell_count": 1
+      }
+    }
+  },
+  "result": {
+    "benchmark_round": "BATTERYLIFE-ZN-COIN-R1",
+    "protocol_fingerprint": "56fe739efb7b5ce6f2c2595ad024559924f51a10687d88f555bb89481f43ac14",
+    "type": "compression",
+    "seed": 2021,
+    "training_compute_seconds": 169.082,
+    "validation_seconds": 43.42,
+    "wall_seconds": 291.252,
+    "num_steps": 1518,
+    "runner_version": "r4-relative-huber-v2",
+    "steps_per_sec": 8.977884,
+    "num_params": 28921,
+    "model_bytes_fp32": 115684,
+    "peak_device_memory_bytes": 1348154368,
+    "best_epoch": 28,
+    "minimum_validation_mape": 0.3276261521051949,
+    "checkpoint_mape_tolerance": 0.005,
+    "best_epoch_complete": true,
+    "best_epoch_steps": 46,
+    "steps_per_epoch": 46,
+    "completed_epochs": 33,
+    "last_epoch": 33,
+    "last_epoch_steps": 46,
+    "epoch_progress": 33.0,
+    "stop_reason": "early_stopping",
+    "status": "pending_analysis",
+    "description": "None vs ZN-E023: identical model and training; only BL_SPLIT=42.",
+    "device": "cuda"
+  }
+}
