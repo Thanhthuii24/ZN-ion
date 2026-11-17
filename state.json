@@ -11,7 +11,7 @@
   "approval_scope": "Standing authorization for the ordinary proposal, diagnostic, smoke, training, review, commit, and push loop inside this repository. Phase 1 may change architecture only under fixed Relative Huber. Final-test access, destructive resets, dataset changes, and protocol changes remain separately gated.",
   "current_experiment": null,
   "next_experiment_id": "ZN-E026",
-  "next_action": "User decision on S2 board run / QAT / Phase-3 close",
+  "next_action": "User decision: QAT for S2 INT8, or close Phase 3 (push + v6 summary)",
   "active_architecture_parent": "ZN-E010",
   "success_criteria": {
     "same_checkpoint_required": true,
@@ -348,7 +348,7 @@
       "weights exceed the 64 KB internal flash even at int8 -> XSPI2 external flash (external loader) or compression",
       "full-window activations exceed 620 KB SRAM -> per-cycle streaming export required"
     ],
-    "status": "compression done: S2 confirmed (fp32); internal-flash-only deployment infeasible; waiting for the user decision (S2 on board via XSPI/SRAM, QAT, or close Phase 3)",
+    "status": "S2 on board done; next: user decision (QAT or close Phase 3 + push + summary)",
     "P0": {
       "ZN-E010": "max rel EOL diff 3.3e-6, ONNX val MAPE 0.33254",
       "ZN-E018": "max rel EOL diff 5.1e-6, ONNX val MAPE 0.32539",
@@ -412,6 +412,13 @@
       },
       "S2_int8": "all INT8 (31 KB weights): \u0394 vs S2 fp32 +0.0039/+0.0073/-0.0029 (fails 2021/42); E fp32 + F,H INT8: -0.0005/+0.0015/-0.0091 (fails 42)",
       "internal_flash": "S2 all-INT8 build: .text 46 KB (ST runtime + int8 kernels) + weights 31 KB -> 85.3 KB excl. val data > 64 KB internal flash (Boot 19.9 KB): infeasible with the ST runtime"
+    },
+    "S2_board": {
+      "variant": "S2 all fp32, E+H weights in SRAM",
+      "three_split": "board MAPE 0.3323 \u00b1 0.0054 (= fp32), Acc@15 0.3105 \u00b1 0.0882",
+      "latency_ms": "20.74 \u00b1 0.06 (E \u2248 17.3, F \u2248 3.3, C+H \u2248 0.13; min/max 20.1/23.2)",
+      "RAM_KB": 131.7,
+      "max_abs_board_minus_ref_cycles": "0.0012-0.0017"
     }
   }
 }

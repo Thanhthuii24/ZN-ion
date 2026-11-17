@@ -39,3 +39,6 @@ P2-host-S2	ZN-E024	42	S2 INT8 F,H / fp32 E	0.327626	0.329104	+0.001478	False	75.
 P2-host-S2	ZN-E025	2024	S2 all INT8	0.330995	0.32813	-0.002866	True	20.4/5.3/5.2	
 P2-host-S2	ZN-E025	2024	S2 INT8 F,H / fp32 E	0.330995	0.321921	-0.009074	True	75.7/5.3/5.2	
 A-build-host-S2	ZN-E023	2021	S2 all INT8	-	-	-	-	20.4/5.3/5.2	code .text 46 KB + consts: 85.3 KB excl. val data > 64 KB internal flash (Boot 19.9 KB) -> internal-flash-only deployment infeasible with the ST runtime
+B-board-S2	ZN-E023	2021	S2 compressed (28,921 params) all fp32	E+H weights in SRAM, F in XSPI2	0.338255	0.338255	0.338255	-0.000000	1.70e-03	0.375	17.345/16.737/18.895	3.327	0.132	20.803/20.171/22.86	131.7	-	600 MHz
+B-board-S2	ZN-E024	42	S2 compressed (28,921 params) all fp32	E+H weights in SRAM, F in XSPI2	0.327626	0.327626	0.327626	+0.000000	1.20e-03	0.21	17.284/16.701/19.222	3.326	0.128	20.739/20.132/23.209	131.7	-	600 MHz
+B-board-S2	ZN-E025	2024	S2 compressed (28,921 params) all fp32	E+H weights in SRAM, F in XSPI2	0.330995	0.330995	0.330995	+0.000000	1.30e-03	0.3465	17.229/16.837/18.876	3.326	0.136	20.69/20.282/22.848	131.7	-	600 MHz

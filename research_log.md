@@ -297,3 +297,9 @@ Raw experiment artifacts remain unchanged for reproducibility.
 - S2 ONNX export parity 1.9e-6..5.4e-6 on all splits.
 - S2 all INT8 (weights 20.4 + 5.3 + 5.2 = 31 KB): Δ MAPE vs S2 fp32 +0.0039 / +0.0073 / −0.0029 (2021/42/2024) — fails 2021/42 at 0.001; 3-split ≈ 0.335. E fp32 + F/H INT8: −0.0005 / +0.0015 / −0.0091 — fails 42.
 - Internal-flash-only build (S2 all INT8): .text 46 KB (ST runtime + INT8 kernels) + consts → 85.3 KB without val data, above the 64 KB internal flash (Boot already 19.9 KB). With the ST runtime the model cannot run from internal flash alone; XSPI2 (with weights copied to SRAM) stays the deployment path.
+
+## Phase 3 B (board) — S2 compressed model (ZN-E023/E024/E025), all fp32, E/H weights in SRAM
+
+- Board vs host (2000 val prefixes per split): identical MAPE 0.338255 / 0.327626 / 0.330995; max |Δ EOL| 0.0012–0.0017 cycles.
+- 3-split: board MAPE 0.3323 ± 0.0054 (= fp32), Acc@15 0.3105 ± 0.0882. Latency 20.74 ± 0.06 ms per new cycle (E ≈ 17.3, F ≈ 3.3, C+H ≈ 0.13; min 20.1, max 23.2). RAM 131.7 KB.
+- vs ZN-E010 on board: 52.5 ms -> 20.7 ms (2.5× faster), RAM 399 -> 132 KB, same 3-split MAPE (0.332).
