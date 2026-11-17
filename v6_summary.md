@@ -48,3 +48,14 @@ Streaming: E (mã hoá 1 chu kỳ) → F (fade cell) → C (cộng dồn summary
 ## 5. File chính
 results.tsv · research_log.md · state.json · phase3/results_tinyml.tsv · diagnostics/phase1_breakthrough_diagnosis.md ·
 phase3/p0_export.py · phase3/board/st_int8.py · phase3/board/fw/ (zn_app.c, zn_cpart.c, run_split.sh) · loss.md §4.6 (P0u).
+
+## 6. Test (đánh giá một lần, A10-ZN, 2026-11-17)
+
+| Model | MAPE 2021 / 42 / 2024 | MAPE TB | Acc@15 | RMSE |
+|---|---|---|---|---|
+| ZN-E010 | 0.419 / 0.360 / 0.338 | 0.372 ± 0.042 | 0.333 ± 0.076 | 359.6 ± 12.3 |
+| P0c | 0.412 / 0.334 / 0.368 | 0.372 ± 0.039 | 0.268 ± 0.091 | 383.6 ± 38.0 |
+| S2 nén | 0.420 / 0.493 / 0.355 | 0.423 ± 0.069 | 0.348 ± 0.039 | 358.1 ± 27.4 |
+| Paper CPTransformer / CPMLP | – | 0.515 / 0.558 | 0.202 / 0.297 | – |
+
+Test xấu hơn val (20 cell val ước lượng lạc quan), nhất là với S2; vẫn tốt hơn paper. Test đã dùng — không chỉnh model theo số này.
